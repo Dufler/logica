@@ -1,0 +1,57 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+
+public class Azienda extends Entity {
+	
+	public static final String NOME_TABELLA = "azienda";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+
+	private Integer id;
+	private String ragioneSociale;
+	private String partitaIva;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id", Column.AUTOINCREMENT, "id"));
+			variabili.add(new Column("ragione_sociale", Column.STRING, "ragioneSociale"));
+			variabili.add(new Column("partita_iva", Column.STRING, "partitaIva"));
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRagioneSociale() {
+		return ragioneSociale;
+	}
+
+	public void setRagioneSociale(String ragioneSociale) {
+		this.ragioneSociale = ragioneSociale;
+	}
+
+	public String getPartitaIva() {
+		return partitaIva;
+	}
+
+	public void setPartitaIva(String partitaIva) {
+		this.partitaIva = partitaIva;
+	}
+
+}

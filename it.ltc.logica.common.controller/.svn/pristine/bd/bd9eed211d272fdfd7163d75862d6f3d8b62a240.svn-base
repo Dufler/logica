@@ -1,0 +1,127 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.fatturazione.PreferenzeFatturazione;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerPreferenzeFatturazione {
+	
+	private static final String title = "Preferenze di Fatturazione";
+	private static final String resource = "preferenzefatturazione";
+	
+	private static ControllerPreferenzeFatturazione instance;
+	
+	private final List<PreferenzeFatturazione> preferenze;
+
+	private ControllerPreferenzeFatturazione() {
+		preferenze = new LinkedList<>();
+		caricaDati();
+	}
+
+	public static ControllerPreferenzeFatturazione getInstance() {
+		if (instance == null) {
+			instance = new ControllerPreferenzeFatturazione();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoPreferenze p = new ProcessoCaricamentoPreferenze();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(p);
+		if (p.getEsito()) {
+			preferenze.clear();
+			preferenze.addAll(p.getLista());
+		}
+	}
+	
+	public List<PreferenzeFatturazione> getPreferenze() {
+		return preferenze;
+	}
+	
+	/**
+	 * Restituisce tutte le preferenze di fatturazione salvate per una commessa.
+	 * @param commessa la commessa selezionata
+	 * @return tutt le preferenze legate alla commessa.
+	 */
+	public List<PreferenzeFatturazione> getPreferenzePerCommessa(int commessa) {
+		List<PreferenzeFatturazione> preferenzePerCommessa = new LinkedList<>();
+		for (PreferenzeFatturazione preferenza : preferenze) {
+			if (preferenza.getCommessa() == commessa)
+				preferenzePerCommessa.add(preferenza);
+		}
+		return preferenzePerCommessa;
+	}
+	
+	public boolean inserisci(PreferenzeFatturazione preferenzeFatturazione) {
+		ProcessoInserimentoPreferenze processo = new ProcessoInserimentoPreferenze(preferenzeFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			preferenze.add(processo.getObject());
+		}
+		return esito;
+	}
+	
+	public boolean aggiorna(PreferenzeFatturazione preferenzeFatturazione) {
+		ProcessoAggiornamentoPreferenze processo = new ProcessoAggiornamentoPreferenze(preferenzeFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (!esito) {
+			//TODO - ricarica i dati
+		}
+		return esito;
+	}
+	
+	public boolean elimina(PreferenzeFatturazione preferenzeFatturazione) {
+		ProcessoEliminazionePreferenze processo = new ProcessoEliminazionePreferenze(preferenzeFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			preferenze.remove(preferenzeFatturazione);
+		}
+		return esito;
+	}
+	
+	private class ProcessoCaricamentoPreferenze extends ProcessoCaricamentoDati<PreferenzeFatturazione> {
+
+		public ProcessoCaricamentoPreferenze() {
+			super(title, resource, PreferenzeFatturazione.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoPreferenze extends ProcessoInserimentoDati<PreferenzeFatturazione> {
+
+		public ProcessoInserimentoPreferenze(PreferenzeFatturazione object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoPreferenze extends ProcessoAggiornamentoDati<PreferenzeFatturazione> {
+
+		public ProcessoAggiornamentoPreferenze(PreferenzeFatturazione object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazionePreferenze extends ProcessoCancellazioneDati<PreferenzeFatturazione> {
+
+		public ProcessoEliminazionePreferenze(PreferenzeFatturazione object) {
+			super(title, resource, object);
+		}
+		
+	}
+
+}

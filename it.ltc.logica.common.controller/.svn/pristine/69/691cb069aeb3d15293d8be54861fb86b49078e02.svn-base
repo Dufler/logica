@@ -1,0 +1,149 @@
+package it.ltc.logica.common.controller;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.documenti.Documento;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerDocumenti {
+
+	private static ControllerDocumenti instance;
+
+	private final HashMap<Integer, Documento> documenti;
+
+	private ControllerDocumenti() {
+		documenti = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerDocumenti getInstance() {
+		if (instance == null) {
+			instance = new ControllerDocumenti();
+		}
+		return instance;
+	}
+
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+	}
+
+	public Collection<Documento> getDocumenti() {
+		return documenti.values();
+	}
+
+	public Documento getDocumento(Integer id) {
+		return documenti.get(id);
+	}
+
+	public synchronized int inserisciNuovaSpedizione(Documento documento) {
+		ProcessoInserimentoDocumento pid = new ProcessoInserimentoDocumento(documento);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pid);
+		return pid.getDocumento().getId();
+	}
+
+	public synchronized boolean aggiornaSpedizione(Documento documento) {
+		ProcessoAggiornamentoDocumento pad = new ProcessoAggiornamentoDocumento(documento);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pad);
+		boolean update = (pad.getDocumento() != null);
+		return update;
+	}
+
+	private class ProcessoCaricamentoDati extends Processo {
+
+		private static final String title = "Caricamento dei documenti";
+
+		public ProcessoCaricamentoDati() {
+			super(title, -1);
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("documento");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento dei documenti: '" + wsAnswer.getMessage() + "'");
+
+			ObjectMapper mapper = new ObjectMapper();
+			List<Documento> lista = mapper.readValue(answer, new TypeReference<List<Documento>>() {
+			});
+
+			documenti.clear();
+
+			for (Documento documento : lista) {
+				documenti.put(documento.getId(), documento);
+			}
+		}
+	}
+
+	private class ProcessoInserimentoDocumento extends Processo {
+
+		private static final String title = "Inserimento del documento";
+
+		private Documento documento;
+
+		public ProcessoInserimentoDocumento(Documento documento) {
+			super(title, -1);
+			this.documento = documento;
+		}
+
+		public Documento getDocumento() {
+			return documento;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(documento);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("documento", json);
+			if (wsAnswer.getStatus() != 201) {
+				documento = null;
+				throw new RuntimeException("Errore durante l'inserimento del documento: '" + wsAnswer.getMessage() + "'");
+			}
+			documento = mapper.readValue(wsAnswer.getMessage(), Documento.class);
+		}
+	}
+
+	private class ProcessoAggiornamentoDocumento extends Processo {
+
+		private static final String title = "Aggiornamento del documento";
+
+		private Documento documento;
+
+		public ProcessoAggiornamentoDocumento(Documento documento) {
+			super(title, -1);
+			this.documento = documento;
+		}
+
+		public Documento getDocumento() {
+			return documento;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(documento);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("documento", json);
+			if (wsAnswer.getStatus() != 200) {
+				documento = null;
+				throw new RuntimeException("Errore durante l'aggiornamento del documento: '" + wsAnswer.getMessage() + "'");
+			}
+			documento = mapper.readValue(wsAnswer.getMessage(), Documento.class);
+		}
+	}
+
+}

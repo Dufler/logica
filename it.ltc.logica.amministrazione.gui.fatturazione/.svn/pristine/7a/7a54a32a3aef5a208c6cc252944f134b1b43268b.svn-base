@@ -1,0 +1,78 @@
+package it.ltc.logica.amministrazione.gui.fatturazione.elements.preferenze;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.database.model.centrale.fatturazione.PreferenzeFatturazione;
+import it.ltc.logica.gui.common.dialogs.fatturazione.DialogPreferenzeFatturazione;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaPreferenzeFatturazione extends Tabella<PreferenzeFatturazione> {
+
+	public TabellaPreferenzeFatturazione(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatorePreferenzeFatturazione());
+		
+		aggiungiColonna("Commessa", 120, new EtichettatorePreferenzeFatturazione(), 0);
+		aggiungiColonna("Ambito", 120, new EtichettatorePreferenzeFatturazione(), 1);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem insert = new MenuItem(menu, SWT.PUSH);
+		insert.setText("Nuovo");
+		insert.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogInserimento();
+	    	}
+	    });
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    }); 
+	}
+	
+	private void apriDialogInserimento() {
+		DialogPreferenzeFatturazione dialog = new DialogPreferenzeFatturazione(null);
+		int returnCode = dialog.open();
+		if (returnCode == Dialog.OK) {
+			refresh();
+		}
+	}
+
+	private void apriDialogModifica() {
+		PreferenzeFatturazione preferenze = getRigaSelezionata();
+		if (preferenze != null) {
+			DialogPreferenzeFatturazione dialog = new DialogPreferenzeFatturazione(preferenze);
+			int returnCode = dialog.open();
+			if (returnCode == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

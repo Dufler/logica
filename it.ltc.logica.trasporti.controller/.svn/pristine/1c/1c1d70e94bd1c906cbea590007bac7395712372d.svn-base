@@ -1,0 +1,687 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.common.controller.trasporti.ControllerCap;
+import it.ltc.logica.common.controller.trasporti.ControllerContrassegni;
+import it.ltc.logica.common.controller.trasporti.ControllerGiacenze;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione.TipoSpedizione;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.utilities.StringUtility;
+
+public class FatturazioneBRTController {
+	
+	private static FatturazioneBRTController instance;
+	
+	private static final int[] indiciVociDAT = {89, 103, 117, 131, 145, 159, 173, 187};
+	
+	private final StringUtility su;
+	private final SimpleDateFormat sdf;
+	private int[] esitoImportazione;
+	
+	private final ControllerSpedizioni controllerSpedizioni;
+	private final ControllerContrassegni controllerContrassegni; //TODO - qui dovremmo inserire i contrassegni?
+	private final ControllerGiacenze controllerGiacenze;
+	private final ControllerIndirizzi controllerIndirizzi;
+	private final ControllerCap controllerCap;
+	
+	private FatturazioneBRTController() {
+		su = new StringUtility("0", "0", true, true);
+		sdf = new SimpleDateFormat("yyyyMMdd");
+		controllerSpedizioni = ControllerSpedizioni.getInstance();
+		controllerGiacenze = ControllerGiacenze.getInstance();
+		controllerContrassegni = ControllerContrassegni.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		controllerCap = ControllerCap.getInstance();
+	}
+	
+	public static FatturazioneBRTController getInstance() {
+		if (instance == null) {
+			instance = new FatturazioneBRTController();
+		}
+		return instance;
+	}
+	
+	/**
+	 * Importa il file passato come argomento seguendo procedure diverse in base alla tipologia.
+	 * L'array restituito contiene:
+	 * 0 - il totale delle spedizioni e giacenze contenute nel file .xls
+	 * 1 - il totale delle spedizioni di cui si è aggiornato il costo
+	 * 2 - il totale delle giacenze di cui si è aggiornato il costo
+	 * 3 - il totale degli indirizzi aggiornati
+	 * 4 - il totale degli aggiornamenti/inserimenti falliti.
+	 * 5 - il totale delle nuove spedizioni inserite
+	 * @param path il percorso del file sul computer.
+	 * @return un array contenente le informazioni sul risultato dell'importazione.
+	 */
+	public int[] importaDocumentoFatturazione(String path) {
+		esitoImportazione = new int[6];
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Importazione dei dati di fatturazione", -1);
+				int truncationIndex = path.lastIndexOf('.');
+				if (truncationIndex != -1) {
+					String estensione = path.substring(truncationIndex + 1).toUpperCase();
+					switch (estensione) {
+						case "DAT" : esitoImportazione = importaDATFatturazione(path); break;
+						case "CSV" : esitoImportazione = importaCSVFatturazione(path); break;
+					}
+				}
+			}
+		};
+		
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		return esitoImportazione;
+	}
+	
+	public int[] importaCSVFatturazione(String path) {
+		List<String> righe = leggiDocumento(path);
+		HashMap<String, Integer> mappaColonne = new HashMap<String, Integer>();
+		//Crea la mappa dei nomi delle colonne
+		String[] colonne = righe.remove(0).split(";");
+		for (int index = 0; index < colonne.length; index++) {
+			colonne[index] = colonne[index].replaceAll("\"", "");
+			mappaColonne.put(colonne[index], index);
+		}
+		//Leggi le righe ed elabora il documento
+		DocumentoFatturazione documento = new DocumentoFatturazione();
+		for (String riga : righe) {
+			String[] campi = riga.split(";");
+			for (int index = 0; index < campi.length; index++)
+				campi[index] = campi[index].replaceAll("\"", "");
+			RigaFatturazione rf = leggiRigaCSV(mappaColonne, campi);
+			documento.addRiga(rf);
+		}
+		//Importa i dati elaborati
+		int[] esito = importaDati(documento);
+		return esito;
+	}
+	
+	public int[] importaDATFatturazione(String path) {
+		//Leggi le righe ed elabora il documento
+		DocumentoFatturazione documento = new DocumentoFatturazione();
+		List<String> righe = leggiDocumento(path);
+		for (String riga : righe) {
+			RigaFatturazione rf = leggiRigaDAT(riga);
+			documento.addRiga(rf);
+		}
+		//Importa i dati elaborati
+		int[] esito = importaDati(documento);
+		return esito;
+	}
+	
+	private int[] importaDati(DocumentoFatturazione documento) {
+		esitoImportazione[0] = documento.getRighe().size();
+		for (RigaFatturazione riga : documento.getRighe()) {
+			if (riga.isGiacenza()) {
+				aggiornaCostoGiacenza(riga);
+			} else {
+				Spedizione spedizione = recuperaSpedizione(riga);
+				if (spedizione != null) {
+					aggiornaCostoSpedizione(spedizione, riga);
+					aggiornaIndirizzo(spedizione, riga);
+					aggiornaCAP(spedizione, riga);
+				} else { //Inserisco la spedizione, viene anche controllato se è una giacenza
+					inserisciNuovaSpedizione(riga);
+				}
+			}
+			
+		}
+		return esitoImportazione;
+	}
+	
+	private boolean aggiornaIndirizzo(Spedizione spedizione, RigaFatturazione riga) {
+		boolean update = false;
+		if (riga.isIndirizzoParticolare()) {
+			Indirizzo destinazione = controllerIndirizzi.getIndirizzo(spedizione.getIndirizzoDestinazione());
+			if (destinazione != null) {
+				destinazione.setConsegnaAlPiano(riga.isPiano());
+				destinazione.setConsegnaGdo(riga.isGdo());
+				update = controllerIndirizzi.update(destinazione);
+				if (update)
+					esitoImportazione[3] += 1;
+				else
+					esitoImportazione[4] += 1;
+			} else {
+				esitoImportazione[4] += 1;
+			}
+		}
+		return update;
+	}
+	
+	private boolean aggiornaCAP(Spedizione spedizione, RigaFatturazione riga) {
+		boolean update = false;
+		if (riga.isCAPParticolare()) {
+			Indirizzo destinazione = controllerIndirizzi.getIndirizzo(spedizione.getIndirizzoDestinazione());
+			if (destinazione != null) {
+				String localita = destinazione.getLocalita();
+				String cap = destinazione.getCap();
+				Cap c = controllerCap.getInfoCap(cap, localita);
+				if (c != null) {
+					c.setBrtDisagiate(riga.isDisagiata());
+					c.setBrtIsole(riga.isIsola());
+					c.setBrtZtl(riga.isZtl());
+					update = controllerCap.update(c);
+					if (update)
+						esitoImportazione[3] += 1;
+					else
+						esitoImportazione[4] += 1;
+				} else {
+					esitoImportazione[4] += 1;
+				}
+			} else {
+				esitoImportazione[4] += 1;
+			}	
+		}
+		return update;
+	}
+	
+	/**
+	 * Controlla se la spedizione riportata nella riga sia una giacenza:
+	 * Se è una giacenza viene aggiornato il costo della giacenza indicata.
+	 * Se invece è una spedizione non presente a sistema viene inserita e poi si notifica all'utente.
+	 * @param riga la riga csv che contiene le info sulla spedizione
+	 * @return la spedizione appena inserita
+	 */
+	private Spedizione inserisciNuovaSpedizione(RigaFatturazione riga) {
+		//Ricava o inserisci gli indirizzi di partenza e destinazione
+		Indirizzo destinazione = new Indirizzo();
+		destinazione.setCap(riga.capDestinazione);
+		destinazione.setConsegnaAlPiano(false);
+		destinazione.setConsegnaAppuntamento(false);
+		destinazione.setConsegnaGdo(false);
+		destinazione.setConsegnaPrivato(false);
+		destinazione.setIndirizzo(riga.indirizzoDestinazione);
+		destinazione.setLocalita(riga.localitaDestinazione);
+		destinazione.setNazione(riga.nazioneDestinazione);
+		destinazione.setProvincia(riga.provinciaDestinazione);
+		destinazione.setRagioneSociale(riga.ragioneSociale);
+		destinazione = controllerIndirizzi.insert(destinazione);
+		int idDestinazione = destinazione.getId();
+		//inserisci la spedizione
+		Spedizione nuovaSpedizione = null;
+		nuovaSpedizione = new Spedizione();
+		nuovaSpedizione.setCodiceCliente(riga.codiceCliente);
+		nuovaSpedizione.setColli(riga.colli);
+		nuovaSpedizione.setPeso(riga.peso);
+		nuovaSpedizione.setAssicurazione(false);
+		boolean contrassegno = riga.valoreContrassegno > 0;
+		nuovaSpedizione.setContrassegno(contrassegno);
+		//nuovaSpedizione.setCosto(riga.); //TODO - si può capire dal file?
+		Date dataSpedizione;
+		try {
+			dataSpedizione = sdf.parse(riga.dataSpedizione);
+		} catch (Exception e) {
+			dataSpedizione = new Date();
+		}
+		nuovaSpedizione.setDataPartenza(dataSpedizione);
+		nuovaSpedizione.setDatiCompleti(true);
+		nuovaSpedizione.setFatturazione(Spedizione.Fatturazione.FATTURABILE);
+		nuovaSpedizione.setGiacenza(false); //TODO - nel file c'è, va inserita.
+		nuovaSpedizione.setIdCommessa(1); //prenderla dal codice cliente
+		nuovaSpedizione.setIdCorriere(1); //FISSO a brt
+		nuovaSpedizione.setIdDocumento(1); //non è rilevante, basta che esiste.
+		nuovaSpedizione.setIndirizzoDestinazione(idDestinazione);
+		nuovaSpedizione.setIndirizzoPartenza(1); //TODO -  recuperarlo dalla sede della commessa
+		nuovaSpedizione.setInRitardo(false);
+		nuovaSpedizione.setLetteraDiVettura(riga.letteraDiVettura); //ricavrla da brt
+		nuovaSpedizione.setParticolarita(false);
+		nuovaSpedizione.setPezzi(0);
+		nuovaSpedizione.setRiferimentoCliente(riga.letteraDiVettura);
+		nuovaSpedizione.setRiferimentoMittente(riga.letteraDiVettura);
+		nuovaSpedizione.setServizio("DEF"); //TODO - verificare se c'è
+		nuovaSpedizione.setStato("IMP");
+		nuovaSpedizione.setTipo(riga.tipoSpedizione);
+		nuovaSpedizione.setVolume(riga.volume);
+		nuovaSpedizione.setCosto(riga.imponibile);
+		nuovaSpedizione.setRagioneSocialeDestinatario(riga.ragioneSociale);
+		//int idSpedizione = controllerSpedizioni.inserisciNuovaSpedizione(nuovaSpedizione);
+		int idSpedizione = controllerSpedizioni.inserisciNuovaSpedizioneSenzaDialog(nuovaSpedizione);
+		if (idSpedizione != -1)
+			esitoImportazione[5] += 1;
+		else
+			esitoImportazione[4] += 1;		
+		//inserisco il contrassegno, se presente.
+		if (contrassegno) {
+			
+		}
+		return nuovaSpedizione;
+	}
+	
+	private Spedizione recuperaSpedizione(RigaFatturazione riga) {
+		//String codiceCliente = riga.getCodiceCliente();
+		String letteraDiVettura = riga.getLetteraDiVettura();
+		Spedizione spedizione = null;
+		for (Spedizione s : controllerSpedizioni.getSpedizioni()) {
+			String ldv = s.getLetteraDiVettura();
+			String cc = s.getCodiceCliente();
+			if (ldv != null && cc != null && ldv.equals(letteraDiVettura)) { // && cc.equals(codiceCliente)) {
+				spedizione = s;
+				break;
+			}
+		}
+		//Se non l'ho trovata tento usando il riferimento numerico del cliente
+//		String riferimento = riga.getRiferimentoMittente();
+//		String dataSpedizione = riga.getDataSpedizione();
+//		if (spedizione == null && !riferimento.isEmpty()) {
+//			for (Spedizione s : controller.getListaSpedizioni()) {
+//				String r = s.getRiferimentoMittente();
+//				String cc = s.getCodiceCliente();
+//				String ds = s.getDataPartenza() != null ? sdf.format(s.getDataPartenza()) : null;
+//				if (r != null && cc != null && r.equals(riferimento) && cc.equals(codiceCliente) && ds != null && ds.equals(dataSpedizione)) {
+//					if (spedizione == null)
+//						spedizione = s; //La prima che trovo potrebbe essere buona.
+//					else {
+//						spedizione = null; //Se ne trovo un'altra non va più bene, annullo ed esco.
+//						break;
+//					}
+//				}
+//			}
+//		}
+		return spedizione;
+	}
+	
+	private boolean aggiornaCostoSpedizione(Spedizione spedizione, RigaFatturazione riga) {
+		double imponibile = riga.getImponibile();
+		spedizione.setCosto(imponibile);
+		boolean update = controllerSpedizioni.aggiornaSpedizioneSenzaDialog(spedizione);
+		if (update)
+			esitoImportazione[1] += 1;
+		else
+			esitoImportazione[4] += 1;
+		return update;
+	}
+	
+	private boolean aggiornaCostoGiacenza(RigaFatturazione riga) {
+		boolean update = false;
+		String letteraDiVettura = riga.getLetteraDiVettura();
+		double imponibile = riga.getImponibile();
+		Giacenza trovata = null;
+		//Prima ricerca tra le giacenze
+		for (Giacenza g : controllerGiacenze.getGiacenze()) {
+			String ldv = g.getLetteraDiVettura();
+			if (ldv != null && ldv.equalsIgnoreCase(letteraDiVettura)) {
+				trovata = g;
+				break;
+			}
+		}
+		//Se non c'è cerca la spedizione originale (BRT crea una spedizione fittizia a volta per fatturare)
+		if (trovata == null) {
+			Spedizione spedizione = recuperaSpedizione(riga);
+			if (spedizione != null && spedizione.getGiacenza()) {
+				for (Giacenza g : controllerGiacenze.getGiacenze()) {
+					String ldv = g.getLetteraDiVettura();
+					if (ldv != null && ldv.equalsIgnoreCase(spedizione.getLetteraDiVettura())) {
+						trovata = g;
+						break;
+					}
+				}
+			}
+		}
+		//Se dopo le ricerche la ho trovata allora l'aggiorno.
+		if (trovata != null) {
+			trovata.setCosto(imponibile);
+			update = controllerGiacenze.aggiornaGiacenza(trovata);
+		}
+		if (update)
+			esitoImportazione[2] += 1;
+		else
+			esitoImportazione[4] += 1;
+		return update;
+	}
+	
+	private List<String> leggiDocumento(String path) {
+		List<String> righe = new LinkedList<String>();
+		try {
+			FileReader fr = new FileReader(path);
+			BufferedReader br = new BufferedReader(fr);
+			String line = br.readLine();
+			while (line != null) {
+				righe.add(line);
+				line = br.readLine();
+			}
+			br.close();
+		} catch (Exception e) {
+			//log error
+		}
+		return righe;
+	}
+	
+	private RigaFatturazione leggiRigaDAT(String line) {
+		String letteraDiVettura = getLetteraDiVetturaDAT(line);
+		String codiceCliente = line.substring(28, 35);
+		String riferimentoCliente = getRiferimentoCliente(line);
+		String dataSpedizione = getDataSpedizioneDAT(line);
+		double imponibile = getImponibileDAT(line);
+		List<String> voci = getVociDAT(line);
+		boolean piano = voci.contains("P");
+		boolean gdo = voci.contains("S");
+		boolean ztl = voci.contains("Q");
+		boolean disagiata = voci.contains("K");
+		boolean isola = voci.contains("J");
+		boolean giacenza = voci.contains("I");
+		RigaFatturazione riga = new RigaFatturazione(letteraDiVettura, codiceCliente, riferimentoCliente, dataSpedizione, imponibile, piano, gdo, ztl, disagiata, isola, giacenza);
+		return riga;
+	}
+	
+	private String getRiferimentoCliente(String line) {
+		String riferimentoCliente = line.substring(262, 277);
+		while (!riferimentoCliente.isEmpty() && riferimentoCliente.charAt(0) == '0')
+			riferimentoCliente = riferimentoCliente.substring(1);
+		return riferimentoCliente;
+	}
+	
+	private String getLetteraDiVetturaDAT(String line) {
+		String filialePartenza = line.substring(6, 9);
+		String numeroSerie = line.substring(10, 12);
+		String numeroSpedizione = line.substring(13, 20);
+		String letteraDiVettura = filialePartenza + numeroSerie + numeroSpedizione;
+		return letteraDiVettura;
+	}
+	
+	private String getDataSpedizioneDAT(String line) {
+		String annoSpedizione = line.substring(1, 5);
+		String meseGiornoSpedizione = line.substring(23, 27);
+		String dataSpedizione = annoSpedizione + meseGiornoSpedizione;
+		return dataSpedizione;
+	}
+	
+	private double getImponibileDAT(String line) {
+		String sImponibile = line.substring(215, 229);
+		sImponibile = sImponibile.replace(',', '.');
+		double imponibile = Double.parseDouble(sImponibile);
+		return imponibile;
+	}
+	
+	private List<String> getVociDAT(String line) {
+		List<String> voci = new LinkedList<String>();
+		//int[] indiciVociDAT = {89, 103, 117, 131, 145, 159, 173, 187};
+		for (int indice : indiciVociDAT) {
+			String voce = line.substring(indice, indice + 1).trim();
+			if (!voce.isEmpty())
+				voci.add(voce.toUpperCase());
+		}
+		return voci;
+	}
+	
+	private RigaFatturazione leggiRigaCSV(HashMap<String, Integer> mappaColonne, String[] fields) {
+		String letteraDiVettura = getLetteraDiVetturaCSV(mappaColonne, fields);
+		String codiceCliente = fields[mappaColonne.get("VAFKSC")];
+		String riferimentoCliente = fields[mappaColonne.get("VAFRMN")];
+		String dataSpedizione = getDataSpedizioneCSV(mappaColonne, fields);
+		codiceCliente = su.getFormattedString(codiceCliente, 7);
+		double imponibile = getImponibileCSV(mappaColonne, fields);
+		List<String> voci = getVociCSV(mappaColonne, fields);
+		boolean piano = voci.contains("P");
+		boolean gdo = voci.contains("S");
+		boolean ztl = voci.contains("Q");
+		boolean disagiata = voci.contains("K");
+		boolean isola = voci.contains("J");
+		boolean giacenza = voci.contains("I");
+		String numeroColli = fields[mappaColonne.get("VAFNCL")];
+		if (numeroColli.isEmpty())
+			numeroColli = "1";
+		int colli = Integer.parseInt(numeroColli);
+		
+		String pesoSpedizione = fields[mappaColonne.get("VAFPKB")];
+		if (pesoSpedizione.isEmpty())
+			pesoSpedizione = "0.0";
+		pesoSpedizione = pesoSpedizione.replace(',', '.');
+		double peso = Double.parseDouble(pesoSpedizione);
+		
+		String pesoSpedizioneReale = fields[mappaColonne.get("VAFPKC")];
+		if (pesoSpedizioneReale.isEmpty())
+			pesoSpedizioneReale = "0.0";
+		pesoSpedizioneReale = pesoSpedizioneReale.replace(',', '.');
+		double pesoReale = Double.parseDouble(pesoSpedizioneReale);
+		if (pesoReale > 0)
+			peso = pesoReale;
+		
+		String volumeSpedizione = fields[mappaColonne.get("VAFVLF")];
+		if (volumeSpedizione.isEmpty())
+			volumeSpedizione = "0.0";
+		volumeSpedizione = volumeSpedizione.replace(',', '.');
+		double volume = Double.parseDouble(volumeSpedizione);
+		String volumeSpedizioneReale = fields[mappaColonne.get("VAFVLC")];
+		if (volumeSpedizioneReale.isEmpty())
+			volumeSpedizioneReale = "0.0";
+		volumeSpedizioneReale = volumeSpedizioneReale.replace(',', '.');
+		double volumeReale = Double.parseDouble(volumeSpedizioneReale);
+		if (volumeReale > 0)
+			volume = volumeReale;
+		
+		//String valContrassegno = fields[mappaColonne.get("VAFCAS")]; //TODO
+		double valoreContrassegno = 0;
+		String tipoContrassegno = "SC"; 
+		String cap = fields[mappaColonne.get("VAFCAD")];
+		String localita = fields[mappaColonne.get("VAFLOD")];
+		String provincia = fields[mappaColonne.get("VAFPRD")];
+		String indirizzo = fields[mappaColonne.get("VAFIND")];
+		String ragioneSociale = fields[mappaColonne.get("VAFRSD")];
+		String nazione = fields[mappaColonne.get("VAFNZD")];
+		RigaFatturazione riga = new RigaFatturazione(letteraDiVettura, codiceCliente, riferimentoCliente, dataSpedizione, imponibile, piano, gdo, ztl, disagiata, isola, giacenza, colli, peso, volume, valoreContrassegno, tipoContrassegno, cap, localita, provincia, indirizzo, nazione, ragioneSociale);
+		return riga;
+	}
+	
+	private String getLetteraDiVetturaCSV(HashMap<String, Integer> mappaColonne, String[] fields) {
+		String filialePartenza = fields[mappaColonne.get("VAFLNP")];
+		filialePartenza = su.getFormattedString(filialePartenza, 3);
+		String numeroSerie = fields[mappaColonne.get("VAFNRS")];
+		numeroSerie = su.getFormattedString(numeroSerie, 2);
+		String numeroSpedizione = fields[mappaColonne.get("VAFNSP")];
+		numeroSpedizione = su.getFormattedString(numeroSpedizione, 7);
+		String letteraDiVettura = filialePartenza + numeroSerie + numeroSpedizione;
+		return letteraDiVettura;
+	}
+	
+	private String getDataSpedizioneCSV(HashMap<String, Integer> mappaColonne, String[] fields) {
+		String annoSpedizione = fields[mappaColonne.get("VAFAAS")];
+		String meseGiornoSpedizione = fields[mappaColonne.get("VAFMGS")];
+		meseGiornoSpedizione = su.getFormattedString(meseGiornoSpedizione, 4);
+		String dataSpedizione = annoSpedizione + meseGiornoSpedizione;
+		return dataSpedizione;
+	}
+	
+	private double getImponibileCSV(HashMap<String, Integer> mappaColonne, String[] fields) {
+		String sImponibile = fields[mappaColonne.get("VAFIMV")];
+		sImponibile = sImponibile.replace(',', '.');
+		double imponibile = Double.parseDouble(sImponibile);
+		return imponibile;
+	}
+	
+	private List<String> getVociCSV(HashMap<String, Integer> mappaColonne, String[] fields) {
+		List<String> voci = new LinkedList<String>();
+		for (int index = 1; index < 9; index++) {
+			String key = "VAFSV" + index;
+			String voce = fields[mappaColonne.get(key)].trim();
+			if (!voce.isEmpty())
+				voci.add(voce.toUpperCase());
+		}
+		return voci;
+	}
+	
+	private class DocumentoFatturazione {
+		
+		private final List<RigaFatturazione> righe;
+		
+		DocumentoFatturazione() {
+			righe = new LinkedList<RigaFatturazione>();
+		}
+		
+		public void addRiga(RigaFatturazione riga) {
+			righe.add(riga);
+		}
+		
+		List<RigaFatturazione> getRighe() {
+			return righe;
+		}
+	}
+	
+	private class RigaFatturazione {
+		
+		private final TipoSpedizione tipoSpedizione;
+		private final String letteraDiVettura;
+		private final String codiceCliente;
+		private final String riferimentoMittente;
+		private final String dataSpedizione; //formato yyyyMMdd
+		private final double imponibile;
+		private final boolean piano;
+		private final boolean gdo;
+		private final boolean ztl;
+		private final boolean disagiata;
+		private final boolean isola;
+		private final boolean giacenza;
+		
+		private final int colli;
+		private final int pezzi;
+		private final double peso;
+		private final double volume;
+		private final double valoreContrassegno;
+		private final String tipoContrassegno;
+		
+		private final String capDestinazione;
+		private final String indirizzoDestinazione;
+		private final String localitaDestinazione;
+		private final String provinciaDestinazione;
+		private final String nazioneDestinazione;
+		private final String ragioneSociale;
+		
+		public RigaFatturazione(String letteraDiVettura, String codiceCliente, String riferimentoMittente, String dataSpedizione, double imponibile, boolean piano, boolean gdo, boolean ztl, boolean disagiata, boolean isola, boolean giacenza) {
+			this.letteraDiVettura = letteraDiVettura;
+			this.codiceCliente = codiceCliente;
+			this.riferimentoMittente = riferimentoMittente;
+			this.dataSpedizione = dataSpedizione;
+			this.imponibile = imponibile;
+			this.piano = piano;
+			this.gdo = gdo;
+			this.ztl = ztl;
+			this.disagiata = disagiata;
+			this.isola = isola;
+			this.giacenza = giacenza;
+			this.tipoSpedizione = TipoSpedizione.ITALIA;
+			
+			colli = 0;
+			pezzi = 0;
+			peso = 0;
+			volume = 0;
+			valoreContrassegno = 0;
+			tipoContrassegno = "SC";
+			
+			capDestinazione = "";
+			indirizzoDestinazione = "";
+			localitaDestinazione = "";
+			provinciaDestinazione = "";
+			ragioneSociale = "";
+			nazioneDestinazione = "ITA";
+		}
+		
+		public RigaFatturazione(String letteraDiVettura, String codiceCliente, String riferimentoMittente, String dataSpedizione, double imponibile, boolean piano, boolean gdo, boolean ztl, boolean disagiata, boolean isola, boolean giacenza, int colli, double peso, double volume, double valoreContrassegno, String tipoContrassegno, String cap, String localita, String provincia, String indirizzo, String nazione, String ragioneSociale) {
+			this.letteraDiVettura = letteraDiVettura;
+			this.codiceCliente = codiceCliente;
+			this.riferimentoMittente = riferimentoMittente;
+			this.dataSpedizione = dataSpedizione;
+			this.imponibile = imponibile;
+			this.piano = piano;
+			this.gdo = gdo;
+			this.ztl = ztl;
+			this.disagiata = disagiata;
+			this.isola = isola;
+			this.giacenza = giacenza;
+			this.tipoSpedizione = TipoSpedizione.ITALIA; //TODO - metterlo in base alla nazione
+			
+			this.colli = colli;
+			pezzi = 0;
+			this.peso = peso;
+			this.volume = volume;
+			this.valoreContrassegno = valoreContrassegno;
+			this.tipoContrassegno = tipoContrassegno;
+			
+			capDestinazione = cap;
+			indirizzoDestinazione = indirizzo;
+			localitaDestinazione = localita;
+			provinciaDestinazione = provincia;
+			nazioneDestinazione = nazione; //TODO - trascodificare
+			this.ragioneSociale = ragioneSociale;
+			
+		}
+		
+		public boolean isIndirizzoParticolare() {
+			boolean particolarita = piano || gdo;
+			return particolarita;
+		}
+		
+		public boolean isCAPParticolare() {
+			boolean particolarita = ztl || disagiata || isola;
+			return particolarita;
+		}
+
+		public String getLetteraDiVettura() {
+			return letteraDiVettura;
+		}
+		
+		public String getCodiceCliente() {
+			return codiceCliente;
+		}
+		
+		public String getRiferimentoMittente() {
+			return riferimentoMittente;
+		}
+
+		public String getDataSpedizione() {
+			return dataSpedizione;
+		}
+
+		public double getImponibile() {
+			return imponibile;
+		}
+		
+		public boolean isPiano() {
+			return piano;
+		}
+		
+		public boolean isGdo() {
+			return gdo;
+		}
+		
+		public boolean isZtl() {
+			return ztl;
+		}
+		
+		public boolean isDisagiata() {
+			return disagiata;
+		}
+		
+		public boolean isIsola() {
+			return isola;
+		}
+		
+		public boolean isGiacenza() {
+			return giacenza;
+		}
+		
+	}
+
+}

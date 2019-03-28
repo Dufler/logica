@@ -1,0 +1,183 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.TipoContrassegno;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerContrassegni {
+	
+	private static ControllerContrassegni instance;
+	
+	private final HashMap<Integer, Contrassegno> contrassegni;
+	private final HashMap<String, TipoContrassegno> tipi;
+
+	private ControllerContrassegni() {
+		contrassegni = new HashMap<>();
+		tipi = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerContrassegni getInstance() {
+		if (instance == null) {
+			instance = new ControllerContrassegni();
+		}
+		return instance;
+	}
+	
+	public Collection<Contrassegno> getContrassegni() {
+		return contrassegni.values();
+	}
+	
+	public Contrassegno getContrassegno(Integer id) {
+		return contrassegni.get(id);
+	}
+	
+	public Collection<TipoContrassegno> getTipiContrassegno() {
+		return tipi.values();
+	}
+	
+	public TipoContrassegno getTipoContrassegno(String codice) {
+		return tipi.get(codice);
+	}
+	
+	public synchronized int inserisciNuovaContrassegno(Contrassegno giacenza) {
+		ProcessoInserimentoContrassegno pic = new ProcessoInserimentoContrassegno(giacenza);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pic);
+		return pic.getContrassegno().getIdSpedizione();
+	}
+
+	public synchronized boolean aggiornaContrassegno(Contrassegno giacenza) {
+		ProcessoAggiornamentoContrassegno pag = new ProcessoAggiornamentoContrassegno(giacenza);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pag);
+		boolean update = (pag.getContrassegno() != null);
+		return update;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoContrassegni pcd = new ProcessoCaricamentoContrassegni();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+		
+		ProcessoCaricamentoTipiContrassegno pt = new ProcessoCaricamentoTipiContrassegno();
+		DialogProgresso dialogTipi = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialogTipi.esegui(pt);
+		if (pt.getEsito()) {
+			tipi.clear();
+			for (TipoContrassegno tipo : pt.getLista()) {
+				tipi.put(tipo.getCodice(), tipo);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoContrassegni extends Processo {
+		
+		private static final String title = "Caricamento dei contrassegni";
+		
+		public ProcessoCaricamentoContrassegni() {
+			super(title, -1);
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			List<Contrassegno> lista = null;
+			
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("contrassegno");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento dei contrassegni: '" + wsAnswer.getMessage() + "'");
+			
+			ObjectMapper mapper = new ObjectMapper();
+			lista = mapper.readValue(answer, new TypeReference<List<Contrassegno>>(){});
+			
+			contrassegni.clear();
+			
+			for (Contrassegno ss : lista) {
+				contrassegni.put(ss.getIdSpedizione(), ss);
+			}
+		}
+	}
+	
+	private class ProcessoInserimentoContrassegno extends Processo {
+		
+		private static final String title = "Inserimento del contrassegno";
+		
+		private Contrassegno contrassegno;
+		
+		public ProcessoInserimentoContrassegno(Contrassegno contrassegno) {
+			super(title, -1);
+			this.contrassegno = contrassegno;
+		}
+		
+		public Contrassegno getContrassegno() {
+			return contrassegno;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(contrassegno);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("contrassegno", json);
+			if (wsAnswer.getStatus() != 201) {
+				contrassegno = null;
+				throw new RuntimeException("Errore durante l'inserimento del contrassegno: '" + wsAnswer.getMessage() + "'");
+			}
+			contrassegno = mapper.readValue(wsAnswer.getMessage(), Contrassegno.class);
+		}
+	}
+	
+	private class ProcessoAggiornamentoContrassegno extends Processo {
+		
+		private static final String title = "Aggiornamento del contrassegno";
+		
+		private Contrassegno contrassegno;
+		
+		public ProcessoAggiornamentoContrassegno(Contrassegno contrassegno) {
+			super(title, -1);
+			this.contrassegno = contrassegno;
+		}
+		
+		public Contrassegno getContrassegno() {
+			return contrassegno;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(contrassegno);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("contrassegno", json);
+			if (wsAnswer.getStatus() != 200) {
+				contrassegno = null;
+				throw new RuntimeException("Errore durante l'aggiornamento del contrassegno: '" + wsAnswer.getMessage() + "'");
+			}
+			contrassegno = mapper.readValue(wsAnswer.getMessage(), Contrassegno.class);
+		}
+	}
+	
+	private class ProcessoCaricamentoTipiContrassegno extends ProcessoCaricamentoDati<TipoContrassegno> {
+
+		private static final String title = "Caricamento dei tipi di contrassegno";
+		private static final String resource = "contrassegno/tipi";
+		
+		public ProcessoCaricamentoTipiContrassegno() {
+			super(title, resource, TipoContrassegno.class);
+		}
+		
+	}
+
+}

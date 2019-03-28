@@ -1,0 +1,164 @@
+package it.ltc.logica.trasporti.gui.dialog;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.database.model.centrale.indirizzi.Regione;
+import it.ltc.logica.gui.dialog.DialogSemplice;
+import it.ltc.logica.gui.input.ComboBox;
+
+/**
+ * Dialog semplice per la selezione di regioni.
+ * Quando viene aperta restituisce una stringa contenente le regioni selezionate dall'utente.
+ * La stringa viene composta dalla sigla delle regioni selezionate separate da '-'
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class DialogSelezioneRegioni extends DialogSemplice {
+	
+	private static final String title = "Selezione Regioni";
+	
+	public static final String SEPARATORE = "-";
+	public static final char SEPARATORE_C = '-';
+	
+	private ComboBox<Regione> comboRegioni;
+	private List listaRegioni;
+	private final Set<Regione> regioniSelezionate;
+	
+	private final ControllerIndirizzi controller;
+	
+	private String selezionePrecedente;
+
+	public DialogSelezioneRegioni(String selezionePrecedente) {
+		super(title);
+		controller = ControllerIndirizzi.getInstance();
+		regioniSelezionate = new HashSet<Regione>();
+		this.selezionePrecedente = selezionePrecedente;
+	}
+	
+	@Override
+	public void aggiungiAltriBottoni(Composite parent) {
+		checkSelezione();
+	}
+	
+	/**
+	 * Abilita o disabilita il bottone di 'Ok' in base alla selezione dell'utente.
+	 * E' necessario inserire almeno una regione per poter confermare la selezione.
+	 */
+	private void checkSelezione() {
+		boolean selezioneCorretta = !regioniSelezionate.isEmpty();
+		okButton.setEnabled(selezioneCorretta);
+	}
+	
+	private void aggiungiRegione() {
+		Regione regioneSelezionata = comboRegioni.getSelectedValue();
+		if (regioneSelezionata != null) {
+			if (!regioniSelezionate.contains(regioneSelezionata)) {
+				regioniSelezionate.add(regioneSelezionata);
+				listaRegioni.add(regioneSelezionata.getNome());
+			}
+		}
+		checkSelezione();
+	}
+	
+	private void eliminaRegione(int selectionIndex) {
+		String regione = listaRegioni.getItem(selectionIndex);
+		for (Regione r : regioniSelezionate) {
+			if (r.getNome().equals(regione)) {
+				regioniSelezionate.remove(r);
+				listaRegioni.remove(selectionIndex);
+				break;
+			}
+		}
+		checkSelezione();
+	}
+	
+	public String apri() {
+		String regioni = "";
+		if (open() == Dialog.OK) {
+			for (Regione r :regioniSelezionate) {
+				regioni += r.getCodice() + SEPARATORE;
+			}
+			int truncationIndex = regioni.lastIndexOf(SEPARATORE_C);
+			if (truncationIndex != -1);
+			regioni = regioni.substring(0, truncationIndex);
+		} else {
+			regioni = selezionePrecedente;
+		}
+		return regioni;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		Composite compositeControlli = new Composite(container, SWT.NONE);
+		compositeControlli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlli.setLayout(new GridLayout(3, false));
+		
+		Label lblRegioni = new Label(compositeControlli, SWT.NONE);
+		lblRegioni.setText("Regioni: ");
+		
+		comboRegioni = new ComboBox<Regione>(compositeControlli);
+		comboRegioni.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboRegioni.setItems(controller.getRegioni());
+		
+		Button btnAggiungi = new Button(compositeControlli, SWT.NONE);
+		btnAggiungi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				aggiungiRegione();
+			}
+		});
+		btnAggiungi.setText("Aggiungi");
+		
+		
+		
+		listaRegioni = new List(container, SWT.BORDER | SWT.H_SCROLL);
+		listaRegioni.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		
+		
+		Menu menuPopup = new Menu(listaRegioni);
+		MenuItem delete = new MenuItem(menuPopup, SWT.PUSH);
+		delete.setText("Elimina");
+		delete.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		int selectionIndex = listaRegioni.getSelectionIndex();
+	    		if (selectionIndex != -1) {
+	    			eliminaRegione(selectionIndex);
+	    		}
+	    	}
+	    });	
+		listaRegioni.setMenu(menuPopup);		
+	}
+
+	@Override
+	public void checkElementiGrafici() {
+		//Se avevo già delle regioni precedentemente inserite le riporto.
+		if (selezionePrecedente != null && !selezionePrecedente.isEmpty()) {
+			String[] regioniPrecedenti = selezionePrecedente.split(SEPARATORE);
+			for (String sigla : regioniPrecedenti) {
+				Regione regione = controller.getRegione(sigla);
+				if (regione != null) {
+					regioniSelezionate.add(regione);
+					listaRegioni.add(regione.getNome());
+				}
+			}
+		}
+	}
+
+}

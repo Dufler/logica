@@ -1,0 +1,7 @@
+package it.ltc.logica.database.orm;
+
+public interface ValidEntity {
+	
+	public ValidationResult validate();
+
+}

@@ -1,0 +1,123 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura.Categoria;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerAmbitiFatturazione {
+	
+	private static ControllerAmbitiFatturazione instance;
+	
+	private final HashMap<Integer, AmbitoFattura> ambiti;
+	private final HashMap<Integer, SottoAmbitoFattura> sottoambiti;
+
+	private ControllerAmbitiFatturazione() {
+		ambiti = new HashMap<>();
+		sottoambiti = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerAmbitiFatturazione getInstance() {
+		if (instance == null) {
+			instance = new ControllerAmbitiFatturazione();
+		}
+		return instance;
+	}
+	
+	public Collection<AmbitoFattura> getAmbiti() {
+		return ambiti.values();
+	}
+	
+	public AmbitoFattura getAmbito(int id) {
+		return ambiti.get(id);
+	}
+	
+	public List<AmbitoFattura> getAmbitiPerCategoria(Categoria categoria) {
+		return null;
+	}
+	
+	public Collection<SottoAmbitoFattura> getSottoAmbiti() {
+		return sottoambiti.values();
+	}
+	
+	public SottoAmbitoFattura getSottoAmbito(int id) {
+		return null;
+	}
+	
+	public List<SottoAmbitoFattura> getSottoAmbitiPerAmbito(Integer id) {
+		return null;
+	}
+	
+	public boolean update(AmbitoFattura valore) {
+		return false;
+	}
+
+	public boolean insert(AmbitoFattura valore) {
+		return false;
+	}
+
+	public boolean update(SottoAmbitoFattura valore) {
+		return false;
+	}
+
+	public boolean insert(SottoAmbitoFattura valore) {
+		return false;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+	}
+	
+	private class ProcessoCaricamentoDati extends Processo {
+		
+		private static final String title = "Caricamento degli ambiti";
+		
+		public ProcessoCaricamentoDati() {
+			super(title, -1);
+			
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			
+			ObjectMapper mapper = new ObjectMapper();
+			WSConsumer c = WSConsumer.getInstance();
+			
+			//Ambiti
+			WSAnswer wsAnswerA = c.get("ambitifatturazione");
+			String answerA = wsAnswerA.getMessage();
+			if (wsAnswerA.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento degli ambiti di fatturazione: '" + wsAnswerA.getMessage() + "'");
+			List<AmbitoFattura> listaA = mapper.readValue(answerA, new TypeReference<List<AmbitoFattura>>(){});
+			ambiti.clear();
+			for (AmbitoFattura ambito : listaA) {
+				ambiti.put(ambito.getId(), ambito);
+			}
+			
+			//Sotto Ambiti
+			WSAnswer wsAnswerSA = c.get("ambitifatturazione");
+			String answerSA = wsAnswerSA.getMessage();
+			if (wsAnswerSA.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento degli ambiti di fatturazione: '" + wsAnswerSA.getMessage() + "'");
+			List<SottoAmbitoFattura> listaSA = mapper.readValue(answerSA, new TypeReference<List<SottoAmbitoFattura>>(){});
+			sottoambiti.clear();
+			for (SottoAmbitoFattura ambito : listaSA) {
+				sottoambiti.put(ambito.getId(), ambito);
+			}
+		}
+	}
+
+}

@@ -1,0 +1,156 @@
+package it.ltc.logica.trasporti.gui.spedizioni.wizard;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.common.controller.sistema.ControllerCommesse;
+import it.ltc.logica.common.controller.trasporti.ControllerCorrieri;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+
+public class RiepilogoNuovaSpedizioneWizardPage extends PaginaWizardRisultati {
+	
+	private static final String title = "Inserisci una nuova spedizione";
+	private static final String description = "Controlla i dati inseriti.";
+	
+	private Text textCliente;
+	private Text textCorriere;
+	private Text textCodice;
+	private Text textColli;
+	private Text textPezzi;
+	private Text textPeso;
+	private Text textVolume;
+	private Text textMittente;
+	private Text textDestinatario;
+	private Text textContrassegno;
+
+	private final Spedizione spedizione;
+	private final Contrassegno contrassegno;
+	private final Indirizzo mittente;
+	private final Indirizzo destinatario;
+
+	public RiepilogoNuovaSpedizioneWizardPage(Spedizione spedizione, Contrassegno contrassegno, Indirizzo mittente, Indirizzo destinatario) {
+		super(title, description, true);
+		
+		this.spedizione = spedizione;
+		this.contrassegno = contrassegno;
+		this.mittente = mittente;
+		this.destinatario = destinatario;
+	}
+	
+	@Override
+	public void mostraRisultato() {
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(spedizione.getIdCommessa());
+		textCliente.setText(commessa.getNome());
+		Corriere corriere = ControllerCorrieri.getInstance().getCorriere(spedizione.getIdCorriere());
+		textCorriere.setText(corriere.getNome());
+		textCodice.setText(spedizione.getCodiceCliente());
+		textColli.setText(Integer.toString(spedizione.getColli()));
+		textPezzi.setText(Integer.toString(spedizione.getPezzi()));
+		textPeso.setText(spedizione.getPeso().toString() + " Kg");
+		textVolume.setText(spedizione.getVolume().toString() + " mc");
+		if (spedizione.getContrassegno()) {
+			textContrassegno.setText(Decorator.getEuroValue(contrassegno.getValore()));
+		} else {
+			textContrassegno.setText("-");
+		}
+		textMittente.setText(mittente.getRagioneSociale());
+		textDestinatario.setText(destinatario.getRagioneSociale());
+	}
+
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(2, false));
+		
+		Label lblCliente = new Label(container, SWT.NONE);
+		lblCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCliente.setText("Cliente: ");
+		
+		textCliente = new Text(container, SWT.BORDER);
+		textCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textCliente.setEditable(false);
+		
+		Label lblCorriere = new Label(container, SWT.NONE);
+		lblCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCorriere.setText("Corriere: ");
+		
+		textCorriere = new Text(container, SWT.BORDER);
+		textCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textCorriere.setEditable(false);
+		
+		Label lblCodiceCorriere = new Label(container, SWT.NONE);
+		lblCodiceCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCodiceCorriere.setText("Codice Corriere: ");
+		
+		textCodice = new Text(container, SWT.BORDER);
+		textCodice.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textCodice.setEditable(false);
+		
+		Label lblColli = new Label(container, SWT.NONE);
+		lblColli.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblColli.setText("Colli: ");
+		
+		textColli = new Text(container, SWT.BORDER);
+		textColli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textColli.setEditable(false);
+		
+		Label lblPezzi = new Label(container, SWT.NONE);
+		lblPezzi.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPezzi.setText("Pezzi: ");
+		
+		textPezzi = new Text(container, SWT.BORDER);
+		textPezzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textPezzi.setEditable(false);
+		
+		Label lblPeso = new Label(container, SWT.NONE);
+		lblPeso.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPeso.setText("Peso: ");
+		
+		textPeso = new Text(container, SWT.BORDER);
+		textPeso.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textPeso.setEditable(false);
+		
+		Label lblVolume = new Label(container, SWT.NONE);
+		lblVolume.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblVolume.setText("Volume: ");
+		
+		textVolume = new Text(container, SWT.BORDER);
+		textVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textVolume.setEditable(false);
+		
+		Label lblContrassegno = new Label(container, SWT.NONE);
+		lblContrassegno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblContrassegno.setText("Contrassegno: ");
+		
+		textContrassegno = new Text(container, SWT.BORDER);
+		textContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textContrassegno.setEditable(false);
+		
+		Label lblMittente = new Label(container, SWT.NONE);
+		lblMittente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMittente.setText("Mittente: ");
+		
+		textMittente = new Text(container, SWT.BORDER);
+		textMittente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textMittente.setEditable(false);
+		
+		Label lblDestinatario = new Label(container, SWT.NONE);
+		lblDestinatario.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDestinatario.setText("Destinatario: ");
+		
+		textDestinatario = new Text(container, SWT.BORDER);
+		textDestinatario.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textDestinatario.setEditable(false);
+	}
+
+}

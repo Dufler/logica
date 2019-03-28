@@ -1,0 +1,386 @@
+package it.ltc.logica.database.model.locale;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+
+/**
+ * The persistent class for the spedizione database table.
+ * 
+ */
+//@Entity
+//@Table(name="spedizione")
+//@NamedQuery(name="Spedizione.findAll", query="SELECT s FROM Spedizione s")
+public class SpedizioneLocale implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
+	public enum TipoSpedizione {ITALIA, UE, EXTRA_UE}
+	
+	/**
+	 * Definisce i possibili stati di fatturazione.
+	 * Lo stato di default, <code>NON_FATTURABILE</code>, è uno stato pozzo per gestire i casi limite, come le simulazioni, che non dovranno mai essere fatturate.
+	 * @author Damiano
+	 *
+	 */
+	public enum Fatturazione { 
+		
+		NON_FATTURABILE("Non fatturabile"),
+		IN_DEFINIZIONE("Non ancora fatturabile"),
+		FATTURABILE("Fatturabile"),
+		FATTURATA("Gia' fatturata");
+		
+		private final String descrizione;
+		
+		private Fatturazione(String descrizione) {
+			this.descrizione = descrizione;
+		}
+		
+		@Override
+		public String toString() {
+			return descrizione;
+		}
+	}
+	
+	@Id
+	@Column(unique=true, nullable=false)
+	private int id;
+
+	@Column(nullable=false)
+	private boolean assicurazione;
+
+	@Column(name="codice_cliente", length=50)
+	private String codiceCliente;
+
+	private int colli;
+
+	@Column(nullable=false)
+	private boolean contrassegno;
+
+	@Column(precision=10, scale=3)
+	private Double costo;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="data_partenza")
+	private Date dataPartenza;
+
+	@Column(name="dati_completi", nullable=false)
+	private boolean datiCompleti;
+
+	@Column(nullable=false, length=1, columnDefinition="ENUM('NON_FATTURABILE', 'IN_DEFINIZIONE', 'FATTURABILE', 'FATTURATA')")
+	@Enumerated(EnumType.STRING)
+	private Fatturazione fatturazione;
+
+	@Column(nullable=false)
+	private boolean giacenza;
+
+	@Column(name="id_commessa", nullable=false)
+	private int idCommessa;
+
+	@Column(name="id_corriere")
+	private int idCorriere;
+
+	@Column(name="id_documento", nullable=false)
+	private int idDocumento;
+
+	@Column(name="in_ritardo", nullable=false)
+	private boolean inRitardo;
+
+	@Column(name="indirizzo_destinazione", nullable=false)
+	private int indirizzoDestinazione;
+
+	@Column(name="indirizzo_partenza", nullable=false)
+	private int indirizzoPartenza;
+
+	@Column(name="lettera_di_vettura", length=45)
+	private String letteraDiVettura;
+
+	@Column(name="note", columnDefinition="MEDIUMTEXT")
+	private String note;
+
+	@Column(nullable=false)
+	private boolean particolarita;
+
+	@Column(precision=10, scale=3)
+	private Double peso;
+
+	private int pezzi;
+
+	@Column(precision=10, scale=3)
+	private Double ricavo;
+
+	@Column(name="riferimento_cliente", length=45)
+	private String riferimentoCliente;
+
+	@Column(name="riferimento_mittente", length=45)
+	private String riferimentoMittente;
+
+	@Column(nullable=false, length=3, columnDefinition="CHAR")
+	private String servizio;
+
+	@Column(nullable=false, length=3, columnDefinition="CHAR")
+	private String stato;
+
+	@Column(nullable=false, length=1, columnDefinition="ENUM('ITALIA', 'UE', 'EXTRA-UE')")
+	@Enumerated(EnumType.STRING)
+	private TipoSpedizione tipo;
+
+	@Column(name="valore_merce_dichiarato", precision=10, scale=2)
+	private Double valoreMerceDichiarato;
+
+	@Column(precision=10, scale=3)
+	private Double volume;
+	
+	@Column(name="ragione_sociale_destinatario", length=100)
+	private String ragioneSocialeDestinatario;
+
+	public SpedizioneLocale() {}
+
+	public int getId() {
+		return this.id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public boolean getAssicurazione() {
+		return this.assicurazione;
+	}
+
+	public void setAssicurazione(boolean assicurazione) {
+		this.assicurazione = assicurazione;
+	}
+
+	public String getCodiceCliente() {
+		return this.codiceCliente;
+	}
+
+	public void setCodiceCliente(String codiceCliente) {
+		this.codiceCliente = codiceCliente;
+	}
+
+	public int getColli() {
+		return this.colli;
+	}
+
+	public void setColli(int colli) {
+		this.colli = colli;
+	}
+
+	public boolean getContrassegno() {
+		return this.contrassegno;
+	}
+
+	public void setContrassegno(boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public Double getCosto() {
+		return this.costo;
+	}
+
+	public void setCosto(Double costo) {
+		this.costo = costo;
+	}
+
+	public Date getDataPartenza() {
+		return this.dataPartenza;
+	}
+
+	public void setDataPartenza(Date dataPartenza) {
+		this.dataPartenza = dataPartenza;
+	}
+
+	public boolean getDatiCompleti() {
+		return this.datiCompleti;
+	}
+
+	public void setDatiCompleti(boolean datiCompleti) {
+		this.datiCompleti = datiCompleti;
+	}
+
+	public Fatturazione getFatturazione() {
+		return this.fatturazione;
+	}
+
+	public void setFatturazione(Fatturazione fatturazione) {
+		this.fatturazione = fatturazione;
+	}
+
+	public boolean getGiacenza() {
+		return this.giacenza;
+	}
+
+	public void setGiacenza(boolean giacenza) {
+		this.giacenza = giacenza;
+	}
+
+	public int getIdCommessa() {
+		return this.idCommessa;
+	}
+
+	public void setIdCommessa(int idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public int getIdCorriere() {
+		return this.idCorriere;
+	}
+
+	public void setIdCorriere(int idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public int getIdDocumento() {
+		return this.idDocumento;
+	}
+
+	public void setIdDocumento(int idDocumento) {
+		this.idDocumento = idDocumento;
+	}
+
+	public boolean getInRitardo() {
+		return this.inRitardo;
+	}
+
+	public void setInRitardo(boolean inRitardo) {
+		this.inRitardo = inRitardo;
+	}
+
+	public int getIndirizzoDestinazione() {
+		return this.indirizzoDestinazione;
+	}
+
+	public void setIndirizzoDestinazione(int indirizzoDestinazione) {
+		this.indirizzoDestinazione = indirizzoDestinazione;
+	}
+
+	public int getIndirizzoPartenza() {
+		return this.indirizzoPartenza;
+	}
+
+	public void setIndirizzoPartenza(int indirizzoPartenza) {
+		this.indirizzoPartenza = indirizzoPartenza;
+	}
+
+	public String getLetteraDiVettura() {
+		return this.letteraDiVettura;
+	}
+
+	public void setLetteraDiVettura(String letteraDiVettura) {
+		this.letteraDiVettura = letteraDiVettura;
+	}
+
+	public String getNote() {
+		return this.note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public boolean getParticolarita() {
+		return this.particolarita;
+	}
+
+	public void setParticolarita(boolean particolarita) {
+		this.particolarita = particolarita;
+	}
+
+	public Double getPeso() {
+		return this.peso;
+	}
+
+	public void setPeso(Double peso) {
+		this.peso = peso;
+	}
+
+	public int getPezzi() {
+		return this.pezzi;
+	}
+
+	public void setPezzi(int pezzi) {
+		this.pezzi = pezzi;
+	}
+
+	public Double getRicavo() {
+		return this.ricavo;
+	}
+
+	public void setRicavo(Double ricavo) {
+		this.ricavo = ricavo;
+	}
+
+	public String getRiferimentoCliente() {
+		return this.riferimentoCliente;
+	}
+
+	public void setRiferimentoCliente(String riferimentoCliente) {
+		this.riferimentoCliente = riferimentoCliente;
+	}
+
+	public String getRiferimentoMittente() {
+		return this.riferimentoMittente;
+	}
+
+	public void setRiferimentoMittente(String riferimentoMittente) {
+		this.riferimentoMittente = riferimentoMittente;
+	}
+
+	public String getServizio() {
+		return this.servizio;
+	}
+
+	public void setServizio(String servizio) {
+		this.servizio = servizio;
+	}
+
+	public String getStato() {
+		return this.stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public TipoSpedizione getTipo() {
+		return this.tipo;
+	}
+
+	public void setTipo(TipoSpedizione tipo) {
+		this.tipo = tipo;
+	}
+
+	public Double getValoreMerceDichiarato() {
+		return this.valoreMerceDichiarato;
+	}
+
+	public void setValoreMerceDichiarato(Double valoreMerceDichiarato) {
+		this.valoreMerceDichiarato = valoreMerceDichiarato;
+	}
+
+	public Double getVolume() {
+		return this.volume;
+	}
+
+	public void setVolume(Double volume) {
+		this.volume = volume;
+	}
+
+	public String getRagioneSocialeDestinatario() {
+		return ragioneSocialeDestinatario;
+	}
+
+	public void setRagioneSocialeDestinatario(String ragioneSocialeDestinatario) {
+		this.ragioneSocialeDestinatario = ragioneSocialeDestinatario;
+	}
+
+}

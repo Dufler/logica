@@ -1,0 +1,20 @@
+package it.ltc.logica.trasporti.gui.listini.elements.cliente;
+
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreListiniClienti extends Ordinatore<ListinoCommessa> {
+
+	@Override
+	protected int compare(ListinoCommessa t1, ListinoCommessa t2, int property) {
+		int compare;
+		switch (property) {
+			case 0 : compare = t1.getNome().compareTo(t2.getNome()); break;
+			case 1 : compare = t1.getTipo().compareTo(t2.getTipo()); break;
+			case 2 : compare = t1.getDescrizione().compareTo(t2.getDescrizione()); break;
+			default : compare = 0;
+		}
+		return compare;
+	}
+
+}

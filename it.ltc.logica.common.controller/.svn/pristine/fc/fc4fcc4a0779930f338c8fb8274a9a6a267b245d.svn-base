@@ -1,0 +1,59 @@
+package it.ltc.logica.common.controller;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Cliente;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerClienti {
+	
+	private static final String title = "Clienti";
+	private static final String resource = "cliente";
+	
+	private static ControllerClienti instance;
+	
+	private final HashMap<Integer, Cliente> clienti;
+
+	private ControllerClienti() {
+		clienti = new HashMap<Integer, Cliente>();
+		caricaDati();
+	}
+
+	public static ControllerClienti getInstance() {
+		if (instance == null) {
+			instance = new ControllerClienti();
+		}
+		return instance;
+	}
+	
+	public Collection<Cliente> getClienti() {
+		return clienti.values();
+	}
+	
+	public Cliente getCliente(int id) {
+		return clienti.get(id);
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoClienti processo = new ProcessoCaricamentoClienti();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		if (processo.getEsito()) {
+			clienti.clear();
+			for (Cliente cliente : processo.getLista()) {
+				clienti.put(cliente.getId(), cliente);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoClienti extends ProcessoCaricamentoDati<Cliente> {
+
+		public ProcessoCaricamentoClienti() {
+			super(title, resource, Cliente.class);
+		}
+		
+	}
+
+}

@@ -1,0 +1,38 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino;
+import it.ltc.logica.database.model.centrale.Contrassegno;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ContrassegnoInferioreASeimilaCinquecentoEuro extends IAmbitoTrasporto {
+
+	public ContrassegnoInferioreASeimilaCinquecentoEuro(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODICE = "CONTRASSEGNO_6500I";
+	public static final int ID = 10;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Contrassegno contrassegno = spedizione.getContrassegno();
+		boolean applicabile = (contrassegno != null && contrassegno.getValore() != null && contrassegno.getValore() <= 6500);
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+		Contrassegno contrassegno = spedizione.getContrassegno();
+		double valore = contrassegno.getValore();
+		if (contrassegno.getAnnullato())
+			valore = 0;
+		return valore;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.CONTRASSEGNO;
+	}
+
+}

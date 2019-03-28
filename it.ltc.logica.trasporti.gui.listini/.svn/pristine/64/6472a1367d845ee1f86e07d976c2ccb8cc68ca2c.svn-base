@@ -1,0 +1,45 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
+import it.ltc.logica.database.model.locale.ListinoSimulazioneVoceFissa;
+import it.ltc.logica.gui.wizard.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceFissa;
+
+public class NuovaVoceListinoSimulazioneFissaWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino di simulazione - Algoritmo";
+	private static final String descrizione = "Specifica il valore fisso.";
+	
+	private ListiniSimulazioneController controller;
+	
+	private ListinoSimulazioneVoceFissa voceFissa;
+
+	private CompositeVoceFissa compositeFissa;
+	
+	public NuovaVoceListinoSimulazioneFissaWizardPage() {
+		super(titolo, descrizione);
+		controller = ListiniSimulazioneController.getInstance();
+		voceFissa = new ListinoSimulazioneVoceFissa();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeFissa = new CompositeVoceFissa(container, SWT.NONE);
+		compositeFissa.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeFissa);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		voceFissa.setValore(compositeFissa.getValore());
+		controller.setVoceFisso(voceFissa);
+	}
+
+}

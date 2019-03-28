@@ -1,0 +1,156 @@
+package it.ltc.logica.common.controller.ingressi;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ingressi.DettaglioIngresso;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.utenti.TipoEventoUtente;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogProgresso;
+
+public class IngressiController {
+	
+	private static IngressiController instance;
+	
+	private final ControllerUtente utente;
+	
+	private final EntityManager<Ingresso> managerIngressi;
+	private final EntityManager<DettaglioIngresso> managerDettagliIngressi;
+	
+	private final List<Ingresso> listaOrdini;
+	private final HashMap<Integer, Ingresso> ordini;
+	
+	private final HashMap<Integer, List<DettaglioIngresso>> dettagliIngressi;
+	
+	private IngressiController() {
+		utente = ControllerUtente.getInstance();
+		managerIngressi = new EntityManager<Ingresso>(Ingresso.class, ConfigurationManager.getDefault());
+		managerDettagliIngressi = new EntityManager<DettaglioIngresso>(DettaglioIngresso.class, ConfigurationManager.getDefault());
+		listaOrdini = new ArrayList<Ingresso>();
+		ordini = new HashMap<Integer, Ingresso>();
+		dettagliIngressi = new HashMap<Integer, List<DettaglioIngresso>>();
+		caricaDati();
+	}
+	
+	public static IngressiController getInstance() {
+		if (instance == null) {
+			instance = new IngressiController();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		caricaIngressi();
+		caricaDettagliIngressi();
+	}
+	
+	private void caricaIngressi() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento degli ingressi", -1);
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				ordini.clear();
+				listaOrdini.clear();
+				//Carico tutto quello che trovo
+				List<Ingresso> lista = managerIngressi.getEntities();
+				for (Ingresso ingresso : lista) {
+					if (!ordini.containsKey(ingresso.getId())) {
+						ordini.put(ingresso.getId(), ingresso);
+						listaOrdini.add(ingresso);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void caricaDettagliIngressi() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dei dettagli degli ingressi", -1);
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				dettagliIngressi.clear();
+				//Carico tutto quello che trovo
+				List<DettaglioIngresso> lista = managerDettagliIngressi.getEntities();
+				for (DettaglioIngresso ingresso : lista) {
+					if (!dettagliIngressi.containsKey(ingresso.getIdIngresso())) {
+						List<DettaglioIngresso> listaDettagli = new LinkedList<DettaglioIngresso>();
+						listaDettagli.add(ingresso);
+						dettagliIngressi.put(ingresso.getIdIngresso(), listaDettagli);
+					} else {
+						List<DettaglioIngresso> listaDettagli = dettagliIngressi.get(ingresso.getIdIngresso());
+						listaDettagli.add(ingresso);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Ingresso> getIngressi() {
+		return listaOrdini;
+	}
+	
+	public List<Ingresso> getListaIngressi(Commessa commessaSelezionata) {
+		List<Ingresso> ordiniCliente = new ArrayList<Ingresso>();
+		if (commessaSelezionata != null) {
+			Integer idCommessa = commessaSelezionata.getId();
+			for (Ingresso ordine : listaOrdini) {
+				if (idCommessa.equals(ordine.getIdCommessa()))
+					ordiniCliente.add(ordine);
+			}
+		}
+		return ordiniCliente;
+	}
+	
+	public List<DettaglioIngresso> getListaDettagli(int idIngresso) {
+		List<DettaglioIngresso> listaDettagli = dettagliIngressi.get(idIngresso);
+		return listaDettagli;
+	}
+
+	public int inserisciNuovoIngresso(Ingresso ingresso) {
+		int id = managerIngressi.insertAndReturnID(ingresso);
+		boolean inserimento = (id != -1);
+		if (inserimento) {
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("O01");
+			utente.inserisciEvento(tipoEvento, ingresso.toString());
+		}
+		return id;
+	}
+
+	public boolean aggiornaIngresso(Ingresso ingresso) {
+		boolean update = managerIngressi.update(ingresso);
+		if (update) {
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("O02");
+			utente.inserisciEvento(tipoEvento, ingresso.toString());
+		}
+		return update;
+	}
+
+}

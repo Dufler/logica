@@ -1,0 +1,62 @@
+ 
+package it.ltc.logica.trasporti.gui.report.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.trasporti.gui.report.wizard.StatisticheWizard;
+
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class ReportPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.report.part.report";
+	
+	@Inject
+	public ReportPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Label lblReport = new Label(parent, SWT.NONE);
+		lblReport.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		lblReport.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		lblReport.setText("Report");
+		
+		Button btnReportSemplice = new Button(parent, SWT.NONE);
+		btnReportSemplice.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardReportSemplice();
+			}
+		});
+		btnReportSemplice.setText("Report semplice");
+		
+		Label lblGraficoSullaDistrubuzione = new Label(parent, SWT.NONE);
+		lblGraficoSullaDistrubuzione.setText("DA FARE: grafico sulla distrubuzione delle spedizioni nei scaglioni di peso");
+		
+	}
+	
+	private void apriWizardReportSemplice() {
+		DialogWizard wizard = new DialogWizard(new StatisticheWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Fai qualcosa, se necessario.
+		}		
+	}
+	
+	
+}

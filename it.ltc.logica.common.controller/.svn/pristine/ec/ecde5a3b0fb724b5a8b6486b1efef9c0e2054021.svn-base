@@ -1,0 +1,269 @@
+package it.ltc.logica.common.controller.ingressi;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoColloDettaglio;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
+import it.ltc.logica.database.model.composed.Carico;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerIngressi {
+
+	private static ControllerIngressi instance;
+
+	private final HashMap<Integer, Ingresso> ingressi;
+	private final HashMap<Integer, List<Ingresso>> ingressiPerCommessa;
+	private final HashMap<Integer, List<IngressoDettaglio>> dettagliPerIngresso;
+	private final HashMap<Integer, List<IngressoColloDettaglio>> dettagliColloPerIngresso;
+
+	private ControllerIngressi() {
+		ingressi = new HashMap<Integer, Ingresso>();
+		ingressiPerCommessa = new HashMap<Integer, List<Ingresso>>();
+		dettagliPerIngresso = new HashMap<Integer, List<IngressoDettaglio>>();
+		dettagliColloPerIngresso = new HashMap<Integer, List<IngressoColloDettaglio>>();
+		caricaDati();
+	}
+
+	public static ControllerIngressi getInstance() {
+		if (instance == null) {
+			instance = new ControllerIngressi();
+		}
+		return instance;
+	}
+
+	public synchronized void caricaDati() {
+		caricaIngressi();
+	}
+
+	private void caricaIngressi() {
+		//Recupero i clienti gestibili dall'utente.
+		//List<Commessa> commesse = ControllerUtente.getInstance().getUtente().getCommesse();
+		//FIXME - Il caricamento delle commesse deve essere chiamato da fuori quando serve per ogni commessa.
+		List<Commessa> commesse = new LinkedList<>();
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento degli ingressi", commesse.size() + 1);
+				try {
+					for (Commessa commessa : commesse) {
+						monitor.subTask("Commessa: " + commessa.getNome());
+						scaricaIngressiCommessa(commessa.getId());
+						monitor.worked(1);
+					}
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+			DialogMessaggio.openError("Errore nel caricamento dei carichi", "Errore durante il caricamento: " + e.getMessage());
+		}
+	}
+	
+	private void ricaricaIngressi(Commessa commessa) {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento degli ingressi: " + commessa.getNome(), -1);
+				try {
+					scaricaIngressiCommessa(commessa.getId());
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+			DialogMessaggio.openError("Errore nel caricamento dei carichi", "Errore durante il caricamento: " + e.getMessage());
+		}
+	}
+
+	private void caricaDettagliIngressi(int idIngresso) {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dei dettagli dell'ingresso", -1);
+				try {
+					scaricaDettagliIngresso(idIngresso);
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+			DialogMessaggio.openError("Errore nel caricamento dei dettagli", "Errore durante il caricamento: " + e.getMessage());
+		}
+	}
+
+	private void scaricaIngressiCommessa(int idCommessa) throws Exception {
+		// Chiamata al WS
+		WSConsumer c = WSConsumer.getInstance();
+		WSAnswer wsAnswer = c.get("ingresso/lista/" + idCommessa);
+		int status = wsAnswer.getStatus();
+		String answer = wsAnswer.getMessage();
+		if (status == 200) {
+			// Carico tutto quello che trovo
+			ObjectMapper mapper = new ObjectMapper();
+			List<Ingresso> lista = mapper.readValue(answer, new TypeReference<List<Ingresso>>() {});
+			for (Ingresso ingresso : lista) {
+				ingressi.put(ingresso.getId(), ingresso);
+			}
+			ingressiPerCommessa.put(idCommessa, lista);
+		} else if (status == 204) {
+			List<Ingresso> lista = new LinkedList<Ingresso>();
+			ingressiPerCommessa.put(idCommessa, lista);
+		} else {
+			throw new RuntimeException("Errore nello scaricarimento degli ingressi: " + status + ", " + answer);
+		}
+	}
+
+	private void scaricaDettagliIngresso(int idIngresso) throws Exception {
+		// Chiamata al WS
+		WSConsumer c = WSConsumer.getInstance();
+		WSAnswer wsAnswer = c.get("ingresso/info/" + idIngresso);
+		String answer = wsAnswer.getMessage();
+		// Carico tutto quello che trovo
+		ObjectMapper mapper = new ObjectMapper();
+		Carico carico = mapper.readValue(answer, Carico.class);
+		dettagliPerIngresso.put(idIngresso, carico.getDettagli());
+		dettagliColloPerIngresso.put(idIngresso, carico.getDettagliPerCollo());
+	}
+	
+	private class ProcessoInserimentoCarico extends Processo {
+		
+		private static final String title = "Inserimento del carico";
+		
+		private final Carico carico;
+		private Ingresso ingresso;
+
+		public ProcessoInserimentoCarico(Carico carico) {
+			super(title, -1);
+			this.carico = carico;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ingresso = inserisciCarico(carico);			
+		}
+
+		public Ingresso getIngresso() {
+			return ingresso;
+		}
+		
+	}
+	
+	private Ingresso inserisciCarico(Carico carico) throws Exception {
+		Ingresso ingresso;
+		// Chiamata al WS
+		WSConsumer c = WSConsumer.getInstance();
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonCarico = mapper.writeValueAsString(carico);
+		WSAnswer wsAnswer = c.post("ingresso/nuovo", jsonCarico);
+		if (wsAnswer.getStatus() == 201) {
+			String answer = wsAnswer.getMessage();
+			ingresso = mapper.readValue(answer, Ingresso.class);
+			ingressi.put(ingresso.getId(), ingresso);
+			ingressiPerCommessa.get(ingresso.getIdCommessa()).add(ingresso);
+			dettagliPerIngresso.put(ingresso.getId(), carico.getDettagli());
+			dettagliColloPerIngresso.put(ingresso.getId(), carico.getDettagliPerCollo());
+		} else {
+			ingresso = null;
+			throw new RuntimeException("Errore durante l'inserimento del carico: '" + wsAnswer.getMessage() + " (" + wsAnswer.getStatus() + ")'");
+		}
+		return ingresso;
+	}
+
+	public Collection<Ingresso> getIngressi() {
+		return ingressi.values();
+	}
+
+	/**
+	 * Restituisce la lista degli ingressi legati alla commessa passata come argomento.
+	 * @param commessaSelezionata la commessa di cui servono gli ingressi.
+	 * @param reload se true forza la richiesta al server ricaricando i dati.
+	 * @return una lista di ingressi.
+	 */
+	public List<Ingresso> getListaIngressi(Commessa commessaSelezionata, boolean reload) {
+		Integer id = commessaSelezionata.getId();
+		if (reload || !ingressiPerCommessa.containsKey(id))
+			ricaricaIngressi(commessaSelezionata);
+		return ingressiPerCommessa.get(id);
+	}
+
+	/**
+	 * Restituisce la lista dei prodotti e le relative quantità per un dato ingresso.
+	 * @param idIngresso l'ID dell'ingresso di interesse.
+	 * @param reload se true forza la richiesta al server ricaricando i dati.
+	 * @return una lista di dettagli.
+	 */
+	public List<IngressoDettaglio> getListaDettagli(int idIngresso, boolean reload) {
+		if (reload || !dettagliPerIngresso.containsKey(idIngresso))
+			caricaDettagliIngressi(idIngresso);
+		return dettagliPerIngresso.get(idIngresso);
+	}
+	
+	/**
+	 * Restituisce la lista dei prodotti e le relative quantità per un dato ingresso suddivise per collo.
+	 * @param idIngresso l'ID dell'ingresso di interesse.
+	 * @param reload se true forza la richiesta al server ricaricando i dati.
+	 * @return una lista di dettagli per collo.
+	 */
+	public List<IngressoColloDettaglio> getListaDettagliPerCollo(int idIngresso, boolean reload) {
+		if (reload || !dettagliPerIngresso.containsKey(idIngresso))
+			caricaDettagliIngressi(idIngresso);
+		return dettagliColloPerIngresso.get(idIngresso);
+	}
+
+	public Ingresso inserisciNuovoCarico(Carico carico) {
+		ProcessoInserimentoCarico pic = new ProcessoInserimentoCarico(carico);
+		DialogProgresso dialog = new DialogProgresso("Inserimento Carico");
+		dialog.esegui(pic);
+		return pic.getIngresso();
+	}
+
+	public boolean aggiornaIngresso(Ingresso ingresso) {
+		//TODO - aggiornamento
+		//TODO - Aggiungere Log utente
+		return false;
+	}
+	
+	public boolean eliminaIngresso(Ingresso ingresso) {
+		//TODO - eliminazione
+		//TODO - Aggiungere Log utente
+		return false;
+	}
+
+}

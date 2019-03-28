@@ -1,0 +1,154 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class ProdottoSQLServer extends Entity {
+	
+	public static final String NOME_TABELLA = "dbo.Articoli";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer idArticolo;
+	private String idUniArticolo;
+	private String codArtStr;
+	private String descrizione;
+	private String modello;
+	private String taglia;
+	private String colore;
+	private Integer artH;
+	private Integer artL;
+	private Integer artZ;
+	private Double artPeso;
+	private String linea;
+	private String gruppoMerc;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdArticolo", "idArticolo");
+			variabili.addString("IdUniArticolo", "idUniArticolo");
+			variabili.addString("CodArtStr", "codArtStr");
+			variabili.addString("Descrizione", "descrizione");
+			variabili.addString("Modello", "modello");
+			variabili.addString("Taglia", "taglia");
+			variabili.addString("Colore", "colore");
+			variabili.addString("Linea", "linea");
+			variabili.addString("Gruppomerc", "gruppoMerc");
+			variabili.addInt("ArtH", "artH");
+			variabili.addInt("ArtL", "artL");
+			variabili.addInt("ArtZ", "artZ");
+			variabili.addDouble("ArtPeso", "artPeso");
+		}
+		return variabili;
+	}
+
+	public Integer getIdArticolo() {
+		return idArticolo;
+	}
+
+	public void setIdArticolo(Integer idArticolo) {
+		this.idArticolo = idArticolo;
+	}
+
+	public String getIdUniArticolo() {
+		return idUniArticolo;
+	}
+
+	public void setIdUniArticolo(String idUniArticolo) {
+		this.idUniArticolo = idUniArticolo;
+	}
+
+	public String getCodArtStr() {
+		return codArtStr;
+	}
+
+	public void setCodArtStr(String codArtStr) {
+		this.codArtStr = codArtStr;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public String getModello() {
+		return modello;
+	}
+
+	public void setModello(String modello) {
+		this.modello = modello;
+	}
+
+	public String getTaglia() {
+		return taglia;
+	}
+
+	public void setTaglia(String taglia) {
+		this.taglia = taglia;
+	}
+
+	public String getColore() {
+		return colore;
+	}
+
+	public void setColore(String colore) {
+		this.colore = colore;
+	}
+
+	public Integer getArtH() {
+		return artH;
+	}
+
+	public void setArtH(Integer artH) {
+		this.artH = artH;
+	}
+
+	public Integer getArtL() {
+		return artL;
+	}
+
+	public void setArtL(Integer artL) {
+		this.artL = artL;
+	}
+
+	public Integer getArtZ() {
+		return artZ;
+	}
+
+	public void setArtZ(Integer artZ) {
+		this.artZ = artZ;
+	}
+
+	public Double getArtPeso() {
+		return artPeso;
+	}
+
+	public void setArtPeso(Double artPeso) {
+		this.artPeso = artPeso;
+	}
+
+	public String getLinea() {
+		return linea;
+	}
+
+	public void setLinea(String linea) {
+		this.linea = linea;
+	}
+
+	public String getGruppoMerc() {
+		return gruppoMerc;
+	}
+
+	public void setGruppoMerc(String gruppoMerc) {
+		this.gruppoMerc = gruppoMerc;
+	}
+
+}

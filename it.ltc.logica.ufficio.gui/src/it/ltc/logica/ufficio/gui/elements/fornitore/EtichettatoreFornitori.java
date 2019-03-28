@@ -1,0 +1,32 @@
+package it.ltc.logica.ufficio.gui.elements.fornitore;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.gui.elements.Etichettatore;
+
+public class EtichettatoreFornitori extends Etichettatore<Fornitore> {
+
+	@Override
+	public String getTesto(Fornitore oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = oggetto.getNome(); break;
+			case 1 : testo = oggetto.getRiferimentoCliente(); break;
+			case 2 : testo = oggetto.getNote(); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(Fornitore oggetto, int colonna) {
+		return getTesto(oggetto, colonna);
+	}
+
+	@Override
+	public Image getIcona(Fornitore oggetto, int colonna) {
+		return null;
+	}
+
+}

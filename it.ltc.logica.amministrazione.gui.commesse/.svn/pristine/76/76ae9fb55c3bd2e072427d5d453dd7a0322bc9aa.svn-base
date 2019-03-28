@@ -1,0 +1,92 @@
+package it.ltc.logica.amministrazione.gui.commesse.dialogs;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.amministrazione.gui.composite.CompositePreferenzeFatturazione;
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.ModalitaPagamentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.PreferenzeFatturazione;
+import it.ltc.logica.gui.dialog.DialogModel;
+
+public class DialogPreferenzeFatturazione extends DialogModel<PreferenzeFatturazione> {
+
+	private static final String title = "Preferenze di Fatturazione";
+	
+	private CompositePreferenzeFatturazione composite;
+	
+	private final PreferenzeFatturazione preferenze;
+	
+	private final ControllerCommesse controllerCommesse;
+	private final ControllerAmbitiFatturazione controllerAmbitiFatturazione;
+	private final ControllerPreferenzeFatturazione controllerPreferenzeFatturazione;
+	
+	public DialogPreferenzeFatturazione(PreferenzeFatturazione value, boolean nuovo) {
+		super(title, nuovo ? null : value);
+		preferenze = value;
+		controllerCommesse = ControllerCommesse.getInstance();
+		controllerAmbitiFatturazione = ControllerAmbitiFatturazione.getInstance();
+		controllerPreferenzeFatturazione = ControllerPreferenzeFatturazione.getInstance();
+	}
+
+	@Override
+	public void loadModel() {
+		composite.setCommessa(controllerCommesse.getCommessa(valore.getCommessa()));
+		composite.setAmbito(controllerAmbitiFatturazione.getAmbito(valore.getAmbito()));
+		composite.setModalitaPagamaneto(ModalitaPagamentoFattura.valueOf(valore.getModalitaPagamento()));
+		composite.setCodiceCliente(valore.getNumeroClienteEsterno());
+		composite.setDescrizione(valore.getDescrizioneVoce());
+	}
+
+	@Override
+	public void prefillModel() {
+		composite.setCommessa(controllerCommesse.getCommessa(preferenze.getCommessa()));
+		composite.setAmbito(controllerAmbitiFatturazione.getAmbito(preferenze.getAmbito()));
+	}
+
+	@Override
+	public void copyDataToModel() {
+		valore.setCommessa(composite.getCommessa().getId());
+		valore.setAmbito(composite.getAmbito().getId());
+		valore.setModalitaPagamento(composite.getModalitaPagamento().name());
+		valore.setNumeroClienteEsterno(composite.getCodiceCliente());
+		valore.setDescrizioneVoce(composite.getDescrizione());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		return controllerPreferenzeFatturazione.aggiorna(valore);
+	}
+
+	@Override
+	public boolean insertModel() {
+		return controllerPreferenzeFatturazione.inserisci(valore);
+	}
+
+	@Override
+	public PreferenzeFatturazione createNewModel() {
+		PreferenzeFatturazione model = new PreferenzeFatturazione();
+		return model;
+	}
+
+	@Override
+	public boolean isDirty() {
+		return composite.isDirty();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		composite = new CompositePreferenzeFatturazione(container, SWT.NONE);
+		
+	}
+
+}

@@ -1,0 +1,161 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.Date;
+import java.util.List;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.Spedizione;
+
+public class SpedizioniTableViewer extends TableViewer {
+	
+	private Table table;
+	private TableViewerColumn colonnaData;
+	private TableViewerColumn colonnaDestinatario;
+	private TableViewerColumn colonnaRiferimento;
+	private TableViewerColumn colonnaColli;
+	private TableViewerColumn colonnaPezzi;
+	private TableViewerColumn colonnaContrassegno;
+	private TableViewerColumn colonnaGiacenza;
+	private TableViewerColumn colonnaRitardo;
+	
+	private SpedizioniComparator ordinatore;
+	private FiltroSpedizioni filtro;
+	
+	public SpedizioniTableViewer(Composite parent) {
+		super(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		setUseHashlookup(true);
+		setContentProvider(ArrayContentProvider.getInstance());
+		setOrdinamento();
+		setFiltro();
+		table = getTable();
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		aggiungiColonne();
+		aggiungiListener();
+	}
+	
+	private void setOrdinamento() {
+		ordinatore = new SpedizioniComparator();
+		setComparator(ordinatore);
+	}
+	
+	private void setFiltro() {
+		filtro = new FiltroSpedizioni();
+		setFilters(filtro);
+	}
+	
+	private void aggiungiColonne() {
+		colonnaData = new TableViewerColumn(this, SWT.NONE);
+		colonnaData.setLabelProvider(new SpedizioneDataLabelProvider());
+		
+		TableColumn tblclmnDataInserimento = colonnaData.getColumn();
+		tblclmnDataInserimento.setWidth(100);
+		tblclmnDataInserimento.setText("Data Inserimento");
+		
+		colonnaDestinatario = new TableViewerColumn(this, SWT.NONE);
+		colonnaDestinatario.setLabelProvider(new DestinatarioLabelProvider());
+		
+		TableColumn tblclmnDestinatario = colonnaDestinatario.getColumn();
+		tblclmnDestinatario.setWidth(100);
+		tblclmnDestinatario.setText("Destinatario");
+		
+		colonnaRiferimento = new TableViewerColumn(this, SWT.NONE);
+		colonnaRiferimento.setLabelProvider(new RiferimentoLabelProvider());
+		
+		TableColumn tblclmnRiferimento = colonnaRiferimento.getColumn();
+		tblclmnRiferimento.setWidth(100);
+		tblclmnRiferimento.setText("Riferimento");
+		
+		colonnaColli = new TableViewerColumn(this, SWT.NONE);
+		colonnaColli.setLabelProvider(new SpedizioneColliLabelProvider());
+		
+		TableColumn tblclmnColli = colonnaColli.getColumn();
+		tblclmnColli.setWidth(100);
+		tblclmnColli.setText("Colli");
+		
+		colonnaPezzi = new TableViewerColumn(this, SWT.NONE);
+		colonnaPezzi.setLabelProvider(new PezziLabelProvider());
+		
+		TableColumn tblclmnPezzi = colonnaPezzi.getColumn();
+		tblclmnPezzi.setWidth(100);
+		tblclmnPezzi.setText("Pezzi");
+		
+		colonnaContrassegno = new TableViewerColumn(this, SWT.NONE);
+		colonnaContrassegno.setLabelProvider(new ContrassegnoLabelProvider());
+		
+		TableColumn tblclmnContrassegno = colonnaContrassegno.getColumn();
+		tblclmnContrassegno.setWidth(100);
+		tblclmnContrassegno.setText("Contrassegno");
+		
+		colonnaGiacenza = new TableViewerColumn(this, SWT.NONE);
+		colonnaGiacenza.setLabelProvider(new GiacenzaLabelProvider());
+		
+		TableColumn tblclmnGiacenza = colonnaGiacenza.getColumn();
+		tblclmnGiacenza.setWidth(100);
+		tblclmnGiacenza.setText("Giacenza");
+		
+		colonnaRitardo = new TableViewerColumn(this, SWT.NONE);
+		colonnaRitardo.setLabelProvider(new RitardoLabelProvider());
+		
+		TableColumn tblclmnRitardo = colonnaRitardo.getColumn();
+		tblclmnRitardo.setWidth(100);
+		tblclmnRitardo.setText("Ritardo");
+		
+	}
+	
+	private void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogSpedizione();
+			}
+		});
+	}
+	
+	private void apriDialogSpedizione() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			Spedizione spedizione = (Spedizione) selectedItem.getData();
+			SpedizioneDialog dialog = new SpedizioneDialog(spedizione);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+	public void mostraSpedizioni(List<Spedizione> input) {
+		setInput(input);
+		for (TableColumn column : table.getColumns()) {
+			column.pack();
+		}
+	}
+	
+	public void filtra(Date da, Date a, Integer idCommessa, Integer idCorriere, Boolean contrassegno, Boolean datiCompleti, String riferimento) {
+		filtro.setDa(da);
+		filtro.setA(a);
+		filtro.setIdCommessa(idCommessa);
+		filtro.setIdCorriere(idCorriere);
+		filtro.setContrassegno(contrassegno);
+		filtro.setDatiCompleti(datiCompleti);
+		refresh();
+	}
+	
+	public void annullaFiltro() {
+		filtro.resetFiltri();
+		refresh();
+	}
+
+}

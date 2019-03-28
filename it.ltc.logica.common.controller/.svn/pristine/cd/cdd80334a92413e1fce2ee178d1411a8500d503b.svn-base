@@ -1,0 +1,60 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.Processo;
+
+public class ProcessoCaricamentoDatiFatturazione extends Processo {
+	
+	private static final String titolo = "Caricamento dei dati di fatturazione";
+
+	private final EntityManager<DocumentoFattura> managerDocumenti;
+	private final EntityManager<VoceFattura> managerVoci;
+	
+	private final int idDocumento;
+	private final String path;
+	
+	public ProcessoCaricamentoDatiFatturazione(String path, int idDocumento) {
+		super(titolo, 100);
+		managerDocumenti = new EntityManager<DocumentoFattura>(DocumentoFattura.class, ConfigurationManager.getDefault());
+		managerVoci = new EntityManager<VoceFattura>(VoceFattura.class, ConfigurationManager.getDefault());
+		this.path = path;
+		this.idDocumento = idDocumento;
+	}
+
+	@Override
+	public void eseguiOperazioni() {
+		//Carica il documento
+		DocumentoFattura filtroDocumento = new DocumentoFattura();
+		filtroDocumento.setId(idDocumento);
+		DocumentoFattura documento = managerDocumenti.getEntity(filtroDocumento, true);
+		if (documento == null)
+			throw new RuntimeException("Documento non trovato!");
+		aumentaProgresso(10);
+		//Carica il modello
+		AmbitoFattura modello = AmbitoFattura.getAmbito(documento.getIdAmbito());
+		aumentaProgresso(10);
+		if (modello == null)
+			throw new RuntimeException("Modello per il documento non valido!");
+		//Carica le voci
+		VoceFattura filtroVoci = new VoceFattura();
+		filtroVoci.setIdDocumento(idDocumento);
+		List<VoceFattura> voci = managerVoci.getEntities(filtroVoci);
+		aumentaProgresso(20);
+		//Genero un oggetto che elabori il documento seguendo il modello
+		RealizzatoreDocumentoDiFatturazione realizzatore = ControllerDocumentiDiFatturazione.getInstance().getRealizzatore(modello);
+		realizzatore.setFile(path);
+		realizzatore.setDocumento(documento);
+		realizzatore.setVoci(voci);
+		aumentaProgresso(5);
+		//Elabora il documento
+		realizzatore.elaboraDocumento();
+		aumentaProgresso(55);
+	}
+
+}

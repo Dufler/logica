@@ -1,0 +1,93 @@
+package it.ltc.logica.database.model;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class ListinoCommessa extends Entity implements ValidEntity {
+
+	public static final String NOME_TABELLA = "listino_commessa";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer idCommessa;
+	private String nome;
+	private String descrizione;
+	
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (nome == null || nome.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il nome per il listino non può essere vuoto.");
+		}
+		if (idCommessa == null || idCommessa < 1) {
+			esito.setValid(false);
+			esito.addMessage("Devi selezionare una commessa esistente.");
+		}
+		return esito;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof ListinoCommessa && o != null) {
+			ListinoCommessa listino = (ListinoCommessa) o;
+			uguali = id.equals(listino.getId());
+		}
+		return uguali;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+	
+}

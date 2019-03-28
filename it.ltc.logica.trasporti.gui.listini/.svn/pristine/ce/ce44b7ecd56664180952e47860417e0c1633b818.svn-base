@@ -1,0 +1,32 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.cliente;
+
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+
+public class NuovoListinoCommessaWizard extends Wizard {
+	
+	private ListiniClientiController controller;
+	
+	NuovoListinoCommessaProprietaWizardPage paginaProprieta;
+
+	public NuovoListinoCommessaWizard() {
+		setWindowTitle("Nuovo listino cliente");
+		controller = ListiniClientiController.getInstance();
+		paginaProprieta = new NuovoListinoCommessaProprietaWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+	}
+
+	@Override
+	public boolean performFinish() {
+		ListinoCommessa listino = paginaProprieta.getListino();
+		boolean insert = controller.creaNuovoListino(listino);
+		return insert;
+	}
+
+}

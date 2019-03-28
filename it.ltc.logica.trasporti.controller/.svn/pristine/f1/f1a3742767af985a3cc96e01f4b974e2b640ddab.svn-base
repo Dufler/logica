@@ -1,0 +1,238 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.common.controller.trasporti.ControllerGiacenze;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.utilities.excel.XLStoCSV;
+import it.ltc.logica.utilities.excel.model.csv.CampoDecimale;
+import it.ltc.logica.utilities.excel.model.csv.FileCSV;
+import it.ltc.logica.utilities.excel.model.csv.RigaCSV;
+
+/**
+ * Controller singleton che si occupa di importare un file .csv con i dati di fatturazione di TNT.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class FatturazioneTNTController {
+	
+	private static FatturazioneTNTController instance;
+	
+	//private SpedizioniController controller;
+	private final ControllerSpedizioni controllerSpedizioni;
+	private final ControllerIndirizzi controllerIndirizzi;
+	private final ControllerGiacenze controllerGiacenze;	
+	
+	private int indiceCodiceCliente;
+	private int indiceLetteraDiVettura;
+	private int indiceImponibile;
+	private int indiceConsegnaPrivati;
+	private int indiceConsegnaPiano;
+	private int indiceGiorniGiacenza;
+	
+	private int[] esitoImportazione;
+	
+	private FatturazioneTNTController() {
+		//controller = SpedizioniController.getInstance();
+		controllerSpedizioni = ControllerSpedizioni.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		controllerGiacenze = ControllerGiacenze.getInstance();
+	}
+	
+	public static FatturazioneTNTController getInstance() {
+		if (instance == null) {
+			instance = new FatturazioneTNTController();
+		}
+		return instance;
+	}
+	
+	/**
+	 * Importa le informazioni di fatturazione contenute nel .xls passato come argomento.
+	 * L'array restituito contiene:
+	 * 0 - il totale delle spedizioni e giacenze contenute nel file .xls
+	 * 1 - il totale delle spedizioni di cui si è aggiornato il costo
+	 * 2 - il totale delle giacenze di cui si è aggiornato il costo
+	 * 3 - il totale degli indirizzi aggiornati
+	 * 4 - il totale degli aggiornamenti/inserimenti falliti.
+	 * 5 - il totale delle nuove spedizioni inserite
+	 * @param fileCSV 
+	 * @return un array contenente le informazioni sul risultato dell'importazione.
+	 */
+	public int[] importaXLSFatturazione(String pathFileXLS) {
+		esitoImportazione = new int[6];
+		File fileXLS = new File(pathFileXLS);
+		
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Importazione dei dati di fatturazione", -1);
+				FileCSV csv = XLStoCSV.getCSV(fileXLS);
+				esitoImportazione[0] = csv.getRighe().size();
+				recuperaIndici(csv);
+				for (RigaCSV riga : csv.getRighe()) {
+					boolean giacenza = isGiacenza(riga);
+					if (giacenza) {
+						aggiornaCostoGiacenza(riga);
+					} else {
+						Spedizione spedizione = recuperaSpedizione(riga);
+						//Aggiorno il costo
+						if (spedizione != null) {
+							aggiornaCostoSpedizione(spedizione, riga);
+							aggiornaIndirizzoPerConsegnaAlPiano(spedizione, riga);
+							aggiornaIndirizzoPerConsegnaAPrivato(spedizione, riga);
+						} else { //Inserisco la spedizione, viene anche controllato se è una giacenza
+							inserisciNuovaSpedizione(riga);
+						}
+					}
+				}
+			}
+		};
+		
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}		
+		
+		return esitoImportazione;
+	}
+	
+	/**
+	 * Permette di abbinare i giusti indici di colonna ai nomi/informazioni necessarie.
+	 * @param csv il file .csv
+	 */
+	private void recuperaIndici(FileCSV csv) {
+		indiceCodiceCliente = csv.getIndiceColonna("Codice Cliente");
+		indiceLetteraDiVettura = csv.getIndiceColonna("Ld Vettura");
+		indiceImponibile = csv.getIndiceColonna("Imponibile");
+		indiceConsegnaPrivati = csv.getIndiceColonna("Imp.addebito PRDEL");
+		indiceConsegnaPiano = csv.getIndiceColonna("Imp.addebito FLDEL");
+		indiceGiorniGiacenza = csv.getIndiceColonna("GG Giacenza");
+	}
+	
+	private boolean isGiacenza(RigaCSV riga) {
+		CampoDecimale campoGiorniGiacenza = (CampoDecimale) riga.getCampo(indiceGiorniGiacenza);
+		double giorniGiacenza = campoGiorniGiacenza.getValore();
+		return giorniGiacenza > 0;
+	}
+	
+	/**
+	 * Controlla se la spedizione riportata nella riga sia una giacenza:
+	 * Se è una giacenza viene aggiornato il costo della giacenza indicata.
+	 * Se invece è una spedizione non presente a sistema viene inserita e poi si notifica all'utente.
+	 * @param riga la riga csv che contiene le info sulla spedizione
+	 * @return la spedizione appena inserita
+	 */
+	private Spedizione inserisciNuovaSpedizione(RigaCSV riga) {
+		Spedizione nuovaSpedizione = null;
+		//Ricava o inserisci gli indirizzi di partenza e destinazione
+		nuovaSpedizione = new Spedizione();
+		//inserisci i dati...
+		int idSpedizione = 1; //controller.inserisciNuovaSpedizione(nuovaSpedizione);
+		if (idSpedizione != -1)
+			esitoImportazione[5] += 1;
+		else
+			esitoImportazione[4] += 1;
+		//contrassegno etc, se necessario
+		//inserire un riepilogo/alert con tutte le spedizioni inserite.
+		return nuovaSpedizione;
+	}
+	
+	private boolean aggiornaCostoSpedizione(Spedizione spedizione, RigaCSV riga) {
+		double imponibile = getImponibile(riga);
+		spedizione.setCosto(imponibile);
+		boolean update = controllerSpedizioni.aggiornaSpedizione(spedizione);
+		if (update)
+			esitoImportazione[1] += 1;
+		else
+			esitoImportazione[4] += 1;
+		return update;
+	}
+	
+	private boolean aggiornaCostoGiacenza(RigaCSV riga) {
+		boolean update = false;
+		String letteraDiVettura = riga.getCampo(indiceLetteraDiVettura).toString();
+		double imponibile = getImponibile(riga);
+		for (Giacenza g : controllerGiacenze.getGiacenze()) {
+			String ldv = g.getLetteraDiVettura();
+			if (ldv != null && ldv.equalsIgnoreCase(letteraDiVettura)) {
+				g.setCosto(imponibile);
+				update = controllerGiacenze.aggiornaGiacenza(g);
+				break;
+			}
+		}
+		if (update)
+			esitoImportazione[2] += 1;
+		else
+			esitoImportazione[4] += 1;
+		return update;
+	}
+	
+	private boolean aggiornaIndirizzoPerConsegnaAlPiano(Spedizione spedizione, RigaCSV riga) {
+		boolean update = false;
+		CampoDecimale campoConsegnaPiano = (CampoDecimale) riga.getCampo(indiceConsegnaPiano);
+		double costoConsegnaPiano = campoConsegnaPiano.getValore();
+		Indirizzo destinazione = controllerIndirizzi.getIndirizzo(spedizione.getIndirizzoDestinazione());
+		if (destinazione != null && costoConsegnaPiano > 0) {
+			destinazione.setConsegnaAlPiano(true);
+			update = controllerIndirizzi.update(destinazione);
+			if (update)
+				esitoImportazione[3] += 1;
+			else
+				esitoImportazione[4] += 1;
+		} else {
+			esitoImportazione[4] += 1;
+		}
+		return update;
+	}
+	
+	private boolean aggiornaIndirizzoPerConsegnaAPrivato(Spedizione spedizione, RigaCSV riga) {
+		boolean update = false;
+		CampoDecimale campoConsegnaPrivati = (CampoDecimale) riga.getCampo(indiceConsegnaPrivati);
+		double costoConsegnaPrivati = campoConsegnaPrivati.getValore();
+		Indirizzo destinazione = controllerIndirizzi.getIndirizzo(spedizione.getIndirizzoDestinazione());
+		if (destinazione != null && costoConsegnaPrivati > 0) {
+			destinazione.setConsegnaPrivato(true);
+			update = controllerIndirizzi.update(destinazione);
+			if (update)
+				esitoImportazione[3] += 1;
+			else
+				esitoImportazione[4] += 1;
+		} else {
+			esitoImportazione[4] += 1;
+		}
+		return update;
+	}
+
+	private Spedizione recuperaSpedizione(RigaCSV riga) {
+		String codiceCliente = riga.getCampo(indiceCodiceCliente).toString();
+		String letteraDiVettura = riga.getCampo(indiceLetteraDiVettura).toString();
+		Spedizione spedizione = null;
+		for (Spedizione s : controllerSpedizioni.getSpedizioni()) {
+			String ldv = s.getLetteraDiVettura();
+			String cc = s.getCodiceCliente();
+			if (ldv != null && cc != null && ldv.equals(letteraDiVettura) && cc.equals(codiceCliente)) {
+				spedizione = s;
+				break;
+			}
+		}
+		return spedizione;
+	}
+	
+	private double getImponibile(RigaCSV riga) {
+		CampoDecimale campoImponibile = (CampoDecimale) riga.getCampo(indiceImponibile);
+		double imponibile = campoImponibile.getValore();
+		return imponibile;
+	}
+
+}

@@ -1,0 +1,114 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
+
+public class JTDS extends DBMS {
+
+	private BoneCP connectionPool = null;
+	
+	private final String dateFormat = "dd/MM/yyyy HH:mm:ss";
+	private final String driverName = "net.sourceforge.jtds.jdbc.Driver";
+	private final String dbms = "jtds:sqlserver";
+	private final String defaultPortNumber = "1433";
+	
+	private Connection transactionalConnection;
+
+	protected JTDS(Database db) {
+		super(db);
+		try {
+			Class.forName(driverName);
+			setup(db);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String getConnectionURL(Database db) {
+		String connectionURL = "jdbc:" + dbms + "://" + db.getIndirizzoDB() + ":" + defaultPortNumber +";databaseName=" + db.getNomeDB();
+		return connectionURL;
+	}
+	
+	private void setup(Database db) throws Exception {
+		BoneCPConfig config = new BoneCPConfig();
+		config.setJdbcUrl(getConnectionURL(db));
+		config.setUsername(db.getUsername()); 
+		config.setPassword(db.getPassword());
+		Properties configuration = new Properties();
+		configuration.setProperty("db_username", db.getUsername());
+		configuration.setProperty("db_password", db.getPassword());
+		configuration.setProperty("db_dbms", dbms);
+		configuration.setProperty("db_host", db.getIndirizzoDB());
+		configuration.setProperty("db_port", defaultPortNumber);
+		configuration.setProperty("db_name", db.getNomeDB());
+		configuration.setProperty("validationQuery", "SELECT 1");
+		configuration.setProperty("testOnBorrow", "true");
+		config.setProperties(configuration);
+		config.setMinConnectionsPerPartition(1);
+		config.setMaxConnectionsPerPartition(3);
+		config.setPartitionCount(1);
+		connectionPool = new BoneCP(config);
+	}
+
+	@Override
+	public String getDefaultDateFormat() {
+		return dateFormat;
+	}
+
+	@Override
+	public Connection getConnection() {
+		Connection connection = null;
+		try {
+			connection = connectionPool.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+
+	@Override
+	public Connection getTransactionConnection() {
+		try {
+			if (transactionalConnection == null || transactionalConnection.isClosed()) {
+				transactionalConnection = connectionPool.getConnection();
+				transactionalConnection.setAutoCommit(false);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return transactionalConnection;
+	}
+	
+	public void finalize() {
+		connectionPool.shutdown();
+	}
+
+	@Override
+	public DBMSType getType() {
+		return DBMSType.JTDS;
+	}
+
+	@Override
+	public boolean checkConnectionValidity(Connection connection) {
+		boolean valid = true;
+		try {
+			if (connection == null || connection.isClosed())
+				valid = false;
+			else {
+				PreparedStatement statement = connection.prepareStatement("SELECT 1");
+				statement.setQueryTimeout(1);
+				statement.executeQuery();
+			}
+		} catch (SQLException e) {
+			valid = false;
+			e.printStackTrace();
+		}
+		return valid;
+	}
+
+}

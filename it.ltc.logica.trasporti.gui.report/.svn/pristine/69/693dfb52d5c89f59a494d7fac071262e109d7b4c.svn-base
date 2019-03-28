@@ -1,0 +1,112 @@
+ 
+package it.ltc.logica.trasporti.gui.report.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import it.ltc.logica.gui.wizard.DialogWizard;
+import it.ltc.logica.trasporti.gui.report.wizards.colli.DistribuzioneColliWizard;
+import it.ltc.logica.trasporti.gui.report.wizards.destinazione.DistribuzioneDestinazioneWizard;
+import it.ltc.logica.trasporti.gui.report.wizards.pesovolume.DistribuzionePesoVolumeWizard;
+import it.ltc.logica.trasporti.gui.report.wizards.semplice.StatisticheWizard;
+
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class ReportPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.report.part.report";
+	
+	@Inject
+	public ReportPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Label lblReport = new Label(parent, SWT.NONE);
+		lblReport.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		lblReport.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		lblReport.setText("Report");
+		
+		Button btnReportSemplice = new Button(parent, SWT.NONE);
+		btnReportSemplice.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardReportSemplice();
+			}
+		});
+		btnReportSemplice.setText("Report semplice");
+		
+		Button btnReportSullaDistribuzione = new Button(parent, SWT.NONE);
+		btnReportSullaDistribuzione.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardReportPesoVolume();
+			}
+		});
+		btnReportSullaDistribuzione.setText("Distribuzione Peso/Volume");
+		
+		Button btnDistribuzioneColli = new Button(parent, SWT.NONE);
+		btnDistribuzioneColli.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardReportDistribuzioneColli();
+			}
+		});
+		btnDistribuzioneColli.setText("Distribuzione Colli");
+		
+		Button btnDistribuzioneDestinazioni = new Button(parent, SWT.NONE);
+		btnDistribuzioneDestinazioni.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardReportDistribuzioneDestinazioni();
+			}
+		});
+		btnDistribuzioneDestinazioni.setText("Distribuzione Destinazioni");
+		
+	}
+	
+	private void apriWizardReportSemplice() {
+		DialogWizard wizard = new DialogWizard(new StatisticheWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Fai qualcosa, se necessario.
+		}		
+	}
+	
+	private void apriWizardReportPesoVolume() {
+		DialogWizard wizard = new DialogWizard(new DistribuzionePesoVolumeWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Fai qualcosa, se necessario.
+		}		
+	}
+	
+	private void apriWizardReportDistribuzioneColli() {
+		DialogWizard wizard = new DialogWizard(new DistribuzioneColliWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Fai qualcosa, se necessario.
+		}		
+	}
+	
+	private void apriWizardReportDistribuzioneDestinazioni() {
+		DialogWizard wizard = new DialogWizard(new DistribuzioneDestinazioneWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Fai qualcosa, se necessario.
+		}		
+	}
+	
+}

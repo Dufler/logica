@@ -1,0 +1,102 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.AmbitoDiTrasporto;
+
+public class Calcolo {
+	
+	public enum Tipo {
+		COSTO,
+		RICAVO;
+	}
+	
+	private List<VoceCalcolata> voci;
+	private final String etichetta;
+	private final int idListino;
+	private final Tipo tipo;
+	
+	public Calcolo(String name, int id, Tipo type) {
+		etichetta = name;
+		idListino = id;
+		tipo = type;
+		voci = new ArrayList<VoceCalcolata>();
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof Calcolo) {
+			Calcolo c = (Calcolo) o;
+			uguali = tipo == c.tipo && idListino == c.idListino;
+		}
+		return uguali;
+	}
+	
+	public void aggiungiVoce(VoceCalcolata voce) {
+		voci.add(voce);
+	}
+
+	public List<VoceCalcolata> getVoci() {
+		return voci;
+	}
+
+	public void setVoci(List<VoceCalcolata> voci) {
+		this.voci = voci;
+	}
+
+	public String getNome() {
+		return etichetta;
+	}
+	
+	public int getIdListino() {
+		return idListino;
+	}
+	
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	public double getCostoNoloBase() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			if (AmbitoDiTrasporto.Tipo.NOLO_BASE == ambito.getETipo()) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getCostoNolo() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			AmbitoDiTrasporto.Tipo tipo = ambito.getETipo();
+			if (AmbitoDiTrasporto.Tipo.NOLO_BASE == tipo || AmbitoDiTrasporto.Tipo.NOLO_EXTRA == tipo) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getCostoContrassegno() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			if (AmbitoDiTrasporto.Tipo.CONTRASSEGNO == ambito.getETipo()) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getTotale() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			totale += voce.getCosto();
+		}
+		return totale;
+	}
+
+}

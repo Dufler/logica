@@ -1,0 +1,98 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Assicurazione extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "spedizione_assicurazione";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idSpedizione;
+	private Double valore;
+	private String valuta;
+	private String tipo;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_spedizione", "idSpedizione", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addString("valuta", "valuta");
+			variabili.addString("tipo", "tipo");
+		}
+		return variabili;
+	}
+
+	@Override
+	public String toString() {
+		return "Assicurazione [idSpedizione=" + idSpedizione + ", valore=" + valore + ", valuta=" + valuta + ", tipo=" + tipo + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idSpedizione == null) ? 0 : idSpedizione.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Assicurazione other = (Assicurazione) obj;
+		if (idSpedizione == null) {
+			if (other.idSpedizione != null)
+				return false;
+		} else if (!idSpedizione.equals(other.idSpedizione))
+			return false;
+		return true;
+	}
+
+	public Integer getIdSpedizione() {
+		return idSpedizione;
+	}
+
+	public void setIdSpedizione(Integer idSpedizione) {
+		this.idSpedizione = idSpedizione;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	public String getValuta() {
+		return valuta;
+	}
+
+	public void setValuta(String valuta) {
+		this.valuta = valuta;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+}

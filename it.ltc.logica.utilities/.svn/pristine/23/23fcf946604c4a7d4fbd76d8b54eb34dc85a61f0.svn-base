@@ -1,0 +1,21 @@
+package it.ltc.logica.utilities.excel.model.csv;
+
+public class CampoIntero extends CampoCSV {
+
+	private final Integer valore;
+	
+	public CampoIntero(String nome, int posizione, Integer valore) {
+		super(nome, posizione, Tipo.INTEGER);
+		this.valore = valore;
+	}
+
+	@Override
+	public String getAsString() {
+		return valore != null ? valore.toString() : "";
+	}
+	
+	public Integer getValore() {
+		return valore;
+	}
+
+}

@@ -1,0 +1,94 @@
+ 
+package it.ltc.logica.trasporti.gui.preventivi.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.trasporti.ControllerCap;
+import it.ltc.logica.common.controller.trasporti.ControllerGiacenze;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.gui.wizard.DialogWizard;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti.PreventivoSpedizioniEsistentiWizard;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia.PreventivoSpedizioneFittiziaWizard;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli.PreventivoSpedizioneFittiziaSuColliWizard;
+
+public class PreventiviPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.preventivi.part.preventivi";
+	
+	@Inject UISynchronize sync;
+	
+	@Inject
+	public PreventiviPart() {
+		ControllerIndirizzi.getInstance();
+		ControllerCap.getInstance();
+		ControllerGiacenze.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnPreventivoPerSpedizione = new Button(parent, SWT.NONE);
+		btnPreventivoPerSpedizione.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardPreventivoFittizia();
+			}
+		});
+		btnPreventivoPerSpedizione.setText("Spedizioni fittizie");
+		
+		Button btnSpedizioniFittizieSu = new Button(parent, SWT.NONE);
+		btnSpedizioniFittizieSu.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardPreventivoFittiziaSuColli();
+			}
+		});
+		btnSpedizioniFittizieSu.setText("Spedizioni fittizie su pi\u00F9 colli");
+		
+		Button btnPreventivoPerSpedizioni = new Button(parent, SWT.NONE);
+		btnPreventivoPerSpedizioni.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriWizardPreventivoEsistenti();
+			}
+		});
+		btnPreventivoPerSpedizioni.setText("Spedizioni esistenti");		
+	}
+	
+	private void apriWizardPreventivoFittizia() {
+		DialogWizard wizard = new DialogWizard(new PreventivoSpedizioneFittiziaWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Se serve fai qualcosa.
+		}
+	}
+	
+	private void apriWizardPreventivoFittiziaSuColli() {
+		DialogWizard wizard = new DialogWizard(new PreventivoSpedizioneFittiziaSuColliWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Se serve fai qualcosa.
+		}
+	}
+	
+	private void apriWizardPreventivoEsistenti() {
+		DialogWizard wizard = new DialogWizard(new PreventivoSpedizioniEsistentiWizard(sync), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Se serve fai qualcosa.
+		}
+	}
+	
+	
+}

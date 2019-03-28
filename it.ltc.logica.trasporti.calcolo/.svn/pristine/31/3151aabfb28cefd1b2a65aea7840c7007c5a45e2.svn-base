@@ -1,0 +1,143 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.HashMap;
+
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbito;
+
+public class AlgoritmoScaglioni implements IAlgoritmo {
+	
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "A Scaglioni";
+	
+	/**
+	 * Elenco di ogni tipo di misurazione di scaglioni.
+	 * @author Damiano Bellucci - damiano.bellucci@gmail.com
+	 *
+	 */
+	public enum Tipo {
+		
+		COLLI (1, "COLLI", "Colli"),
+		PESO_VOLUME_100 (100, "PESO_VOLUME_100", "Rapporto 1:100"),
+		PESO_VOLUME_150 (150, "PESO_VOLUME_150", "Rapporto 1:150"),
+		PESO_VOLUME_167 (167, "PESO_VOLUME_167", "Rapporto 1:167"),
+		PESO_VOLUME_200 (200, "PESO_VOLUME_200", "Rapporto 1:200"),
+		PESO_VOLUME_250 (250, "PESO_VOLUME_250", "Rapporto 1:250"),
+		PESO_VOLUME_300 (300, "PESO_VOLUME_300", "Rapporto 1:300");
+		
+		private final int rapporto;
+		private final String codifica;
+		private final String nome;
+		
+		private Tipo(int rapporto, String codifica, String nome) {
+			this.rapporto = rapporto;
+			this.codifica = codifica;
+			this.nome = nome;
+		}
+		
+		public int getRapporto() {
+			return rapporto;
+		}
+
+		public String getCodifica() {
+			return codifica;
+		}
+
+		public String getNome() {
+			return nome;
+		}
+
+		public String toString() {
+			return nome;
+		}
+
+	}
+	
+	private static final HashMap<Tipo, AlgoritmoScaglioni> tipi = new HashMap<Tipo, AlgoritmoScaglioni>(8);
+	
+	private String nome;
+	private Tipo tipo;
+	
+	private AlgoritmoScaglioni(Tipo type) {
+		nome = type.getNome();
+		tipo = type;
+	}
+	
+	public static AlgoritmoScaglioni getInstance(Tipo tipo) {
+		if (!tipi.containsKey(tipo)) {
+			tipi.put(tipo, new AlgoritmoScaglioni(tipo));			
+		}
+		AlgoritmoScaglioni algoritmo = tipi.get(tipo);
+		return algoritmo;
+	}
+	
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	public String toString() {
+		String toString = (nome != null && !nome.isEmpty()) ? nome : NOME;
+		return toString;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AlgoritmoScaglioni) {
+			AlgoritmoScaglioni algoritmo = (AlgoritmoScaglioni) o;
+			if (algoritmo.getTipo().equals(tipo))
+				uguali = true;
+		}
+		return uguali;
+	}
+
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		IAmbito ambito = voce.getAmbito();
+		if (ambito.isApplicabile(spedizione)) {
+			double valore = ambito.getValore(spedizione, this);
+			valore = Math.floor(valore * 1000) / 1000; //Approssimazione al massimo di 3 cifre decimali.
+			for (Scaglione scaglione : voce.getScaglioni()) {
+				if (scaglione.getInizio() <= valore && valore <= scaglione.getFine()) {
+					costo = scaglione.getValore();
+					break;
+				}
+			}
+			if (costo == 0) {
+				Scaglione ultimo = voce.getScaglioni().get(voce.getScaglioni().size() - 1);
+				if (valore > ultimo.getFine())
+					costo = ultimo.getValore();
+			}
+			//Sperimentale
+			if (tipo == Tipo.COLLI)
+				costo = costo * spedizione.getSpedizione().getColli();
+			
+		}
+		return costo;
+	}
+
+	public static int getMaxDecimali(Tipo tipo) {
+		int maxDecimali;
+		switch (tipo) {
+			case COLLI : maxDecimali = 0; break;
+			default : maxDecimali = 3;
+		}
+		return maxDecimali;
+		
+	}
+
+	@Override
+	public TipoAlgoritmo getTipoAlgoritmo() {
+		return TipoAlgoritmo.SCAGLIONI;
+	}
+
+}

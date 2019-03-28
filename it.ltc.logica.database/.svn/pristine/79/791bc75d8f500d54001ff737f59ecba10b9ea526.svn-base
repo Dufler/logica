@@ -1,0 +1,155 @@
+package it.ltc.logica.database.model.centrale.fatturazione;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class SottoAmbitoFattura extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "fattura_sotto_ambito";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	@JsonIgnore
+	private static final EntityManager<SottoAmbitoFattura> manager = new EntityManager<SottoAmbitoFattura>(SottoAmbitoFattura.class, ConfigurationManager.getDefault());
+	@JsonIgnore
+	private static final LinkedList<SottoAmbitoFattura> lista = new LinkedList<SottoAmbitoFattura>();
+	
+	private Integer id;
+	private String nome;
+	private String descrizione;
+	private Integer idAmbito;
+	private String categoria;
+	private Boolean valoreAmmesso;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+			variabili.addInt("id_ambito", "idAmbito");
+			variabili.addString("categoria_ambito", "categoria");
+			variabili.addBoolean("valore_ammesso", "valoreAmmesso");
+		}
+		return variabili;
+	}
+	
+	public static List<SottoAmbitoFattura> getSottoAmbiti() {
+		if (lista.isEmpty()) {
+			lista.addAll(manager.getEntities());
+		}
+		return lista;
+	}
+	
+	public static List<SottoAmbitoFattura> getSottoAmbitiPerAmbito(Integer id) {
+		List<SottoAmbitoFattura> listaSottoAmbiti = new LinkedList<SottoAmbitoFattura>();
+		for (SottoAmbitoFattura ambito : getSottoAmbiti()) {
+			if (ambito.getIdAmbito().equals(id))
+				listaSottoAmbiti.add(ambito);
+		}
+		return listaSottoAmbiti;
+	}
+	
+	public static SottoAmbitoFattura getSottoAmbito(int id) {
+		SottoAmbitoFattura ambito = null;
+		for (SottoAmbitoFattura a : getSottoAmbiti()) {
+			if (a.getId() == id) {
+				ambito = a;
+				break;
+			}
+		}
+		return ambito;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public Integer getIdAmbito() {
+		return idAmbito;
+	}
+
+	public void setIdAmbito(Integer idAmbito) {
+		this.idAmbito = idAmbito;
+	}
+
+	public String getCategoria() {
+		return categoria;
+	}
+
+	public void setCategoria(String categoria) {
+		this.categoria = categoria;
+	}
+
+	public Boolean getValoreAmmesso() {
+		return valoreAmmesso;
+	}
+
+	public void setValoreAmmesso(Boolean valoreAmmesso) {
+		this.valoreAmmesso = valoreAmmesso;
+	}
+
+	@Override
+	public String toString() {
+		return nome;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SottoAmbitoFattura other = (SottoAmbitoFattura) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+}

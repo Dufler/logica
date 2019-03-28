@@ -1,0 +1,254 @@
+package it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.prodotti.ColloConProdotti;
+import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoColloDettaglio;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+import it.ltc.logica.ufficio.gui.elements.prodotto.AlberoProdotti;
+
+public class PaginaDettaglioPerCollo extends PaginaWizardRisultati {
+	
+	private static final String title = "Nuovo Carico";
+	private static final String description = "Inserisci le informazioni sulla composizione del carico per ogni collo.";
+	private static final String filterHint = "Filtra i prodotti per modello...";
+
+	private final Ingresso ingresso;
+	private final List<IngressoDettaglio> dettagli;
+	private final List<IngressoColloDettaglio> dettagliPerCollo;
+	
+	private int counter;
+	private final List<ColloConProdotti> colli;
+	
+//	private TabellaProdottiPerModello viewer;
+//	private Table table;
+	private Text textFiltro;
+	private Label lblDettaglioPerCollo;
+	private Composite compositeColli;
+	private Button btnNuovoCollo;
+	private Button btnEliminaCollo;
+	
+	private AlberoProdotti albero;
+	private Tree tree;
+	private Table table;
+	private TableViewer tableViewer;
+	private TableColumn tblclmnCollo;
+	private TableViewerColumn tableViewerColumn;
+	private TableColumn tblclmnTotalePezzi;
+	private TableViewerColumn tableViewerColumn_1;
+
+	protected PaginaDettaglioPerCollo(Ingresso ingresso, List<IngressoDettaglio> dettagli, List<IngressoColloDettaglio> dettagliPerCollo) {
+		super(title, description, false);
+		this.ingresso = ingresso;
+		this.dettagli = dettagli;
+		this.dettagliPerCollo = dettagliPerCollo;
+		this.colli = new LinkedList<>();
+		counter = 0;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblFiltraPerModello = new Label(container, SWT.NONE);
+		lblFiltraPerModello.setText("Filtra per modello: ");
+		
+		textFiltro = new Text(container, SWT.BORDER);
+		textFiltro.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				//viewer.filtra(textFiltro.getText());
+				albero.filtra(textFiltro.getText());
+			}
+		});
+		textFiltro.setToolTipText(filterHint);
+		textFiltro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFiltro.setMessage(filterHint);
+		
+		albero = new AlberoProdotti(container);
+		tree = albero.getTree();
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		
+//		viewer = new TabellaProdottiPerModello(container);
+//		table = viewer.getTable();
+//		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		compositeColli = new Composite(container, SWT.NONE);
+		compositeColli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeColli.setLayout(new GridLayout(3, false));
+		
+		lblDettaglioPerCollo = new Label(compositeColli, SWT.NONE);
+		lblDettaglioPerCollo.setText("Dettaglio per collo:");
+		
+		btnNuovoCollo = new Button(compositeColli, SWT.NONE);
+		btnNuovoCollo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				nuovoCollo();
+			}
+		});
+		btnNuovoCollo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+		btnNuovoCollo.setText("Nuovo Collo");
+		
+		btnEliminaCollo = new Button(compositeColli, SWT.NONE);
+		btnEliminaCollo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				eliminaCollo();
+			}
+		});
+		btnEliminaCollo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnEliminaCollo.setText("Elimina Collo");
+		
+		tableViewer = new TableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		
+		table = tableViewer.getTable();
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				mostraContenutoCollo();
+			}
+		});
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		tableViewerColumn = new TableViewerColumn(tableViewer, SWT.NONE);
+		tableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				ColloConProdotti collo = (ColloConProdotti) element; 
+				return collo.getCollo();
+			}
+		});
+		tblclmnCollo = tableViewerColumn.getColumn();
+		tblclmnCollo.setWidth(100);
+		tblclmnCollo.setText("Collo");
+		
+		tableViewerColumn_1 = new TableViewerColumn(tableViewer, SWT.NONE);
+		tableViewerColumn_1.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				ColloConProdotti collo = (ColloConProdotti) element; 
+				return Integer.toString(collo.getTotalePezzi());
+			}
+		});
+		tblclmnTotalePezzi = tableViewerColumn_1.getColumn();
+		tblclmnTotalePezzi.setWidth(100);
+		tblclmnTotalePezzi.setText("Totale Pezzi");
+
+	}
+
+	@Override
+	public void copyDataToModel() {
+		dettagli.clear();
+		dettagliPerCollo.clear();
+		HashMap<Prodotto, Integer> mappaQuantita = new HashMap<>();
+		int totaleProdottiSelezionati = 0;
+		for (ColloConProdotti collo : colli) {
+			HashMap<Prodotto, Integer> prodottiSelezionati = collo.getContenuto();
+			for (Prodotto prodotto : prodottiSelezionati.keySet()) {
+				int quantita = prodottiSelezionati.get(prodotto);
+				totaleProdottiSelezionati += quantita;
+				if (mappaQuantita.containsKey(prodotto)) {
+					int quantitaPrecedente = mappaQuantita.get(prodotto);
+					mappaQuantita.put(prodotto, quantitaPrecedente + quantita);
+				} else {
+					mappaQuantita.put(prodotto, quantita);
+				}
+				IngressoColloDettaglio dettaglioCollo = new IngressoColloDettaglio(); 
+				dettaglioCollo.setCollo(collo.getCollo());
+				dettaglioCollo.setIdProdotto(prodotto.getId());
+				dettaglioCollo.setQuantitaStimata(quantita);
+				dettaglioCollo.setQuantitaVerificata(0);
+				dettagliPerCollo.add(dettaglioCollo);
+			}
+		}
+		for (Prodotto prodotto : mappaQuantita.keySet()) {
+			int quantita = mappaQuantita.get(prodotto);
+			IngressoDettaglio dettaglio = new IngressoDettaglio();
+			dettaglio.setIdProdotto(prodotto.getId());
+			dettaglio.setQuantitaLetta(0);
+			dettaglio.setQuantitaPrevista(quantita);
+			dettagli.add(dettaglio);
+		}
+		ingresso.setColli(colli.size());
+		ingresso.setPezziStimati(totaleProdottiSelezionati);
+	}
+
+	@Override
+	public void mostraRisultato() {
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(ingresso.getIdCommessa());
+		//viewer.setElementi(ControllerProdotti.getInstance().getProdottiPerModello(commessa.getIdCliente()));
+		albero.setProdotti(ControllerProdotti.getInstance().getProdottiPerModello(commessa.getIdCliente()));
+		tableViewer.setInput(colli);
+	}
+	
+	private void nuovoCollo() {
+		counter++;
+		String barcode = Integer.toString(counter);
+		ColloConProdotti collo = new ColloConProdotti(barcode, albero.getProdottiSelezionati());
+		colli.add(collo);
+		tableViewer.refresh();
+		albero.resettaQuantita();
+		validate();
+	}
+	
+	private void mostraContenutoCollo() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			ColloConProdotti collo = (ColloConProdotti) selectedItem.getData();
+			albero.impostaQuantita(collo.getContenuto());
+		}
+	}
+	
+	private void eliminaCollo() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			ColloConProdotti collo = (ColloConProdotti) selectedItem.getData();
+			colli.remove(collo);
+			tableViewer.refresh();
+			albero.resettaQuantita();
+			validate();
+		}
+	}
+	
+	@Override
+	protected boolean validazioneSpecifica(boolean valid) {
+		boolean ok = valid && !colli.isEmpty();
+		return ok;
+	}
+
+}

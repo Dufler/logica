@@ -1,0 +1,216 @@
+package it.ltc.logica.utilities;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+/**
+ * Classe utilizzabile per caricare le configurazioni del progetto.
+ * Vengono caricate automaticamente anche le impostazioni di sistema.
+ * 
+ * utilizzo tipico:
+ * FileInputStream configFile = new FileInputStream("resources/config.properties");
+ * Configuration settings = new Configuration(configFile);
+ * String value = settings.get("myKey");
+ * 
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ * @version 1.2
+ *
+ */
+public class Configuration {
+	
+	private static Configuration systemConfiguration;
+	
+	private final Properties properties;
+	private final InputStream configFileInputStream;
+	private String configFilePath;
+	
+	public static Configuration getSystemConfiguration() {
+		if (systemConfiguration == null) {
+			try {
+				InputStream nullStream = null;
+				systemConfiguration = new Configuration(nullStream, true);
+			} catch(IOException e) {}			
+		}
+		return systemConfiguration;
+	}
+	
+	/**
+	 * Crea un oggetto di configurazione vuoto.
+	 * Vi va impostata manualmente la configurazione.
+	 * Esempio di utilizzo:
+	 * Configuration customConfiguration = new Configuration();
+	 * customConfiguration.getProperties().put("myKey", "myValue");
+	 * 
+	 */
+	public Configuration() {
+		properties = new Properties();
+		configFileInputStream = null;
+		configFilePath = null;
+	}
+	
+	/**
+	 * Crea un oggetto di configurazione a partire dalle impostazioni di sistema e il file di configurazione specificato.
+	 * Lo stream viene chiuso una volta completata la lettura.
+	 * @param configFileInputStream lo stream di input del file di configurazione.
+	 * @throws IOException nel caso in cui sia impossibile leggere dallo stream passato come parametro.
+	 */
+	public Configuration(InputStream stream) throws IOException {
+		properties = System.getProperties();
+		configFileInputStream = stream;
+		configFilePath = null;
+		if (configFileInputStream != null) {
+			properties.load(configFileInputStream);
+			configFileInputStream.close();
+		}	
+	}
+	
+	/**
+	 * Crea un oggetto di configurazione a partire dal file di configurazione specificato.
+	 * Le impostazioni di sistema vengono inserite in maniera opzionale.
+	 * Lo stream viene chiuso una volta completata la lettura.
+	 * @param configFileInputStream lo stream di input del file di configurazione.
+	 * @param system scegli se inserire le impostazioni di sistema.
+	 * @throws IOException nel caso in cui sia impossibile leggere dallo stream passato come parametro.
+	 */
+	public Configuration(InputStream stream, boolean system) throws IOException {
+		if (system) {
+			properties = System.getProperties();
+		} else {
+			properties = new Properties();
+		}
+		configFileInputStream = stream;
+		configFilePath = null;
+		if (configFileInputStream != null) {
+			properties.load(configFileInputStream);
+			configFileInputStream.close();
+		}	
+	}
+	
+	/**
+	 * Crea un oggetto di configurazione a partire dal file di configurazione specificato.
+	 * Le impostazioni di sistema vengono inserite in maniera opzionale.
+	 * Nel caso in cui il file di configurazione non venga trovato questa fase viene saltata.
+	 * 
+	 * Es. se il tuo file di configurazione è nella cartella di package "configuration" dentro i sorgenti
+	 * e si chiama "config.properties" allora dovrai passare al costruttore la stringa "/configuration/config.properties"
+	 * 
+	 * @param configFilePath il percorso del file di configurazione.
+	 * @param system scegli se inserire le impostazioni di sistema.
+	 * @throws IOException nel caso in cui sia impossibile leggere dal path passato come parametro.
+	 */
+	public Configuration(String filePath, boolean system) throws IOException {
+		if (system) {
+			properties = System.getProperties();
+		} else {
+			properties = new Properties();
+		}
+		configFilePath = filePath;
+		configFileInputStream = getStream(configFilePath);
+		if (configFileInputStream != null) {
+			properties.load(configFileInputStream);
+			configFileInputStream.close();
+		} else {
+			throw new IOException("Il file di configurazione specificato non esiste. path: " + configFilePath);
+		}
+					
+	}
+	
+	/**
+	 * Questo metodo aggiorna le modifiche fatte sul file di configurazione.
+	 * Viene inserito come commento di default la data in cui viene chiamato.
+	 * @return l'esito dell'operazione di aggiornamento
+	 */
+	public boolean updateConfiguration() {
+		Date oggi = new Date();
+		String commento = "Configurazione aggiornata il: " + oggi.toString();
+		return updateConfiguration(commento);
+	}
+	
+	/**
+	 * Questo metodo aggiorna le modifiche fatte sul file di configurazione.
+	 * E' possibile specificare un commento da inserire nel file di configurazione.
+	 * @param commento il commento da inserire nel file di configurazione
+	 * @return l'esito dell'operazione di aggiornamento
+	 */
+	public boolean updateConfiguration(String commento) {
+		boolean update = false;
+		if (configFilePath != null) {
+			try {
+				FileOutputStream writer = new FileOutputStream(configFilePath);
+				properties.store(writer, commento);
+				writer.flush();
+				writer.close();
+				update = true;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
+		}
+		return update;
+	}
+	
+	public static InputStream getStream(String path) {
+		return Configuration.class.getResourceAsStream(path);
+	}
+	
+	public void setConfigFilePath(String path) {
+		configFilePath = path;
+	}
+	
+	public void set(String key, double value) {
+		properties.setProperty(key, Double.toString(value));
+	}
+	
+	public void set(String key, int value) {
+		properties.setProperty(key, Integer.toString(value));
+	}
+	
+	public void set(String key, boolean value) {
+		properties.setProperty(key, Boolean.toString(value));
+	}
+	
+	public void set(String key, String value) {
+		properties.setProperty(key, value);
+	}
+	
+	public String get(String key) {
+		return properties.getProperty(key);
+	}
+	
+	public Properties getProperties() {
+		return properties;
+	}
+	
+	public List<String> getChiavi() {
+		List<String> chiavi = new LinkedList<String>();
+		Set<Object> keys = properties.keySet();
+		for (Object key : keys) {
+			if (key != null) {
+				String k = key.toString();
+				String chiave = properties.getProperty(k);
+				if (chiave != null)
+					chiavi.add(chiave);
+			}
+		}
+		return chiavi;
+	}
+	
+	public List<String> getValori() {
+		List<String> valori = new LinkedList<String>();
+		Enumeration<Object> values = properties.elements();
+		while (values.hasMoreElements()) {
+			Object value = values.nextElement();
+			if (value != null) {
+				valori.add(value.toString());
+			}
+		}
+		return valori;
+	}
+
+}

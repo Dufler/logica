@@ -1,0 +1,18 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
+
+import it.ltc.logica.database.model.Indirizzo;
+
+public class IndirizziComparator extends ViewerComparator {
+	
+	public int compare(Viewer viewer, Object e1, Object e2) {
+		Indirizzo i1 = (Indirizzo) e1;
+		Indirizzo i2 = (Indirizzo) e2;
+		String rs1 = i1.getRagioneSociale();
+		String rs2 = i2.getRagioneSociale();
+		return rs1.compareToIgnoreCase(rs2);
+	}
+
+}

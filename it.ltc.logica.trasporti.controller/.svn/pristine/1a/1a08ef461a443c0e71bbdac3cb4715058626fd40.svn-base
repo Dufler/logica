@@ -1,0 +1,256 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.Contrassegno;
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.database.model.TipoEventoUtente;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogProgresso;
+
+public class SpedizioniController {
+	
+	private static SpedizioniController instance;
+	
+	private final EntityManager<Spedizione> managerSpedizioni;
+	private final EntityManager<Indirizzo> managerIndirizzi;
+	private final EntityManager<Contrassegno> managerContrassegni;
+	
+	private final List<Spedizione> listaSpedizioni;
+	private final HashMap<Integer, Spedizione> spedizioni;
+	
+	private final List<Indirizzo> listaIndirizzi;
+	private final HashMap<Integer, Indirizzo> indirizzi;
+	
+	private final List<Contrassegno> listaContrassegni;
+	private final HashMap<Integer, Contrassegno> contrassegni;
+	
+	private final ControllerUtente utente;
+	
+	private SpedizioniController() {
+		utente = ControllerUtente.getInstance();
+		listaSpedizioni = new ArrayList<Spedizione>();
+		spedizioni = new HashMap<Integer, Spedizione>();
+		listaIndirizzi = new ArrayList<Indirizzo>();
+		indirizzi = new HashMap<Integer, Indirizzo>();
+		listaContrassegni = new ArrayList<Contrassegno>();
+		contrassegni = new  HashMap<Integer, Contrassegno>();
+		managerSpedizioni = new EntityManager<Spedizione>(Spedizione.class, ConfigurationManager.getDefault());
+		managerIndirizzi = new EntityManager<Indirizzo>(Indirizzo.class, ConfigurationManager.getDefault());
+		managerContrassegni = new EntityManager<Contrassegno>(Contrassegno.class, ConfigurationManager.getDefault());
+		caricaDati();
+	}
+	
+	public static synchronized SpedizioniController getInstance() {
+		if (instance == null) {
+			instance = new SpedizioniController();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		caricaSpedizioni();
+		caricaIndirizzi();
+		caricaContrassegni();
+	}
+	
+	private void caricaSpedizioni() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				spedizioni.clear();
+				listaSpedizioni.clear();
+				//Carico tutto quello che trovo
+				List<Spedizione> lista = managerSpedizioni.getEntities();
+				monitor.beginTask("Caricamento delle spedizioni", lista.size());
+				for (Spedizione spedizione : lista) {
+					if (!spedizioni.containsKey(spedizione.getId())) {
+						spedizioni.put(spedizione.getId(), spedizione);
+						listaSpedizioni.add(spedizione);
+						monitor.worked(1);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void caricaIndirizzi() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				indirizzi.clear();
+				listaIndirizzi.clear();
+				//Carico tutto quello che trovo
+				List<Indirizzo> lista = managerIndirizzi.getEntities();
+				monitor.beginTask("Caricamento degli indirizzi", lista.size());
+				for (Indirizzo indirizzo : lista) {
+					if (!indirizzi.containsKey(indirizzo.getId())) {
+						indirizzi.put(indirizzo.getId(), indirizzo);
+						listaIndirizzi.add(indirizzo);
+						monitor.worked(1);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void caricaContrassegni() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				contrassegni.clear();
+				listaContrassegni.clear();
+				//Carico tutto quello che trovo
+				List<Contrassegno> lista = managerContrassegni.getEntities();
+				monitor.beginTask("Caricamento dei contrassegni", lista.size());
+				for (Contrassegno contrassegno : lista) {
+					if (!contrassegni.containsKey(contrassegno.getIdSpedizione())) {
+						contrassegni.put(contrassegno.getIdSpedizione(), contrassegno);
+						listaContrassegni.add(contrassegno);
+						monitor.worked(1);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Spedizione> getListaSpedizioni() {
+		return listaSpedizioni;
+	}
+	
+	public List<Indirizzo> getListaIndirizzi() {
+		return listaIndirizzi;
+	}
+	
+	public Indirizzo getIndirizzo(Integer id) {
+		return indirizzi.get(id);
+	}
+	
+	public Spedizione getSpedizione(Integer id) {
+		return spedizioni.get(id);
+	}
+	
+	public Contrassegno getContrassegno(Integer idSpedizione) {
+		return contrassegni.get(idSpedizione);
+	}
+
+	public List<Spedizione> getListaSpedizioni(Commessa commessaSelezionata) {
+		List<Spedizione> spedizioniCliente = new ArrayList<Spedizione>();
+		if (commessaSelezionata != null) {
+			Integer idCommessa = commessaSelezionata.getId();
+			for (Spedizione spedizione : listaSpedizioni) {
+				if (idCommessa.equals(spedizione.getIdCommessa()))
+					spedizioniCliente.add(spedizione);
+			}
+		}
+		return spedizioniCliente;
+	}
+	
+	public List<Spedizione> getListaSpedizioni(Commessa commessaSelezionata, Date da, Date a) {
+		List<Spedizione> spedizioniCliente = new ArrayList<Spedizione>();
+		if (commessaSelezionata != null && da != null && a != null) {
+			Integer idCommessa = commessaSelezionata.getId();
+			for (Spedizione spedizione : listaSpedizioni) {
+				Date data = spedizione.getData();
+				if (idCommessa.equals(spedizione.getIdCommessa())) {
+					if (data == null) {
+						spedizioniCliente.add(spedizione);
+					} else if (da.before(data) && a.after(data)) {
+						spedizioniCliente.add(spedizione);
+					}
+				}
+			}
+		}
+		return spedizioniCliente;
+	}
+
+	public int inserisciNuovaSpedizione(Spedizione spedizione) {
+		int id = managerSpedizioni.insertAndReturnID(spedizione);
+		boolean inserimento = (id != -1);
+		if (inserimento) {
+			spedizione.setId(id);
+			spedizioni.put(id, spedizione);
+			listaSpedizioni.add(spedizione);
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("T01");
+			utente.inserisciEvento(tipoEvento, spedizione.toString());
+		}
+		return id;
+	}
+
+	public boolean aggiornaSpedizione(Spedizione spedizione) {
+		boolean update = managerSpedizioni.update(spedizione);
+		if (update) {
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("T02");
+			utente.inserisciEvento(tipoEvento, spedizione.toString());
+		}
+		return update;
+	}
+
+	public boolean aggiornaIndirizzo(Indirizzo indirizzo) {
+		boolean update = managerIndirizzi.update(indirizzo);
+		return update;
+	}
+
+	public boolean aggiornaContrassegno(Contrassegno contrassegno) {
+		boolean update = managerContrassegni.update(contrassegno);
+		return update;
+	}
+
+	public boolean inserisciContrassegno(Contrassegno contrassegno) {
+		boolean inserimento = managerContrassegni.insert(contrassegno);
+		if (inserimento) {
+			contrassegni.put(contrassegno.getIdSpedizione(), contrassegno);
+			listaContrassegni.add(contrassegno);
+		}
+		return inserimento;
+	}
+
+	public int inserisciIndirizzo(Indirizzo indirizzo) {
+		int id = managerIndirizzi.insertAndReturnID(indirizzo);
+		if (id != -1) {
+			indirizzo.setId(id);
+			indirizzi.put(id, indirizzo);
+			listaIndirizzi.add(indirizzo);
+		}
+		return id;
+	}
+
+}

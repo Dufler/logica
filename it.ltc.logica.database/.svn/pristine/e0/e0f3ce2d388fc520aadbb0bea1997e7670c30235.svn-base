@@ -1,0 +1,87 @@
+package it.ltc.logica.database.orm;
+
+import java.util.LinkedList;
+
+public class ColumnList extends LinkedList<Column> {
+	
+	private static final long serialVersionUID = 1L;
+	
+	public boolean addColumn(String columnName, Type columnType, String variableName) {
+		Column column = new Column(columnName, columnType, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDefaultIDColumn() {
+		Column idColumn = new Column("id", Type.AUTOINCREMENT, "id");
+		boolean added = add(idColumn);
+		return added;
+	}
+	
+	public boolean addAutoincrement(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.AUTOINCREMENT, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addString(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.STRING, variableName, false, false);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addString(String columnName, String variableName, boolean key, boolean defaultValue) {
+		Column column = new Column(columnName, Type.STRING, variableName, key, defaultValue);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addInt(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.INT, variableName, false, false);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addInt(String columnName, String variableName, boolean key, boolean defaultValue) {
+		Column column = new Column(columnName, Type.INT, variableName, key, defaultValue);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDouble(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.DOUBLE, variableName, false, false);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDouble(String columnName, String variableName, boolean key, boolean defaultValue) {
+		Column column = new Column(columnName, Type.DOUBLE, variableName, key, defaultValue);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addBoolean(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.BOOLEAN, variableName, false, false);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addBoolean(String columnName, String variableName, boolean key, boolean defaultValue) {
+		Column column = new Column(columnName, Type.BOOLEAN, variableName, key, defaultValue);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDate(String columnName, String variableName) {
+		Column column = new Column(columnName, Type.DATE, variableName, false, false);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDate(String columnName, String variableName, boolean key, boolean defaultValue) {
+		Column column = new Column(columnName, Type.DATE, variableName, key, defaultValue);
+		boolean added = add(column);
+		return added;
+	}
+
+}

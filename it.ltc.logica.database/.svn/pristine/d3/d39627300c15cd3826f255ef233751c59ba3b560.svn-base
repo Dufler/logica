@@ -1,0 +1,84 @@
+package it.ltc.logica.database.model.centrale.utenti;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class PermessiUtente extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "utente_permessi_join";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+
+	private String utente;
+	private Integer tipo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("utente", "utente", true, false);
+			variabili.addInt("tipo", "tipo");
+		}
+		return variabili;
+	}
+
+	@Override
+	public String toString() {
+		return "PermessiUtente [utente=" + utente + ", tipo=" + tipo + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((tipo == null) ? 0 : tipo.hashCode());
+		result = prime * result + ((utente == null) ? 0 : utente.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PermessiUtente other = (PermessiUtente) obj;
+		if (tipo == null) {
+			if (other.tipo != null)
+				return false;
+		} else if (!tipo.equals(other.tipo))
+			return false;
+		if (utente == null) {
+			if (other.utente != null)
+				return false;
+		} else if (!utente.equals(other.utente))
+			return false;
+		return true;
+	}
+
+	public String getUtente() {
+		return utente;
+	}
+
+	public void setUtente(String utente) {
+		this.utente = utente;
+	}
+
+	public Integer getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(Integer tipo) {
+		this.tipo = tipo;
+	}
+
+}

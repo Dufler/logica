@@ -1,0 +1,49 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+public class AlgoritmoFisso implements IAlgoritmo {
+	
+	private static AlgoritmoFisso instance;
+	
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "Fisso";
+	
+	private AlgoritmoFisso() {
+		//Istanzia la strategia
+	}
+	
+	public static AlgoritmoFisso getInstance() {
+		if (instance == null) {
+			instance = new AlgoritmoFisso();
+		}
+		return instance;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		if (voce.getAmbito().isApplicabile(spedizione)) {
+			costo = voce.getValore();
+		}
+		return costo;
+	}
+
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+	
+	public String toString() {
+		return NOME;
+	}
+
+	@Override
+	public TipoAlgoritmo getTipoAlgoritmo() {
+		return TipoAlgoritmo.FISSO;
+	}
+
+}

@@ -1,0 +1,67 @@
+package it.ltc.logica.common.controller.sistema;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.utenti.Permesso;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+/**
+ * TODO Ancora non viene usato, quando anche la parte admin utilizzerà i Web Services allora ingloberà tutti i metodi statici della classe Permesso. (Gestione CRUD)
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerPermessi {
+	
+	private static ControllerPermessi instance;
+	
+	private final HashMap<Integer, Permesso> permessi;
+
+	private ControllerPermessi() {
+		permessi = new HashMap<Integer, Permesso>();
+		caricaDati();
+	}
+
+	public static ControllerPermessi getInstance() {
+		if (instance == null) {
+			instance = new ControllerPermessi();
+		}
+		return instance;
+	}
+	
+	public Permesso getPermesso(int idPermesso) {
+		return permessi.get(idPermesso);
+	}
+	
+	public Collection<Permesso> getPermessi() {
+		return permessi.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle commesse.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoPermessi pcc = new ProcessoCaricamentoPermessi();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			permessi.clear();
+			for (Permesso sede : pcc.getLista()) {
+				permessi.put(sede.getId(), sede);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoPermessi extends ProcessoCaricamentoDati<Permesso> {
+
+		private static final String title = "Caricamento permessi";
+		private static final String resource = "permesso";
+		
+		public ProcessoCaricamentoPermessi() {
+			super(title, resource, Permesso.class);
+		}
+		
+	}
+
+}

@@ -1,0 +1,43 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.HashMap;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Tracking;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class TrackingController {
+	
+	private static TrackingController instance;
+	
+	private final EntityManager<Tracking> managerTracking;
+	private final HashMap<Integer, List<Tracking>> tracciamenti;
+	
+	private TrackingController() {
+		tracciamenti = new HashMap<Integer, List<Tracking>>();
+		managerTracking = new EntityManager<Tracking>(Tracking.class, ConfigurationManager.getDefault());
+	}
+	
+	public static TrackingController getInstance() {
+		if (instance == null) {
+			instance = new TrackingController();
+		}
+		return instance;
+	}
+	
+	public List<Tracking> getTracking(Integer idOrdine) {
+		return getTracking(idOrdine, false);
+	}
+	
+	public List<Tracking> getTracking(Integer idOrdine, boolean forceUpdate) {
+		if (forceUpdate || !tracciamenti.containsKey(idOrdine)) {
+			Tracking filtro = new Tracking();
+			filtro.setIdOrdine(idOrdine);
+			List<Tracking> lista = managerTracking.getEntities(filtro);
+			tracciamenti.put(idOrdine, lista);
+		}
+		return tracciamenti.get(idOrdine);
+	}
+
+}

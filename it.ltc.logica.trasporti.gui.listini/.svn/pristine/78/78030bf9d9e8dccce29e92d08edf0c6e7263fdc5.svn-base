@@ -1,0 +1,113 @@
+package it.ltc.logica.trasporti.gui.listini.elements.cliente;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.gui.dialog.DialogSelezioneCartella;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaListinoCommessa;
+import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
+import it.ltc.logica.utilities.variabili.Permessi;
+
+public class TabellaListiniClienti extends Tabella<ListinoCommessa> {
+
+	private final ControllerListiniClienti controller;
+	
+	private String filtroListini;
+	
+	public TabellaListiniClienti(Composite parent) {
+		super(parent, Tabella.STILE_SELEZIONE_SINGOLA, new OrdinatoreListiniClienti());
+		
+		controller = ControllerListiniClienti.getInstance();
+		
+		aggiungiColonna("Listino", 100, new EtichettatoreListiniClienti(), 0);
+		aggiungiColonna("Tipo", 100, new EtichettatoreListiniClienti(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreListiniClienti(), 2);
+	}
+	
+	public void setFiltro(String filtro) {
+		filtroListini = filtro;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				ListinoCommessa listino = (ListinoCommessa) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroListini != null)
+					toShow = nome.contains(filtroListini);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Propriet\u00E0");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	    
+	    MenuItem export = new MenuItem(menu, SWT.PUSH);
+	    export.setText("Esporta");
+	    export.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogEsporta();
+	    	}
+	    });
+	}
+	
+	private void apriDialogEsporta() {
+		ListinoCommessa listinoSelezionato = getListinoSelezionato();
+		if (listinoSelezionato != null) {
+			DialogSelezioneCartella dialog = new DialogSelezioneCartella();
+			String path = dialog.open();
+			if (path != null && !path.isEmpty())
+				controller.esportaListino(listinoSelezionato, path);
+		}
+	}
+	
+	private void apriDialogModifica() {
+		ListinoCommessa listinoSelezionato = getListinoSelezionato();
+		if (listinoSelezionato != null) {
+			int idPermesso = Permessi.LISTINI_CLIENTI_FATTURAZIONE_MODIFICA.getID();
+			boolean permessoGestione = ControllerVariabiliGlobali.getInstance().haPermesso(idPermesso);
+			ProprietaListinoCommessa proprieta = new ProprietaListinoCommessa(listinoSelezionato, permessoGestione);
+			int esito = proprieta.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+	private ListinoCommessa getListinoSelezionato() {
+		ListinoCommessa listinoSelezionato = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			listinoSelezionato = (ListinoCommessa) selectedItem.getData();
+		}
+		return listinoSelezionato;
+	}
+
+}

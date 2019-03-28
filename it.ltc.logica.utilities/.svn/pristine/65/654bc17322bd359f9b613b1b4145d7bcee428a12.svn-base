@@ -1,0 +1,71 @@
+package it.ltc.logica.utilities.variabili;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+
+/**
+ * Controller che accede alle preferenze globali del contesto RCP.<br>
+ * Può essere usato per salvare, aggiornare o recuperare variabili.<br>
+ * Le variabili vengono salvate come coppie di stringhe key-value tipiche delle <code>HashMap</code>.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerVariabiliGlobali {
+	
+	private static ControllerVariabiliGlobali instance;
+	
+	private final IEclipsePreferences rootNode;
+	
+	private final boolean test;
+
+	private ControllerVariabiliGlobali() {
+		rootNode = Platform.getPreferencesService().getRootNode();
+		
+		test = getBoolean("utente.permessi.1");
+	}
+
+	public static ControllerVariabiliGlobali getInstance() {
+		if (instance == null) {
+			instance = new ControllerVariabiliGlobali();
+		}
+		return instance;
+	}
+	
+	public void setVariabile(String key, String value) {
+		rootNode.put(key, value);
+	}
+	
+	public String getString(String key) {
+		return rootNode.get(key, null);
+	}
+	
+	public boolean getBoolean(String key) {
+		String value = rootNode.get(key, null);
+		boolean booleanValue = Boolean.parseBoolean(value);
+		return booleanValue;
+	}
+	
+	public int getInt(String key) {
+		String value = rootNode.get(key, null);
+		int intValue;
+		try {
+			intValue = Integer.parseInt(value);
+		} catch (Exception e) {intValue = 0;}
+		return intValue;
+	}
+	
+	public double getDouble(String key) {
+		String value = rootNode.get(key, null);
+		double doubleValue;
+		try {
+			doubleValue = Double.parseDouble(value);
+		} catch (Exception e) {doubleValue = 0;}
+		return doubleValue;
+	}
+	
+	public boolean haPermesso(int idPermesso) {
+		boolean permesso = test ? true : getBoolean("utente.permessi." + idPermesso);
+		return permesso;
+	}
+
+}

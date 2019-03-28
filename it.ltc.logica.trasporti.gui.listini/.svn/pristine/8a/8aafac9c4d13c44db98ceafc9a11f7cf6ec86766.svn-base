@@ -1,0 +1,29 @@
+ 
+package it.ltc.logica.trasporti.gui.listini.parts;
+
+import javax.inject.Inject;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.gui.elements.FunzionePart;
+
+public class FunzioneListiniCorrieriPart extends FunzionePart {
+	
+	private static final String label = "Listini Clienti";
+	private static final String tooltip = "Qui puoi gestire i listini dei clienti.";
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.listini.part.listinicorrieri";
+	public static final String funzionePartID = "it.ltc.logica.trasporti.gui.listini.part.funzionelistinicorrieri";
+	
+	@Inject
+	public FunzioneListiniCorrieriPart() {
+		super(label, tooltip, funzionePartID, partID);
+	}
+
+	@Override
+	public boolean isVisible() {
+		boolean visible = ControllerUtente.getInstance().isAllowed(Permessi.LISTINI_CORRIERI.getID());
+		return visible;
+	}
+	
+}

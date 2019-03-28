@@ -1,0 +1,67 @@
+package it.ltc.logica.database.model;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Utente extends Entity {
+	
+	public static final String NOME_TABELLA = "utente";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private String username;
+	private String password;
+	private String nome;
+	private String cognome;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("username", Column.STRING, "username", true, false));
+			variabili.addColumnString("password", "password");
+			variabili.addColumnString("nome", "nome");
+			variabili.addColumnString("cognome", "cognome");
+		}
+		return variabili;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getCognome() {
+		return cognome;
+	}
+
+	public void setCognome(String cognome) {
+		this.cognome = cognome;
+	}
+
+}

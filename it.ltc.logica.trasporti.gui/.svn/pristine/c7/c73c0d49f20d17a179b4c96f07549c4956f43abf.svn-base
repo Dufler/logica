@@ -1,0 +1,45 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.decoration.Immagine;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.trasporti.calcolo.algoritmi.VoceCalcolata;
+
+public class EtichettatoreVoceCalcolata extends Etichettatore<VoceCalcolata> {
+
+	@Override
+	public String getTesto(VoceCalcolata oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = oggetto.getNome(); break;
+			case 1 : testo = oggetto.getAmbito().toString(); break;
+			case 2 : testo = Decorator.getEuroValue(oggetto.getCosto()); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(VoceCalcolata oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = oggetto.getNome(); break;
+			case 1 : testo = oggetto.getAmbito().getDescrizione(); break;
+			case 2 : testo = Decorator.getEuroValue(oggetto.getCosto()); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public Image getIcona(VoceCalcolata oggetto, int colonna) {
+		Image image = null;
+		if (colonna == 0 && oggetto.getCosto() <= 0) {
+			image = Immagine.RED_MARK_12X20.getImage();
+		}
+		return image;
+	}
+
+}

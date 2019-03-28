@@ -1,0 +1,212 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.common.controller.fatturazione.FatturazioneController;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.common.controller.trasporti.ControllerCodiciClienteCorriere;
+import it.ltc.logica.common.controller.trasporti.ControllerGiacenze;
+import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.CalcolatoreGiacenze;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class FatturazioneGiacenzeController extends FatturazioneController {
+	
+	private static FatturazioneGiacenzeController instance;
+	
+	private final ControllerGiacenze controllerGiacenze;
+	private final ControllerSpedizioni controllerSpedizioni;
+	
+	//private final EntityManager<Giacenza> managerGiacenze;
+	
+	private final HashMap<String, ListinoCommessa> listiniGiacenze;
+	private final HashMap<String, List<SpedizioneModel>> modelGiacenze;
+	
+	private FatturazioneGiacenzeController() {
+		controllerGiacenze = ControllerGiacenze.getInstance();
+		controllerSpedizioni = ControllerSpedizioni.getInstance();
+		//managerGiacenze = new EntityManager<Giacenza>(Giacenza.class, ConfigurationManager.getDefault());
+		listiniGiacenze = new HashMap<String, ListinoCommessa>();
+		modelGiacenze = new HashMap<String, List<SpedizioneModel>>();
+	}
+	
+	public static FatturazioneGiacenzeController getInstance() {
+		if (instance == null) {
+			instance = new FatturazioneGiacenzeController();
+		}
+		return instance;
+	}
+	
+	public HashMap<String, List<SpedizioneModel>> getGiacenzeFatturate() {
+		return modelGiacenze;
+	}
+	
+	public List<ListinoCommessa> getListiniGiacenzeUtilizzati() {
+		List<ListinoCommessa> listiniUtilizzati = new ArrayList<ListinoCommessa>();
+		for (String codice : listiniGiacenze.keySet()) {
+			ListinoCommessa listino = listiniGiacenze.get(codice);
+			listiniUtilizzati.add(listino);
+		}
+		return listiniUtilizzati;
+	}
+	
+	private List<Giacenza> getGiacenze() {
+		List<Giacenza> listaGiacenze = new LinkedList<>();
+		for (Giacenza giacenza : controllerGiacenze.getGiacenze()) {
+			boolean fatturabile = Giacenza.Fatturazione.FATTURABILE == giacenza.getFatturazione();
+			if (fatturabile) {
+				fatturabile = giacenza.getIdCommessa().equals(commessa.getId());
+				if (fatturabile) {
+					Date dataChiusura = giacenza.getDataChiusura();
+					fatturabile = dataChiusura.after(inizio) && dataChiusura.before(fine);
+				}
+			}
+			//Se ha superato tutti i controlli la aggiungo
+			if (fatturabile) {
+				listaGiacenze.add(giacenza);
+			}
+		}
+		
+		return listaGiacenze;
+	}
+	
+	private ListinoCommessa getListinoGiacenze(String codiceCliente) {
+		if (!listiniGiacenze.containsKey(codiceCliente)) {
+			CodiceClienteCorriere codice = ControllerCodiciClienteCorriere.getInstance().getCodiceCliente(codiceCliente);
+			if (codice != null) {
+				ListinoCommessa listino = controllerListini.getListinoPerAmbitoECliente(AmbitoFattura.ID_GIACENZE, codice.getCommessa());
+				if (listino != null)
+					listiniGiacenze.put(codiceCliente, listino);
+			} else {
+				String messaggio = MESSAGGIO_ERRORE_CODICE_NON_TROVATO.replace("[codice]", codiceCliente);
+				DialogMessaggio.openError(TITOLO_ERRORE_CODICE_NON_TROVATO, messaggio);
+			}
+		}
+		return listiniGiacenze.get(codiceCliente);
+	}
+	
+	private List<SpedizioneModel> getListaSpedizioniGiacenze(String codiceCliente) {
+		if (!modelGiacenze.containsKey(codiceCliente)) {
+			ArrayList<SpedizioneModel> lista = new ArrayList<SpedizioneModel>();
+			modelGiacenze.put(codiceCliente, lista);
+		}
+		return modelGiacenze.get(codiceCliente);
+	}
+	
+	public void calcolaFatturazioneGiacenze() {		
+		List<Giacenza> giacenze = getGiacenze();
+		ProcessoCalcoloGiacenze pcg = new ProcessoCalcoloGiacenze(giacenze);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcg);
+	}
+	
+	public void esportaDatiGiacenze(String path) {
+		DialogMessaggio.openInformation("Funzione non disponibile", "L'esportazione non \u00E8 ancora disponibile.");
+	}
+	
+	private class ProcessoCalcoloGiacenze extends Processo {
+		
+		private static final String title = "Calcolo della fatturazione giacenze";
+		
+		private final List<Giacenza> giacenze;
+
+		public ProcessoCalcoloGiacenze(List<Giacenza> giacenze) {
+			super(title, giacenze.size());
+			this.giacenze = giacenze;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			if (giacenze.isEmpty())
+				throw new RuntimeException("Non ci sono giacenze nel periodo selezionato.");
+			CalcolatoreGiacenze calcolatore = CalcolatoreGiacenze.getInstance();
+			listiniGiacenze.clear();
+			modelGiacenze.clear();
+			for (Giacenza giacenza : giacenze) {
+				Spedizione spedizione = controllerSpedizioni.getSpedizione(giacenza.getIdSpedizione());
+				String codiceCliente = spedizione.getCodiceCliente();
+				ListinoCommessa listinoCommessa = getListinoGiacenze(codiceCliente);
+				if (listinoCommessa == null) {
+					throw new RuntimeException("Non \u00E8 stato inserito un listino giacenze per il codice: '" + codiceCliente + "'");
+				}
+				List<SpedizioneModel> listaModel = getListaSpedizioniGiacenze(codiceCliente);
+				SpedizioneModel model = SpedizioneModel.caricaSpedizione(spedizione, giacenza);
+				calcolatore.calcolaRicavo(model, listinoCommessa);
+				listaModel.add(model);
+				aumentaProgresso(1);
+			}
+		}
+		
+	}
+
+	public boolean salvaDatiTrasporti() {
+		boolean salvataggio;
+		//Preparo le entity da salvare
+		int idDocumento = getDocumentoFatturazione(commessa.getId(), AmbitoFattura.ID_GIACENZE, inizio);
+		if (idDocumento != -1) {
+			List<ElementoFatturazioneJSON> elementi = new LinkedList<>();
+			for (String codice : modelGiacenze.keySet()) {
+				List<SpedizioneModel> spedizioni = modelGiacenze.get(codice);
+				for(SpedizioneModel spedizione : spedizioni) {
+					int idSpedizione = spedizione.getSpedizione().getId();
+					Calcolo preventivo = spedizione.getPreventivoRicavo();
+					List<VoceFattura> voci = new LinkedList<>();
+					for (VoceCalcolata voce : preventivo.getVoci()) {
+						//Voce di fatturazione
+						VoceFattura nuovaVoce = new VoceFattura();
+						nuovaVoce.setIdAmbito(AmbitoFattura.ID_GIACENZE);
+						nuovaVoce.setIdSottoAmbito(voce.getIdAmbito());
+						nuovaVoce.setIdCommessa(commessa.getId());
+						nuovaVoce.setIdDocumento(idDocumento);
+						nuovaVoce.setIdListino(preventivo.getIdListino());
+						nuovaVoce.setIdRiferimento(idSpedizione);
+						nuovaVoce.setIdVoce(voce.getIdVoce());
+						nuovaVoce.setImporto(voce.getCosto());
+						voci.add(nuovaVoce);
+					}
+					ElementoFatturazioneJSON elemento = new ElementoFatturazioneJSON();
+					elemento.setAmbito(AmbitoFattura.ID_GIACENZE);
+					elemento.setRiferimento(idSpedizione);
+					elemento.setTotale(preventivo.getTotale());
+					elemento.setVoci(voci);
+					elementi.add(elemento);
+				}
+			}
+			//Chiamo il ws per inserire tutti gli elementi di fatturazione
+			ProcessoInserimentoElementiFatturazione processo = new ProcessoInserimentoElementiFatturazione(elementi);
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.esegui(processo);
+			salvataggio = processo.getEsito();
+		} else {
+			salvataggio = false;
+		}
+		return salvataggio;
+	}
+	
+	private class ProcessoInserimentoElementiFatturazione extends ProcessoInserimentoDati<List<ElementoFatturazioneJSON>> {
+		
+		private final static String title = "Salvataggio dati fatturazione";
+		private final static String resource = "vocifatturazione/salvafattura";
+
+		public ProcessoInserimentoElementiFatturazione(List<ElementoFatturazioneJSON> object) {
+			super(title, resource, object, false);
+		}
+		
+	}
+
+}

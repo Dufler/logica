@@ -1,0 +1,129 @@
+package it.ltc.logica.database.model.centrale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class ListinoCommessa extends Entity implements ValidEntity {
+	
+	public static final int TIPO_SIMULAZIONE_TRASPORTI = 3;
+	
+	private static ListinoCommessa listinoNonInserito;
+
+	public static final String NOME_TABELLA = "listino_commessa";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer idCommessa;
+	private Integer tipo;
+	private String nome;
+	private String descrizione;
+	
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (nome == null || nome.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il nome per il listino non può essere vuoto.");
+		}
+		if (idCommessa == null || idCommessa < 1) {
+			esito.setValid(false);
+			esito.addMessage("Devi selezionare una commessa esistente.");
+		}
+		return esito;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addInt("tipo", "tipo");
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof ListinoCommessa && o != null) {
+			ListinoCommessa listino = (ListinoCommessa) o;
+			uguali = id.equals(listino.getId());
+		}
+		return uguali;
+	}
+	
+	public boolean isSimulazione() {
+		boolean simulazione = TipoListino.SIMULAZIONE_TRASPORTI.equals(tipo);
+		return simulazione;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public Integer getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(Integer tipo) {
+		this.tipo = tipo;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	/**
+	 * Restituisce un listino fittizio da usare per i casi in cui si va a simulare il costo 
+	 * di una spedizione per cui non è stato ancora inserito un listino.
+	 * @return
+	 */
+	public static ListinoCommessa getListinoNonInserito() {
+		if (listinoNonInserito == null) {
+			listinoNonInserito = new ListinoCommessa();
+			listinoNonInserito.setId(-1);
+			listinoNonInserito.setIdCommessa(32);
+			listinoNonInserito.setNome("Listino Non Inserito");
+			listinoNonInserito.setTipo(TIPO_SIMULAZIONE_TRASPORTI);
+			listinoNonInserito.setDescrizione("Listino non inserito!");
+		}
+		return listinoNonInserito;
+	}
+	
+}

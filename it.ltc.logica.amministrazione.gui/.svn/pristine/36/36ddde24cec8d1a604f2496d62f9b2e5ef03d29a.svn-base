@@ -1,0 +1,133 @@
+package it.ltc.logica.amministrazione.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.ModalitaPagamentoFattura;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositePreferenzeFatturazione extends Gruppo {
+	
+	private static final String title = "Preferenze di Fatturazione";
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<AmbitoFattura> comboAmbito;
+	private ComboBox<ModalitaPagamentoFattura> comboPagamento;
+	private TextForString textCodiceCliente;
+	private TextForString textCodiceVoce;
+	private TextForString textDescrizione;
+
+	public CompositePreferenzeFatturazione(Composite parent, int style) {
+		super(parent, style, title);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(2, false));
+		
+		Label lblCommessa = new Label(this, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(ControllerCommesse.getInstance().getCommesse());
+		comboCommessa.setEnabled(false);
+		
+		Label lblAmbito = new Label(this, SWT.NONE);
+		lblAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAmbito.setText("Ambito:");
+		
+		comboAmbito = new ComboBox<AmbitoFattura>(this);
+		comboAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboAmbito.setItems(ControllerAmbitiFatturazione.getInstance().getAmbiti());
+		comboAmbito.setEnabled(false);
+		
+		Label lblPagamento = new Label(this, SWT.NONE);
+		lblPagamento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPagamento.setText("Pagamento: ");
+		
+		comboPagamento = new ComboBox<ModalitaPagamentoFattura>(this);
+		comboPagamento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboPagamento.setItems(ModalitaPagamentoFattura.values());
+		
+		Label lblCodiceCliente = new Label(this, SWT.NONE);
+		lblCodiceCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCodiceCliente.setText("Codice cliente:");
+		
+		textCodiceCliente = new TextForString(this, SWT.BORDER);
+		textCodiceCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblCodiceVoce = new Label(this, SWT.NONE);
+		lblCodiceVoce.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCodiceVoce.setText("Codice voce: ");
+		
+		textCodiceVoce = new TextForString(this, SWT.BORDER);
+		textCodiceVoce.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblDescrizionevoce = new Label(this, SWT.NONE);
+		lblDescrizionevoce.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizionevoce.setText("Descrizione Voce: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER | SWT.MULTI);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+	
+	public void setCommessa(Commessa value) {
+		comboCommessa.setSelectedValue(value);
+	}
+	
+	public Commessa getCommessa() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public void setAmbito(AmbitoFattura value) {
+		comboAmbito.setSelectedValue(value);
+	}
+	
+	public AmbitoFattura getAmbito() {
+		return comboAmbito.getSelectedValue();
+	}
+	
+	public void setModalitaPagamaneto(ModalitaPagamentoFattura value) {
+		comboPagamento.setSelectedValue(value);
+	}
+	
+	public ModalitaPagamentoFattura getModalitaPagamento() {
+		return comboPagamento.getSelectedValue();
+	}
+	
+	public void setCodiceCliente(String value) {
+		textCodiceCliente.setText(value);
+	}
+	
+	public String getCodiceCliente() {
+		return textCodiceCliente.getText();
+	}
+	
+	public void setCodiceVoce(String value) {
+		textCodiceVoce.setText(value);
+	}
+	
+	public String getCodiceVoce() {
+		return textCodiceVoce.getText();
+	}
+	
+	public void setDescrizione(String value) {
+		textDescrizione.setText(value);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+
+}

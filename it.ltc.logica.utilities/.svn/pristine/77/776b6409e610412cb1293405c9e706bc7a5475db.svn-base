@@ -1,0 +1,17 @@
+package it.ltc.logica.utilities.excel.model.csv;
+
+public class CampoDiTesto extends CampoCSV {
+
+	private final String valore;
+	
+	public CampoDiTesto(String nome, int posizione, String valore) {
+		super(nome, posizione, Tipo.STRING);
+		this.valore = valore;
+	}
+
+	@Override
+	public String getAsString() {
+		return valore;
+	}
+
+}

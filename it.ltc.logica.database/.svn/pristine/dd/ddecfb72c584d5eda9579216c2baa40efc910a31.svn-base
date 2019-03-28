@@ -1,0 +1,34 @@
+package it.ltc.logica.database.configuration;
+
+import java.util.HashMap;
+
+public class ConfigurationManager {
+	
+	private static final HashMap<Database, DBMS> configurazioni = new HashMap<Database, DBMS>();
+	private static Database db = Database.PRODUZIONE;
+	
+	public static DBMS getConfiguration(Database db) {
+		if (!configurazioni.containsKey(db)) {
+			DBMSType dbms = db.getDbms();
+			DBMS manager;
+			switch (dbms) {
+				case JTDS : manager = new JTDS(db); break;
+				case MYSQL : manager = new MySQL(db); break;
+				case MYSQLDS : manager = new MySQLDataSource(db); break;
+				case SQLITE : manager = new SQLite(db); break;
+				default : manager = null;
+			}
+			configurazioni.put(db, manager);
+		}
+		return configurazioni.get(db);
+	}
+	
+	public static void setDefault(Database dbDefault) {
+		db = dbDefault;
+	}
+	
+	public static Database getDefault() {
+		return db;
+	}
+
+}

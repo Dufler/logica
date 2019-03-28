@@ -1,0 +1,82 @@
+package it.ltc.logica.admin.gui.controller;
+
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class ControllerAmbiti {
+	
+	private static ControllerAmbiti instance;
+	
+	private final List<AmbitoFattura> ambiti;
+	private final List<SottoAmbitoFattura> sottoAmbiti;
+	
+	private final EntityManager<AmbitoFattura> managerAmbiti;
+	private final EntityManager<SottoAmbitoFattura> managerSottoAmbiti;
+	
+	private ControllerAmbiti() {
+		managerAmbiti = new EntityManager<AmbitoFattura>(AmbitoFattura.class, ConfigurationManager.getDefault());
+		managerSottoAmbiti = new EntityManager<SottoAmbitoFattura>(SottoAmbitoFattura.class, ConfigurationManager.getDefault());
+		ambiti = caricaAmbiti();
+		sottoAmbiti = caricaSottoAmbiti();
+	}
+	
+	public static ControllerAmbiti getInstance() {
+		if (instance == null) {
+			instance = new ControllerAmbiti();
+		}
+		return instance;
+	}
+
+	public boolean update(AmbitoFattura valore) {
+		boolean update = managerAmbiti.update(valore);
+		return update;
+	}
+
+	public boolean insert(AmbitoFattura valore) {
+		boolean insert = false;
+		int id = managerAmbiti.insertAndReturnID(valore);
+		if (id != -1) {
+			insert = true;
+			valore.setId(id);
+			ambiti.add(valore);
+		}
+		return insert;
+	}
+
+	public boolean update(SottoAmbitoFattura valore) {
+		boolean update = managerSottoAmbiti.update(valore);
+		return update;
+	}
+
+	public boolean insert(SottoAmbitoFattura valore) {
+		boolean insert = false;
+		int id = managerSottoAmbiti.insertAndReturnID(valore);
+		if (id != -1) {
+			insert = true;
+			valore.setId(id);
+			sottoAmbiti.add(valore);
+		}
+		return insert;
+	}
+
+	public List<AmbitoFattura> getAmbiti() {
+		return ambiti;
+	}
+	
+	private List<AmbitoFattura> caricaAmbiti() {
+		return managerAmbiti.getEntities();
+	}
+	
+	public List<SottoAmbitoFattura> getSottoAmbiti() {
+		return sottoAmbiti;
+	}
+	
+	private List<SottoAmbitoFattura> caricaSottoAmbiti() {
+		return managerSottoAmbiti.getEntities();
+	}
+
+}

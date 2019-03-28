@@ -1,0 +1,46 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class PriorityMonocollo implements IAmbito {
+
+	public static final String CODIFICA_SERVIZIO_ORE10 = "O10";
+	public static final String CODIFICA_SERVIZIO_ORE12 = "O12";
+	
+	public static final String CODICE = "PRIORITY_MONOCOLLO";
+	
+	private static PriorityMonocollo instance;
+	
+	private PriorityMonocollo() {}
+	
+	public static PriorityMonocollo getInstance() {
+		if (instance == null) {
+			instance = new PriorityMonocollo();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		String servizio = spedizione.getSpedizione().getServizio();
+		boolean checkServizio = CODIFICA_SERVIZIO_ORE10.equals(servizio) || CODIFICA_SERVIZIO_ORE12.equals(servizio);
+		boolean checkColli = spedizione.getSpedizione().getColli() == 1;
+		boolean applicabile = checkServizio && checkColli;
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

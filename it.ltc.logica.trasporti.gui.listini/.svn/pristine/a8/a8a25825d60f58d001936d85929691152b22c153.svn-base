@@ -1,0 +1,147 @@
+package it.ltc.logica.trasporti.gui.listini.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriere;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoFisso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaVoceListinoCorriereFissa;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaVoceListinoCorrierePercentuale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaVoceListinoCorriereProporzionale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaVoceListinoCorriereScaglioni;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaVoceListinoCorriereScaglioniRipetuti;
+
+public class TabellaVociListinoCorrieri extends Tabella<VoceDiListinoCorriere> {
+
+	private String filtroVociDiListino;
+	
+	private MenuItem modify;
+	private boolean permessoModifica;
+	
+	public TabellaVociListinoCorrieri(Composite parent) {
+		super(parent, new OrdinatoreVociListinoCorrieri());
+		
+		aggiungiColonna("Voce", 100, new EtichettatoreVociListiniCorriere(), 0);
+		aggiungiColonna("Ambito", 100, new EtichettatoreVociListiniCorriere(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreVociListiniCorriere(), 2);
+	}
+	
+	public void setFiltro(String filtro) {
+		filtroVociDiListino = filtro;
+	}
+	
+	public void setPermessoModifica(boolean permesso) {
+		modify.setEnabled(permesso);
+		permessoModifica = permesso;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				VoceDiListinoCorriere listino = (VoceDiListinoCorriere) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroVociDiListino != null)
+					toShow = nome.contains(filtroVociDiListino);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	private void apriDialogModifica() {
+		VoceDiListinoCorriere voceSelezionata = getVoceDiListinoSelezionata();
+		if (voceSelezionata != null) {
+			apriModificaVoce(voceSelezionata);
+		}
+	}
+	
+	public VoceDiListinoCorriere getVoceDiListinoSelezionata() {
+		VoceDiListinoCorriere voceSelezionata = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			voceSelezionata = (VoceDiListinoCorriere) selectedItem.getData();
+		}
+		return voceSelezionata;
+	}
+	
+	private void apriModificaVoce(VoceDiListinoCorriere voce) {
+		String tipoAlgoritmo = voce.getTipo();
+		int esito;
+		switch (tipoAlgoritmo) {
+			case AlgoritmoFisso.NOME : 
+			{
+				ProprietaVoceListinoCorriereFissa proprieta = new ProprietaVoceListinoCorriereFissa(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case AlgoritmoPercentuale.NOME :
+			{
+				ProprietaVoceListinoCorrierePercentuale proprieta = new ProprietaVoceListinoCorrierePercentuale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case AlgoritmoProporzionale.NOME :
+			{
+				ProprietaVoceListinoCorriereProporzionale proprieta = new ProprietaVoceListinoCorriereProporzionale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case AlgoritmoScaglioni.NOME :
+			{
+				ProprietaVoceListinoCorriereScaglioni proprieta = new ProprietaVoceListinoCorriereScaglioni(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case AlgoritmoScaglioniRipetuti.NOME :
+			{
+				ProprietaVoceListinoCorriereScaglioniRipetuti proprieta = new ProprietaVoceListinoCorriereScaglioniRipetuti(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			default : esito = Dialog.CANCEL;
+		}
+		if (esito == Dialog.OK) {
+			refresh();
+		}
+	}
+
+}

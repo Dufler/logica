@@ -1,0 +1,124 @@
+ 
+package it.ltc.logica.amministrazione.gui.fatturazione.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Table;
+
+import it.ltc.logica.amministrazione.gui.fatturazione.elements.coordinate.TabellaCoordinate;
+import it.ltc.logica.amministrazione.gui.fatturazione.elements.preferenze.TabellaPreferenzeFatturazione;
+import it.ltc.logica.amministrazione.gui.fatturazione.wizards.ingressi.FatturazioneIngressiWizard;
+import it.ltc.logica.amministrazione.gui.fatturazione.wizards.uscite.FatturazioneUsciteWizard;
+import it.ltc.logica.common.controller.fatturazione.ControllerCoordinateBancarie;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.common.controller.ingressi.ControllerIngressi;
+import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
+import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
+import it.ltc.logica.common.controller.uscite.OrdiniController;
+import it.ltc.logica.gui.wizard.DialogWizard;
+
+public class FatturazionePart {
+	
+	//private TabellaCoordinate tabellaCoordinate;
+	
+	private final ControllerCoordinateBancarie controllerCoordinateBancarie;
+	private final ControllerPreferenzeFatturazione controllerPreferenze;
+	
+	@Inject
+	public FatturazionePart() {
+		//Caricamento dei controller
+		ControllerIngressi.getInstance();
+		ControllerListiniClienti.getInstance();
+		ControllerProdotti.getInstance();
+		OrdiniController.getInstance();
+		controllerCoordinateBancarie = ControllerCoordinateBancarie.getInstance();
+		controllerPreferenze = ControllerPreferenzeFatturazione.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		CTabFolder tabFolder = new CTabFolder(parent, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		
+		CTabItem tbtmFatture = new CTabItem(tabFolder, SWT.NONE);
+		tbtmFatture.setText("Fatture");
+		
+		Composite compositeFatture = new Composite(tabFolder, SWT.NONE);
+		tbtmFatture.setControl(compositeFatture);
+		compositeFatture.setLayout(new GridLayout(1, false));
+		
+		Button btnFatturaIngressi = new Button(compositeFatture, SWT.NONE);
+		btnFatturaIngressi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneIngressi();
+			}
+		});
+		btnFatturaIngressi.setText("Fattura Ingressi");
+		
+		Button btnFatturaUscite = new Button(compositeFatture, SWT.NONE);
+		btnFatturaUscite.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneUscite();
+			}
+		});
+		btnFatturaUscite.setText("Fattura Uscite");
+		
+		CTabItem tbtmCoordinateBancarie = new CTabItem(tabFolder, SWT.NONE);
+		tbtmCoordinateBancarie.setText("Coordinate Bancarie");
+		
+		Composite compositeCoordinate = new Composite(tabFolder, SWT.NONE);
+		tbtmCoordinateBancarie.setControl(compositeCoordinate);
+		compositeCoordinate.setLayout(new GridLayout(1, false));
+		
+		TabellaCoordinate tabellaCoordinate = new TabellaCoordinate(compositeCoordinate);
+		Table tableCoordinate = tabellaCoordinate.getTable();
+		tableCoordinate.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabellaCoordinate.setElementi(controllerCoordinateBancarie.getCoordinate());
+		
+		CTabItem tbtmPreferenze = new CTabItem(tabFolder, SWT.NONE);
+		tbtmPreferenze.setText("Preferenze");
+		
+		Composite compositePreferenze = new Composite(tabFolder, SWT.NONE);
+		tbtmPreferenze.setControl(compositePreferenze);
+		compositePreferenze.setLayout(new GridLayout(1, false));
+		
+		TabellaPreferenzeFatturazione tabellaPreferenze = new TabellaPreferenzeFatturazione(compositePreferenze);
+		Table tablePreferenze = tabellaPreferenze.getTable();
+		tablePreferenze.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabellaPreferenze.setElementi(controllerPreferenze.getPreferenze());
+		
+		//Imposto la prima tab come selezionata e quindi subito visibile.
+		tabFolder.setSelection(0);		
+	}
+
+	public void aggiornaTabellaDocumenti() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void avviaFatturazioneIngressi() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneIngressiWizard(this), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}
+	
+	private void avviaFatturazioneUscite() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneUsciteWizard(this), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}	
+}

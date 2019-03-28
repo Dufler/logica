@@ -1,0 +1,42 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.common;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbitoTrasporto;
+
+public abstract class SupplementoIsoleMinori extends IAmbitoTrasporto {
+	
+	private static final List<Cap> listaCap = new ArrayList<Cap>();
+	
+	public SupplementoIsoleMinori(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		Cap cap = new Cap();
+		cap.setCap(destinazione.getCap());
+		cap.setLocalita(destinazione.getLocalita());
+		boolean applicabile = getListaCapIsoleMinori().contains(cap);
+		return applicabile;
+	}
+	
+	public static List<Cap> getListaCapIsoleMinori() {
+		if (listaCap.isEmpty()) {
+			listaCap.addAll(Cap.getIsole());
+		}
+		return listaCap;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+
+}

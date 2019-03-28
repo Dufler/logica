@@ -1,0 +1,141 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.cliente;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.centrale.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.centrale.VoceDiListino;
+import it.ltc.logica.database.model.centrale.VoceDiListinoPercentuale;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+import it.ltc.logica.trasporti.gui.composite.CompositeVocePercentuale;
+
+public class ProprietaVoceListinoCommessaPercentuale extends DialogModel<VoceDiListino> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino cliente percentuale";
+	
+	private ListiniClientiController controller;
+	
+	private VoceDiListino voce;
+	private VoceDiListinoPercentuale vocePercentuale;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVocePercentuale compositePercentuale;
+	
+	private final boolean permessoGestione;
+	
+	public ProprietaVoceListinoCommessaPercentuale(VoceDiListino voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		voce = voceDiListino;
+		controller = ListiniClientiController.getInstance();
+		permessoGestione = permesso;
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.TIPO_CLIENTE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeVoce.enableInputElements(permessoGestione);
+		addChild(compositeVoce);
+		
+		compositePercentuale = new CompositeVocePercentuale(container, SWT.NONE);
+		compositePercentuale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		compositePercentuale.enableInputElements(permessoGestione);
+		addChild(compositePercentuale);
+	}
+	
+
+	@Override
+	protected Point getInitialSize() {
+		return new Point(450, 400);
+	}
+	
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		compositeVoce.setNome(nome);
+		String descrizione = voce.getDescrizione();
+		compositeVoce.setDescrizione(descrizione);
+		String ambito = voce.getSottoAmbito();
+		AmbitoDiTrasporto ambitoDiTrasporto = AmbitoDiTrasporto.getAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		vocePercentuale = controller.caricaVocePercentuale(voce);
+		if (vocePercentuale != null) {
+			String tipo = vocePercentuale.getTipo();
+			compositePercentuale.setTipo(tipo);
+			Double valore = vocePercentuale.getValore();
+			compositePercentuale.setValore(valore);
+			Double minimo = vocePercentuale.getMinimo();
+			compositePercentuale.setMinimo(minimo);
+			Double massimo = vocePercentuale.getMassimo();
+			compositePercentuale.setMassimo(massimo);
+		}
+	}
+	
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		String ambito = compositeVoce.getAmbito().getCodice();
+		voce.setSottoAmbito(ambito);
+		String tipo = compositePercentuale.getTipo();
+		vocePercentuale.setTipo(tipo);
+		Double valore = compositePercentuale.getValore();
+		vocePercentuale.setValore(valore);
+		Double minimo = compositePercentuale.getMinimo();
+		vocePercentuale.setMinimo(minimo);
+		Double massimo = compositePercentuale.getMassimo();
+		vocePercentuale.setMassimo(massimo);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modificaVoce = compositeVoce.isDirty();
+		boolean modificaPercentuale = compositePercentuale.isDirty();
+		return modificaVoce || modificaPercentuale;
+	}
+
+
+	@Override
+	public boolean updateModel() {
+		boolean updateListino = controller.aggiornaVoceDiListino(voce);
+		boolean updatePercentuale = controller.aggiornaVoceDiListinoPercentuale(vocePercentuale);
+		boolean update = updateListino && updatePercentuale;
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+
+	@Override
+	public VoceDiListino createNewModel() {
+		VoceDiListino listino = new VoceDiListino();
+		return listino;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoPercentuale = vocePercentuale.validate();
+		errors.addAll(esitoPercentuale.getMessages());
+		return errors;
+	}
+
+}

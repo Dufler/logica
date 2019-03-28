@@ -1,0 +1,178 @@
+package it.ltc.logica.common.controller.prodotti;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerProdotti {
+	
+	private static ControllerProdotti instance;
+	
+	private final HashMap<Integer, HashMap<String, ProdottiPerModello>> prodottoPerModelloPerCliente;
+	private final HashMap<Integer, HashMap<Integer, Prodotto>> prodottiPerCliente;
+	private final HashMap<Integer, Prodotto> listaProdotti;
+	
+	private ControllerProdotti() {
+		prodottoPerModelloPerCliente = new HashMap<Integer, HashMap<String, ProdottiPerModello>>();
+		prodottiPerCliente = new HashMap<Integer, HashMap<Integer, Prodotto>>();
+		listaProdotti = new HashMap<Integer, Prodotto>();
+		caricaDati();
+	}
+	
+	public static synchronized ControllerProdotti getInstance() {
+		if (instance == null) {
+			instance = new ControllerProdotti();
+		}
+		return instance;
+	}
+	
+	private void caricaDati() {
+		//Recupero i clienti gestibili dall'utente.
+		//List<Commessa> commesse = ControllerUtente.getInstance().getUtente().getCommesse();
+		//FIXME - Il caricamento delle commesse deve essere chiamato da fuori quando serve per ogni commessa.
+		List<Commessa> commesse = new LinkedList<>();
+		//Scarico i prodotti per ognuno di questi
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dei prodotti", commesse.size());
+				try {
+					for (Commessa commessa : commesse) {
+						monitor.subTask("Commessa: " + commessa.getNome());
+						scaricaProdotti(commessa.getIdCliente());
+						monitor.worked(1);
+					}
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException e) {
+			DialogMessaggio.openError("Errore nel caricamento dei prodotti", "Errore riscontrato nel caricamento dei prodotti: " + e.getCause().getLocalizedMessage());
+		} catch (InterruptedException e) {
+			DialogMessaggio.openError("Errore nel caricamento dei prodotti", "Errore riscontrato nel caricamento dei prodotti: " + e.getLocalizedMessage());
+		}
+	}
+	
+	private synchronized void caricaProdotti(int idCliente) {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dei prodotti: ", -1);
+				try {
+					scaricaProdotti(idCliente);
+				} catch (Exception e) {
+					throw new InvocationTargetException(e);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			DialogMessaggio.openError("Errore nel caricamento dei prodotti", "Errore riscontrato nel caricamento dei prodotti: " + e.getLocalizedMessage());
+		}
+	}
+	
+	private void scaricaProdotti(int idCliente) throws Exception {
+		//Chiamata al WS
+		WSConsumer c = WSConsumer.getInstance();
+		WSAnswer wsAnswer = c.get("prodotti/" + idCliente);
+		if (wsAnswer.getStatus() == 200) {
+			String answer = wsAnswer.getMessage();
+			//Carico tutto quello che trovo
+			ObjectMapper mapper = new ObjectMapper();
+			List<Prodotto> lista = mapper.readValue(answer, new TypeReference<List<Prodotto>>(){});
+			HashMap<Integer, Prodotto> listaProdottiCliente = new HashMap<Integer, Prodotto>();
+			HashMap<String, ProdottiPerModello> listaProdottiClientePerModello = new HashMap<String, ProdottiPerModello>();
+			for (Prodotto prodotto : lista) {
+				listaProdotti.put(prodotto.getId(), prodotto);
+				listaProdottiCliente.put(prodotto.getId(), prodotto);
+				if (!listaProdottiClientePerModello.containsKey(prodotto.getCodiceModello())) {
+					ProdottiPerModello ppm = new ProdottiPerModello();
+					ppm.setCategoriaMerceologica(prodotto.getCategoria());
+					ppm.setCodiceModello(prodotto.getCodiceModello());
+					ppm.setBrand(prodotto.getBrand());
+					ppm.setIdCliente(prodotto.getIdCliente());
+					ppm.setColore(prodotto.getColore());
+					ppm.setDescrizione(prodotto.getDescrizione());
+					listaProdottiClientePerModello.put(prodotto.getCodiceModello(), ppm);
+				}
+				listaProdottiClientePerModello.get(prodotto.getCodiceModello()).addProdotto(prodotto, 0);
+			}
+			prodottiPerCliente.put(idCliente, listaProdottiCliente);
+			prodottoPerModelloPerCliente.put(idCliente, listaProdottiClientePerModello);
+		} else {
+			throw new RuntimeException("Errore durante il download dei prodotti: " + wsAnswer.getMessage());
+		}
+	}
+	
+	/**
+	 * Restituisce una collection di prodotti, eventualmente scaricandola dal web service.
+	 * @param idCliente l'ID del cliente proprietario dei prodotti.
+	 * @return una collezione di prodotti.
+	 */
+	public Collection<Prodotto> getProdotti(int idCliente) {
+		if (!prodottiPerCliente.containsKey(idCliente)) {
+			caricaProdotti(idCliente);
+		}
+		return prodottiPerCliente.get(idCliente).values();
+	}
+	
+	/**
+	 * Restituisce una copia dei prodotti suddivisi per modello appartenti al cliente specificato.
+	 * @param idCliente l'ID del cliente del quale recuperare i prodotti.
+	 * @return una collezione di prodotti raggruppati per modello.
+	 */
+	public Collection<ProdottiPerModello> getProdottiPerModello(int idCliente) {
+		if (!prodottoPerModelloPerCliente.containsKey(idCliente)) {
+			caricaProdotti(idCliente);
+		}
+		Collection<ProdottiPerModello> prodotti = prodottoPerModelloPerCliente.get(idCliente).values(); 
+		for (ProdottiPerModello ppm : prodotti)
+			ppm.svuotaListaProdotti();
+		return prodotti;
+	}
+	
+	/**
+	 * Forza il sistema a scricare la lista aggiornata dei prodotti del cliente.
+	 * @param idCliente l'ID del cliente proprietario dei prodotti.
+	 * @return una collezione di prodotti.
+	 */
+	public Collection<Prodotto> ricaricaProdotti(int idCliente) {
+		caricaProdotti(idCliente);
+		return prodottiPerCliente.get(idCliente).values();
+	}
+	
+	/**
+	 * Recupera lo specifico prodotto a partire dall'ID.
+	 * @param id l'ID del prodotto.
+	 * @return il prodotto corrispondente.
+	 */
+	public Prodotto getProdotto(int id) {
+		return listaProdotti.get(id);
+	}
+
+}

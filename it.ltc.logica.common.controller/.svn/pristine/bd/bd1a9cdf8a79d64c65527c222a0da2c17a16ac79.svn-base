@@ -1,0 +1,62 @@
+package it.ltc.logica.common.controller.sistema;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Feature;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerFeature {
+	
+	private static ControllerFeature instance;
+	
+	private final HashMap<String, Feature> features;
+
+	private ControllerFeature() {
+		features = new HashMap<String, Feature>();
+		caricaDati();
+	}
+
+	public static ControllerFeature getInstance() {
+		if (instance == null) {
+			instance = new ControllerFeature();
+		}
+		return instance;
+	}
+	
+	public Feature getFeature(String nome) {
+		return features.get(nome);
+	}
+	
+	public Collection<Feature> getFeatures() {
+		return features.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle features.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoFeature pcc = new ProcessoCaricamentoFeature();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			features.clear();
+			for (Feature feature : pcc.getLista()) {
+				features.put(feature.getNome(), feature);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoFeature extends ProcessoCaricamentoDati<Feature> {
+
+		private static final String title = "Caricamento feature";
+		private static final String resource = "feature";
+		
+		public ProcessoCaricamentoFeature() {
+			super(title, resource, Feature.class);
+		}
+		
+	}
+
+}

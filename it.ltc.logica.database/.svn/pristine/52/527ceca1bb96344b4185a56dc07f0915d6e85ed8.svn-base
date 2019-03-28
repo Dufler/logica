@@ -1,0 +1,11 @@
+package it.ltc.logica.database.orm;
+
+public interface LocalEntity {
+
+	/**
+	 * Questo metodo restituisce il codice SQL necessario alla creazione e definizione della tabella.
+	 * @return
+	 */
+	public String getTableDefinition();
+	
+}

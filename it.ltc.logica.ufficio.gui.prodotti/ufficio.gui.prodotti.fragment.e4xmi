@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_kF6CEHnjEeiV3sQaoYfzEg" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_nI__oHnjEeiV3sQaoYfzEg" elementId="it.ltc.logica.ufficio.gui.prodotti.part.funzioneprodotti" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.prodotti/it.ltc.logica.ufficio.gui.prodotti.parts.FunzioneProdottiPart" label="Funzione - Prodotti" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaVerdeSu_16x16.png" tooltip="Qui puoi gestire tutte le informazioni sui prodotti."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Ghiv0HnkEeiV3sQaoYfzEg" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_IdTR4HnkEeiV3sQaoYfzEg" elementId="it.ltc.logica.ufficio.gui.prodotti.part.prodotti" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.prodotti/it.ltc.logica.ufficio.gui.prodotti.parts.ProdottiPart" label="Prodotti" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaVerdeSu_16x16.png" tooltip="Qui puoi gestire tutte le informazioni sui prodotti."/>
+  </fragments>
+</fragment:ModelFragments>

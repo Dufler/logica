@@ -1,0 +1,151 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerGiacenze {
+	
+	private static ControllerGiacenze instance;
+	
+	private final HashMap<Integer, Giacenza> giacenze;
+
+	private ControllerGiacenze() {
+		giacenze = new HashMap<>();
+	}
+
+	public static ControllerGiacenze getInstance() {
+		if (instance == null) {
+			instance = new ControllerGiacenze();
+		}
+		return instance;
+	}
+	
+	public Collection<Giacenza> getGiacenze() {
+		return giacenze.values();
+	}
+	
+	public Giacenza getGiacenza(Integer id) {
+		return giacenze.get(id);
+	}
+	
+	public synchronized int inserisciNuovaGiacenza(Giacenza giacenza) {
+		ProcessoInserimentoGiacenza pig = new ProcessoInserimentoGiacenza(giacenza);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pig);
+		return pig.getGiacenza().getId();
+	}
+
+	public synchronized boolean aggiornaGiacenza(Giacenza giacenza) {
+		ProcessoAggiornamentoGiacenza pag = new ProcessoAggiornamentoGiacenza(giacenza);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pag);
+		boolean update = (pag.getGiacenza() != null);
+		return update;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+	}
+	
+	private class ProcessoCaricamentoDati extends Processo {
+		
+		private static final String title = "Caricamento delle spedizioni";
+		
+		public ProcessoCaricamentoDati() {
+			super(title, -1);
+			
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			//scaricaSpedizioni();
+			List<Giacenza> lista = null;
+			
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("giacenza");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento delle giacenze: '" + wsAnswer.getMessage() + "'");
+			
+			ObjectMapper mapper = new ObjectMapper();
+			lista = mapper.readValue(answer, new TypeReference<List<Giacenza>>(){});
+			
+			giacenze.clear();
+			
+			for (Giacenza ss : lista) {
+				giacenze.put(ss.getId(), ss);
+			}
+		}
+	}
+	
+	private class ProcessoInserimentoGiacenza extends Processo {
+		
+		private static final String title = "Inserimento della spedizione";
+		
+		private Giacenza giacenza;
+		
+		public ProcessoInserimentoGiacenza(Giacenza giacenza) {
+			super(title, -1);
+			this.giacenza = giacenza;
+		}
+		
+		public Giacenza getGiacenza() {
+			return giacenza;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(giacenza);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("giacenza", json);
+			if (wsAnswer.getStatus() != 201) {
+				giacenza = null;
+				throw new RuntimeException("Errore durante l'inserimento della giacenza: '" + wsAnswer.getMessage() + "'");
+			}
+			giacenza = mapper.readValue(wsAnswer.getMessage(), Giacenza.class);
+		}
+	}
+	
+	private class ProcessoAggiornamentoGiacenza extends Processo {
+		
+		private static final String title = "Inserimento della spedizione";
+		
+		private Giacenza giacenza;
+		
+		public ProcessoAggiornamentoGiacenza(Giacenza giacenza) {
+			super(title, -1);
+			this.giacenza = giacenza;
+		}
+		
+		public Giacenza getGiacenza() {
+			return giacenza;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(giacenza);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("giacenza", json);
+			if (wsAnswer.getStatus() != 200) {
+				giacenza = null;
+				throw new RuntimeException("Errore durante l'aggiornamento della giacenza: '" + wsAnswer.getMessage() + "'");
+			}
+			giacenza = mapper.readValue(wsAnswer.getMessage(), Giacenza.class);
+		}
+	}
+
+}

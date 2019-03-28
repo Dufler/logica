@@ -1,0 +1,1 @@
+ALTER TABLE indirizzo_simulazione ADD COLUMN inserimento_manuale BOOLEAN NOT NULL DEFAULT 1;

@@ -1,0 +1,333 @@
+ 
+package it.ltc.logica.trasporti.gui.spedizioni.parts;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.Corriere;
+import it.ltc.logica.gui.container.DialogProgresso;
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.DateField;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+import it.ltc.logica.trasporti.gui.elements.spedizione.SpedizioniTableViewer;
+import it.ltc.logica.trasporti.gui.spedizioni.wizard.NuovaSpedizioneWizard;
+import org.eclipse.swt.widgets.Text;
+
+public class SpedizioniPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.spedizioni.part.spedizioni";
+	
+	@Inject
+	private UISynchronize sync;
+	
+	private SpedizioniController controllerSpedizioni;
+	
+	private SpedizioniTableViewer tableViewer;
+	private Table table;
+	private DateField dataDa;
+	private DateField dataA;
+	private ComboBox<Corriere> comboCorriere;
+	private ComboBox<Commessa> comboCommessa;
+	private Button btnSi;
+	private Button btnNo;
+	private Button btnIndifferente;
+	private Button btnDataIndifferente;
+	private Text textRiferimento;
+	
+	@Inject
+	public SpedizioniPart() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnNuovaSpedizione = new Button(parent, SWT.NONE);
+		btnNuovaSpedizione.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				DialogWizard wizard = new DialogWizard(new NuovaSpedizioneWizard(), DialogWizard.WIZARD_SPEDIZIONE);
+				int esito = wizard.open();
+				if (esito == WizardDialog.OK) {
+					//tableViewer.mostraSpedizioni(controllerSpedizioni.getListaSpedizioni());
+					mostraSpedizioni();
+				}
+			}
+		});
+		btnNuovaSpedizione.setText("Nuova Spedizione");
+		
+		Label lblFiltri = new Label(parent, SWT.NONE);
+		lblFiltri.setText("Filtri di ricerca:");
+		
+		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayout(new GridLayout(2, false));
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblData = new Label(composite, SWT.NONE);
+		lblData.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblData.setText("Data: ");
+		
+		Composite compositeData = new Composite(composite, SWT.NONE);
+		compositeData.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		compositeData.setLayout(new GridLayout(5, false));
+		
+		btnDataIndifferente = new Button(compositeData, SWT.CHECK);
+		btnDataIndifferente.setBounds(0, 0, 93, 16);
+		btnDataIndifferente.setText("Indifferente");
+		btnDataIndifferente.setSelection(true);
+		
+		Label lblDa = new Label(compositeData, SWT.NONE);
+		lblDa.setText("Da:");
+		
+		dataDa = new DateField(compositeData);
+		dataDa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnDataIndifferente.setSelection(false);
+			}
+		});
+		
+		Label lblA = new Label(compositeData, SWT.NONE);
+		lblA.setText("A:");
+		
+		dataA = new DateField(compositeData);
+		dataA.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				btnDataIndifferente.setSelection(false);
+			}
+		});
+		
+		Label lblCliente = new Label(composite, SWT.NONE);
+		lblCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCliente.setText("Cliente: ");
+		
+		comboCommessa = new ComboBox<Commessa>(composite);
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(Commessa.getCommesse());
+		
+		Label lblCorriere = new Label(composite, SWT.NONE);
+		lblCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCorriere.setText("Corriere: ");
+		
+		comboCorriere = new ComboBox<Corriere>(composite);
+		comboCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCorriere.setItems(Corriere.getCorrieri());
+		
+		Label lblContrassegno = new Label(composite, SWT.NONE);
+		lblContrassegno.setText("Contrassegno: ");
+		
+		Composite compositeContrassegno = new Composite(composite, SWT.NONE);
+		compositeContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeContrassegno.setLayout(new GridLayout(3, false));
+		
+		btnSi = new Button(compositeContrassegno, SWT.RADIO);
+		btnSi.setBounds(0, 0, 90, 16);
+		btnSi.setText("Si");
+		btnSi.setSelection(false);
+		
+		btnNo = new Button(compositeContrassegno, SWT.RADIO);
+		btnNo.setBounds(0, 0, 90, 16);
+		btnNo.setText("No");
+		btnNo.setSelection(false);
+		
+		btnIndifferente = new Button(compositeContrassegno, SWT.RADIO);
+		btnIndifferente.setBounds(0, 0, 90, 16);
+		btnIndifferente.setText("Indifferente");
+		btnIndifferente.setSelection(true);
+		
+		Label lblRiferimento = new Label(composite, SWT.NONE);
+		lblRiferimento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimento.setText("Riferimento: ");
+		
+		textRiferimento = new Text(composite, SWT.BORDER);
+		textRiferimento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textRiferimento.setMessage("DDT, Ordine cliente, Lettera di vettura ...");
+		
+		new Label(composite, SWT.NONE);
+		
+		Composite compositeControlli = new Composite(composite, SWT.NONE);
+		compositeControlli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlli.setLayout(new GridLayout(3, false));
+		
+		Button btnFiltra = new Button(compositeControlli, SWT.NONE);
+		btnFiltra.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				filtraSpedizioni();
+			}
+		});
+		btnFiltra.setText("Filtra");
+		
+		Button btnAnnullaFiltro = new Button(compositeControlli, SWT.NONE);
+		btnAnnullaFiltro.setSize(83, 25);
+		btnAnnullaFiltro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				annullaFiltro();
+			}
+		});
+		btnAnnullaFiltro.setText("Annulla Filtro");
+		
+		Button btnRicaricaSpedizioni = new Button(compositeControlli, SWT.NONE);
+		btnRicaricaSpedizioni.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ricaricaSpedizioni();
+			}
+		});
+		btnRicaricaSpedizioni.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		btnRicaricaSpedizioni.setText("Ricarica Spedizioni");
+		
+		tableViewer = new SpedizioniTableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		table = tableViewer.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		//tableViewer.mostraSpedizioni(controllerSpedizioni.getListaSpedizioni());
+		mostraSpedizioni();
+		
+	}
+	
+	private void mostraSpedizioni() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Caricamento Spedizioni", IProgressMonitor.UNKNOWN);
+				sync.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewer.mostraSpedizioni(controllerSpedizioni.getListaSpedizioni());
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	private void filtraSpedizioni() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Filtraggio Spedizioni", IProgressMonitor.UNKNOWN);
+				sync.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						impostaFiltro();
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	private void impostaFiltro() {
+		Date da = null;
+		Date a = null;
+		if (!btnDataIndifferente.getSelection()) {
+			da = dataDa.getValue();
+			a = dataA.getValue();
+		}
+		Integer idCorriere = null;
+		Corriere corriere = comboCorriere.getSelectedValue();
+		if (corriere != null) {
+			idCorriere = corriere.getId();
+		}
+		Integer idCommessa = null;
+		Commessa commessa = comboCommessa.getSelectedValue();
+		if (commessa != null) {
+			idCommessa = commessa.getId();
+		}
+		Boolean contrassegno;
+		if (btnSi.getSelection()) {
+			contrassegno = true;
+		} else if (btnNo.getSelection()) {
+			contrassegno = false;
+		} else {
+			contrassegno = null;
+		}
+		String riferimento = null;
+		if (!textRiferimento.getText().isEmpty())
+			riferimento = textRiferimento.getText();
+		tableViewer.filtra(da, a, idCommessa, idCorriere, contrassegno, riferimento);
+	}
+	
+	private void annullaFiltro() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Filtraggio Spedizioni", IProgressMonitor.UNKNOWN);
+				sync.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewer.annullaFiltro();
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		} 
+	}
+
+	
+	private void ricaricaSpedizioni() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Filtraggio Spedizioni", IProgressMonitor.UNKNOWN);
+				sync.syncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewer.annullaFiltro();
+						controllerSpedizioni.caricaDati();
+						tableViewer.mostraSpedizioni(controllerSpedizioni.getListaSpedizioni());
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+}

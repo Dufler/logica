@@ -1,0 +1,19 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+
+public abstract class DBMS {
+	
+	protected final Database db;
+	
+	protected DBMS(Database db) {
+		this.db = db;
+	}
+	
+	public abstract Connection getConnection();
+	
+	public abstract Connection getTransactionConnection();
+	
+	public abstract String getDefaultDateFormat();
+
+}

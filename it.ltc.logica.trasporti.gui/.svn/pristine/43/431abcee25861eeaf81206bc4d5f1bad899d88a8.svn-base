@@ -1,0 +1,25 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class DestinatarioLabelProvider extends ColumnLabelProvider {
+	
+	private final SpedizioniController controllerSpedizioni;
+	
+	public DestinatarioLabelProvider() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		return ragioneSociale;
+	}
+
+}

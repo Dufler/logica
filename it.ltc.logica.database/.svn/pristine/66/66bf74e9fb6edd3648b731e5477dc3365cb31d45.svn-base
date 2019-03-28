@@ -1,0 +1,49 @@
+package it.ltc.logica.database.wsconsumer;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class WSConsumer {
+	
+	public String post(PostRequest request) {
+		String answer;
+		try {
+			URL url = new URL(request.getUrl());
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "application/json");
+
+			String input = request.toString();
+
+			OutputStream os = conn.getOutputStream();
+			os.write(input.getBytes());
+			os.flush();
+
+			if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+				throw new RuntimeException("Failed : HTTP error code : "
+					+ conn.getResponseCode());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+			answer = "";
+			String line = br.readLine();
+			while (line != null) {
+				answer += line;
+				line = br.readLine();
+			}
+			br.close();
+
+			conn.disconnect();
+
+		} catch (Exception e) {
+			answer = null;
+		}
+		return answer;
+	}
+
+}

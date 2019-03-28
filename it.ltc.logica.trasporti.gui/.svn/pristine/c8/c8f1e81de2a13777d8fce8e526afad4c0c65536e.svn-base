@@ -1,0 +1,58 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Point;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class DestinatarioLabelProvider extends ColumnLabelProvider {
+	
+	private final SpedizioniController controllerSpedizioni;
+	
+	public DestinatarioLabelProvider() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		return ragioneSociale;
+	}
+	
+	@Override
+	public String getToolTipText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		String indirizzo = destinatario.getIndirizzo();
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia.equals("XX"))
+			provincia = " " + destinatario.getNazione();
+		else
+			provincia = " (" + provincia +")";
+		String testo = ragioneSociale + "\r\n" + indirizzo + "\r\n" + localita + provincia;
+		return testo;
+	}
+	
+	@Override
+	public int getToolTipDisplayDelayTime(Object object) {
+		return 1000;
+	}
+	
+	@Override
+	public int getToolTipTimeDisplayed(Object object) {
+		return 5000;
+	}
+	
+	@Override
+	public Point getToolTipShift(Object object) {
+		return new Point(5, 5);
+	}
+
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="it.ltc.logica.trasporti.gui.fatturazione.fragment"
+         point="org.eclipse.e4.workbench.model">
+      <fragment
+            apply="initial"
+            uri="trasporti.gui.fatturazione.fragment.e4xmi">
+      </fragment>
+   </extension>
+
+</plugin>

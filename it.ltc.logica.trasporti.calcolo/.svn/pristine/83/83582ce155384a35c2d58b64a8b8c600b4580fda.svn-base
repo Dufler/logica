@@ -1,0 +1,31 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class GiacenzaApertura extends IAmbitoTrasporto {
+	
+	public GiacenzaApertura(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODICE = "GIACENZA_APERTURA";
+	public static final int ID = 14;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		return spedizione.getSpedizione().getGiacenza();
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+		return 1;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.GIACENZA;
+	}
+
+}

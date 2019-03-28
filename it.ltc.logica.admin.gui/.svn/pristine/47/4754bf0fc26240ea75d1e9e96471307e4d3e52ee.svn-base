@@ -1,0 +1,137 @@
+package it.ltc.logica.admin.gui.logic;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Feature;
+import it.ltc.logica.database.model.centrale.Permesso;
+import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.database.model.centrale.Utente;
+import it.ltc.logica.database.model.centrale.UtenteCommesseJoin;
+import it.ltc.logica.database.model.centrale.UtenteFeaturesJoin;
+import it.ltc.logica.database.model.centrale.UtentePermessiJoin;
+import it.ltc.logica.database.model.centrale.UtenteSediJoin;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.utilities.HashUtility;
+
+public class ControllerUtenti {
+	
+	private static ControllerUtenti instance;
+	
+	private final EntityManager<Utente> managerUtenti;
+	private final EntityManager<UtenteSediJoin> managerSedi;
+	private final EntityManager<UtenteCommesseJoin> managerCommesse;
+	private final EntityManager<UtenteFeaturesJoin> managerFeatures;
+	private final EntityManager<UtentePermessiJoin> managerPermessi;
+	
+	private List<Utente> listaUtenti = new ArrayList<Utente>();
+	
+	private ControllerUtenti() {
+		managerUtenti = new EntityManager<Utente>(Utente.class, ConfigurationManager.getDefault());
+		managerSedi = new EntityManager<UtenteSediJoin>(UtenteSediJoin.class, ConfigurationManager.getDefault());
+		managerCommesse = new EntityManager<UtenteCommesseJoin>(UtenteCommesseJoin.class, ConfigurationManager.getDefault());
+		managerFeatures = new EntityManager<UtenteFeaturesJoin>(UtenteFeaturesJoin.class, ConfigurationManager.getDefault());
+		managerPermessi = new EntityManager<UtentePermessiJoin>(UtentePermessiJoin.class, ConfigurationManager.getDefault());
+	}
+	
+	public static ControllerUtenti getInstance() {
+		if (instance == null) {
+			instance = new ControllerUtenti();
+		}
+		return instance;
+	}
+	
+	public List<Utente> getUtenti() {
+		if (listaUtenti.isEmpty()) {
+			listaUtenti.addAll(managerUtenti.getEntities());
+		}
+		return listaUtenti;
+	}
+
+	public void salvaSedi(String username, List<Sede> sediSelezionate) {
+		UtenteSediJoin filtro = new UtenteSediJoin();
+		filtro.setUtente(username);
+		managerSedi.delete(filtro);
+		for (Sede sede : sediSelezionate) {
+			UtenteSediJoin join = new UtenteSediJoin();
+			join.setUtente(username);
+			join.setIdSede(sede.getId());
+			managerSedi.insert(join);
+		}
+	}
+
+	public void salvaCommesse(String username, List<Commessa> commesseSelezionate) {
+		UtenteCommesseJoin filtro = new UtenteCommesseJoin();
+		filtro.setUtente(username);
+		managerCommesse.delete(filtro);
+		for (Commessa commessa : commesseSelezionate) {
+			UtenteCommesseJoin join = new UtenteCommesseJoin();
+			join.setUtente(username);
+			join.setIdCommessa(commessa.getId());
+			managerCommesse.insert(join);
+		}
+	}
+
+	public void salvaFeature(String username, List<Feature> featureSelezionate) {
+		UtenteFeaturesJoin filtro = new UtenteFeaturesJoin();
+		filtro.setUtente(username);
+		managerFeatures.delete(filtro);
+		for (Feature feature : featureSelezionate) {
+			UtenteFeaturesJoin join = new UtenteFeaturesJoin();
+			join.setUtente(username);
+			join.setIdFeature(feature.getId());
+			managerFeatures.insert(join);
+		}
+	}
+
+	public void salvaPermessi(String username, List<Permesso> permessiSelezionati) {
+		UtentePermessiJoin filtro = new UtentePermessiJoin();
+		filtro.setUtente(username);
+		managerPermessi.delete(filtro);
+		for (Permesso permesso : permessiSelezionati) {
+			UtentePermessiJoin join = new UtentePermessiJoin();
+			join.setUtente(username);
+			join.setIdPermesso(permesso.getId());
+			managerPermessi.insert(join);
+		}
+	}
+
+	public String inserisciNuovoUtente(String nome, String cognome, String email, String username) {
+		String message = null;
+		boolean datiValidi = true;
+		if (nome == null || nome.isEmpty()) {
+			message = "Bisogna inserire un nome";
+			datiValidi = false;
+		}
+		if (cognome == null || cognome.isEmpty()) {
+			message = "Bisogna inserire un cognome";
+			datiValidi = false;
+		}
+		if (email == null || email.isEmpty()) {
+			message = "Bisogna inserire una email";
+			datiValidi = false;
+		}
+		if (username == null || username.isEmpty()) {
+			message = "Bisogna inserire un username";
+			datiValidi = false;
+		}
+		if (datiValidi) {
+			Utente nuovoUtente = new Utente();
+			nuovoUtente.setNome(nome);
+			nuovoUtente.setCognome(cognome);
+			nuovoUtente.setEmail(email);
+			nuovoUtente.setUsername(username);
+			String hashedPassword = HashUtility.getHash("ltc" + nome.toLowerCase());
+			nuovoUtente.setPassword(hashedPassword);
+			boolean inserimento = managerUtenti.insert(nuovoUtente);
+			if (!inserimento)
+				message = "Ci sono stati problemi con l'inserimento!";
+			else
+				listaUtenti.add(nuovoUtente);
+		}
+		return message;
+	}
+
+}

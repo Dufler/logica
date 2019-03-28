@@ -1,0 +1,323 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioSpedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione.TipoSpedizione;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerSpedizioni {
+	
+	private static ControllerSpedizioni instance;
+	
+	private final HashMap<Integer,Spedizione> spedizioni;
+	private final HashMap<String, ServizioSpedizione> servizi;
+
+	private ControllerSpedizioni() {
+		spedizioni = new HashMap<Integer,Spedizione>();
+		servizi = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerSpedizioni getInstance() {
+		if (instance == null) {
+			instance = new ControllerSpedizioni();
+		}
+		return instance;
+	}
+	
+	public Collection<Spedizione> getSpedizioni() {
+		return spedizioni.values();
+	}
+	
+	public Spedizione getSpedizione(Integer id) {
+		return spedizioni.get(id);
+	}
+	
+	public Collection<ServizioSpedizione> getServizi() {
+		return servizi.values();
+	}
+	
+	public ServizioSpedizione getServizio(String codice) {
+		return servizi.get(codice);
+	}
+	
+	public synchronized int inserisciNuovaSpedizione(Spedizione spedizione) {
+		ProcessoInserimentoSpedizione pis = new ProcessoInserimentoSpedizione(spedizione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pis);
+		return pis.getSpedizione().getId();
+	}
+	
+	public synchronized int inserisciNuovaSpedizioneSenzaDialog(Spedizione spedizione) {
+		ProcessoInserimentoSpedizione pis = new ProcessoInserimentoSpedizione(spedizione);
+		int id;
+		try {
+			pis.eseguiOperazioni();
+			id = pis.getSpedizione().getId();
+		} catch (Exception e) {
+			id = -1;
+			e.printStackTrace();
+		}
+		return id;
+	}
+
+	public synchronized boolean aggiornaSpedizione(Spedizione spedizione) {
+		ProcessoAggiornamentoSpedizione pas = new ProcessoAggiornamentoSpedizione(spedizione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pas);
+		boolean update = (pas.getSpedizione() != null);
+		return update;
+	}
+	
+	public synchronized boolean aggiornaSpedizioneSenzaDialog(Spedizione spedizione) {
+		ProcessoAggiornamentoSpedizione pas = new ProcessoAggiornamentoSpedizione(spedizione);
+		boolean update;
+		try {
+			pas.eseguiOperazioni();
+			update = (pas.getSpedizione() != null);
+		} catch (Exception e) {
+			update = false;
+			e.printStackTrace();
+		}
+		return update;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoSpedizioni pcd = new ProcessoCaricamentoSpedizioni();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+		
+		ProcessoCaricamentoServizi pcs = new ProcessoCaricamentoServizi();
+		DialogProgresso dialogServizi = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialogServizi.esegui(pcs);
+		if (pcs.getEsito()) {
+			servizi.clear();
+			for (ServizioSpedizione servizio : pcs.getLista()) {
+				servizi.put(servizio.getCodice(), servizio);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoServizi extends ProcessoCaricamentoDati<ServizioSpedizione> {
+		
+		private final static String title = "Caricamento tipi di servizio spedizioni";
+		private final static String resource = "spedizione/servizio";
+
+		public ProcessoCaricamentoServizi() {
+			super(title, resource, ServizioSpedizione.class);
+		}
+		
+	}
+	
+	private class ProcessoCaricamentoSpedizioni extends Processo {
+		
+		private static final String title = "Caricamento delle spedizioni";
+		
+		public ProcessoCaricamentoSpedizioni() {
+			super(title, -1);
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			List<Spedizione> lista = null;
+			
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("spedizione");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento delle spedizioni: '" + wsAnswer.getMessage() + "'");
+			
+			ObjectMapper mapper = new ObjectMapper();
+			lista = mapper.readValue(answer, new TypeReference<List<Spedizione>>(){});
+			
+			spedizioni.clear();
+			
+			for (Spedizione ss : lista) {
+				spedizioni.put(ss.getId(), ss);
+			}
+		}
+	}
+	
+	private class ProcessoInserimentoSpedizione extends Processo {
+		
+		private static final String title = "Inserimento della spedizione";
+		
+		private Spedizione spedizione;
+		
+		public ProcessoInserimentoSpedizione(Spedizione spedizione) {
+			super(title, -1);
+			this.spedizione = spedizione;
+		}
+		
+		public Spedizione getSpedizione() {
+			return spedizione;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(spedizione);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("spedizione", json);
+			if (wsAnswer.getStatus() != 201) {
+				spedizione = null;
+				throw new RuntimeException("Errore durante l'inserimento della spedizione: '" + wsAnswer.getMessage() + "'");
+			}
+			spedizione = mapper.readValue(wsAnswer.getMessage(), Spedizione.class);
+			spedizioni.put(spedizione.getId(), spedizione);
+		}
+	}
+	
+	private class ProcessoAggiornamentoSpedizione extends Processo {
+		
+		private static final String title = "Aggiornamento della spedizione";
+		
+		private Spedizione spedizione;
+		
+		public ProcessoAggiornamentoSpedizione(Spedizione spedizione) {
+			super(title, -1);
+			this.spedizione = spedizione;
+		}
+		
+		public Spedizione getSpedizione() {
+			return spedizione;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(spedizione);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("spedizione", json);
+			if (wsAnswer.getStatus() != 200) {
+				spedizione = null;
+				throw new RuntimeException("Errore durante l'aggiornamento della spedizione: '" + wsAnswer.getMessage() + "'");
+			}
+			spedizione = mapper.readValue(wsAnswer.getMessage(), Spedizione.class);
+		}
+	}
+	
+	private class ProcessoFiltraggioSpedizioni extends Processo {
+		
+		private static final String title = "Filtraggio delle spedizioni";
+		
+		
+		private final List<Spedizione> spedizioniCliente;
+		private final Commessa commessaSelezionata; 
+		private final Date da;
+		private final Date a;
+		private final Boolean ca;
+		private final Corriere corriere;
+		private final CodiceClienteCorriere codiceCliente;
+		private final ServizioCorriere sc;
+		private final TipoSpedizione tipo;
+		private final boolean pezziNecessari;
+		private final boolean colliNecessari;
+		private final boolean pesoNecessario;
+		private final boolean volumeNecessario;
+		
+		public ProcessoFiltraggioSpedizioni(Commessa commessaSelezionata, Date da, Date a, Boolean ca, Corriere corriere, CodiceClienteCorriere codiceCliente, ServizioCorriere sc, TipoSpedizione tipo, boolean pezziNecessari, boolean colliNecessari, boolean pesoNecessario, boolean volumeNecessario) {
+			super(title, spedizioni.size());
+			spedizioniCliente = new ArrayList<Spedizione>();
+			this.commessaSelezionata = commessaSelezionata;
+			this.da = da;
+			this.a = a;
+			this.ca = ca;
+			this.corriere = corriere;
+			this.codiceCliente = codiceCliente;
+			this.sc = sc;
+			this.tipo = tipo;
+			this.pezziNecessari = pezziNecessari;
+			this.colliNecessari = colliNecessari;
+			this.pesoNecessario = pesoNecessario;
+			this.volumeNecessario = volumeNecessario;
+		}
+		
+		public List<Spedizione> getLista() {
+			return spedizioniCliente;
+		}
+		
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			if (commessaSelezionata != null) {
+				Integer idCommessa = commessaSelezionata.getId();
+				for (Spedizione spedizione : spedizioni.values()) {
+					boolean aggiungi = false;
+					if (idCommessa.equals(spedizione.getIdCommessa())) {
+						Date data = spedizione.getDataPartenza();
+						if (data == null || (da == null || da.before(data)) && (a == null ||a.after(data)))  {
+							aggiungi = true;
+						}
+						if (aggiungi && corriere != null) {
+							aggiungi = (spedizione.getIdCorriere() == corriere.getId());
+						}
+						if (aggiungi && codiceCliente != null) {
+							aggiungi = (codiceCliente.getCodiceCliente().equals(spedizione.getCodiceCliente()));
+						}
+						if (aggiungi && sc != null) {
+							aggiungi = (spedizione.getServizio().equals(sc.getCodice()));
+						}
+						if (aggiungi && ca != null) {
+							Boolean contrassegno = spedizione.getContrassegno();
+							aggiungi = contrassegno != null && contrassegno == ca;
+						}
+						if (aggiungi && pesoNecessario) {
+							Double peso = spedizione.getPeso();
+							Integer colli = spedizione.getColli() != null ? spedizione.getColli() : 1;
+							aggiungi = peso != null && peso > 0 && peso <= 35 * colli;
+						}
+						if (aggiungi && volumeNecessario) {
+							Double volume = spedizione.getVolume();
+							Integer colli = spedizione.getColli() != null ? spedizione.getColli() : 1;
+							aggiungi = volume != null && volume > 0 && volume <= 0.25 * colli;
+						}
+						if (aggiungi && pezziNecessari) {
+							Integer pezzi = spedizione.getPezzi();
+							aggiungi = pezzi != null && pezzi > 0;
+						}
+						if (aggiungi && colliNecessari) {
+							Integer colli = spedizione.getColli();
+							aggiungi = colli != null && colli > 0;
+						}
+						if (aggiungi && tipo != null) {
+							aggiungi = tipo.name().equals(spedizione.getTipo());
+						}
+					}
+					if (aggiungi)
+						spedizioniCliente.add(spedizione);
+					aumentaProgresso(1);
+				}
+			}
+		}
+		
+	}
+
+		public List<Spedizione> filtraSpedizioni(Commessa commessaSelezionata, Date da, Date a, Boolean ca, Corriere corriere, CodiceClienteCorriere codiceCliente, ServizioCorriere sc, TipoSpedizione tipo, boolean pezziNecessari, boolean colliNecessari, boolean pesoNecessario, boolean volumeNecessario) {
+		
+		ProcessoFiltraggioSpedizioni pfs = new ProcessoFiltraggioSpedizioni(commessaSelezionata, da, a, ca, corriere, codiceCliente, sc, tipo, pezziNecessari, colliNecessari, pesoNecessario, volumeNecessario);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pfs);
+		
+		List<Spedizione> spedizioniCliente = pfs.getLista();
+		
+		return spedizioniCliente;
+	}
+
+}

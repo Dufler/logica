@@ -1,0 +1,168 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListino extends Entity implements ValidEntity, Comparable<VoceDiListino> {
+
+	public static final String NOME_TABELLA = "listino_commessa_voce";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+
+	private Integer id;
+	private Integer idListino;
+	private Double importoBase;
+	private String ambito;
+	private String sottoAmbito;
+	private String nome;
+	private String descrizione;
+	private String tipo;
+	
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (nome == null || nome.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il nome non può essere vuoto.");
+		}
+		if (tipo == null || tipo.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il tipo non può essere vuoto.");
+		}
+		if (ambito == null || ambito.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("L'ambito non può essere vuoto.");
+		}
+		if (idListino == null || idListino < 1) {
+			esito.setValid(false);
+			esito.addMessage("Bisogna collegare un listino a questa voce.");
+		}
+		return esito;
+	}
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id", Column.AUTOINCREMENT, "id"));
+			variabili.add(new Column("id_listino", Column.INT, "idListino"));
+			variabili.add(new Column("importo_base", Column.DOUBLE, "importoBase"));
+			variabili.add(new Column("ambito", Column.STRING, "ambito"));
+			variabili.add(new Column("sotto_ambito", Column.STRING, "sottoAmbito"));
+			variabili.add(new Column("nome", Column.STRING, "nome"));
+			variabili.add(new Column("descrizione", Column.STRING, "descrizione"));
+			variabili.add(new Column("tipo_calcolo", Column.STRING, "tipo"));
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdListino() {
+		return idListino;
+	}
+
+	public void setIdListino(Integer idListino) {
+		this.idListino = idListino;
+	}
+
+	public Double getImportoBase() {
+		return importoBase;
+	}
+
+	public void setImportoBase(Double importoBase) {
+		this.importoBase = importoBase;
+	}
+
+	public String getAmbito() {
+		return ambito;
+	}
+
+	public void setAmbito(String ambito) {
+		this.ambito = ambito;
+	}
+
+	public String getSottoAmbito() {
+		return sottoAmbito;
+	}
+
+	public void setSottoAmbito(String sottoAmbito) {
+		this.sottoAmbito = sottoAmbito;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	@Override
+	public int compareTo(VoceDiListino voce) {
+		int ordinamento;
+		String type = voce.getTipo();
+		boolean percentuale1 = "Percentuale".equalsIgnoreCase(type);
+		boolean percentuale2 = "Percentuale".equalsIgnoreCase(tipo);
+		if (percentuale1) {
+			if (percentuale2) {
+				String subtype = voce.getSottoAmbito();
+				boolean istat1 = "ISTAT".equalsIgnoreCase(subtype);
+				boolean istat2 = "ISTAT".equalsIgnoreCase(sottoAmbito);	
+				if (istat1) {
+					if (istat2) {
+						ordinamento = 0;
+					} else {
+						ordinamento = -1;
+					}
+				} else {
+					if (istat2) {
+						ordinamento = 1;
+					} else {
+						ordinamento = 0;
+					}
+				}
+			} else {
+				ordinamento = -1;
+			}
+		} else {
+			if (percentuale2) {
+				ordinamento = 1;
+			} else {
+				ordinamento = 0;
+			}
+		}
+		return ordinamento;
+	}
+
+}

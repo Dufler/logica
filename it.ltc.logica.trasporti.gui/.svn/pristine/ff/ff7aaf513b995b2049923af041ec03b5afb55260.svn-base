@@ -1,0 +1,57 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
+
+import it.ltc.logica.common.calcolo.algoritmi.Scaglione;
+
+public class ScaglioneValoreEdit extends EditingSupport {
+	
+	private final TableViewer viewer;
+	private final CellEditor editor;
+
+	public ScaglioneValoreEdit(TableViewer tableViewer) {
+		super(tableViewer);
+		viewer = tableViewer;
+		editor = new TextCellEditor(viewer.getTable());
+	}
+
+	@Override
+	protected CellEditor getCellEditor(Object element) {
+		return editor;
+	}
+
+	@Override
+	protected boolean canEdit(Object element) {
+		return true;
+	}
+
+	@Override
+	protected Object getValue(Object element) {
+		Scaglione scaglione = (Scaglione) element;
+		return scaglione.getValoreStringa();
+	}
+
+	@Override
+	protected void setValue(Object element, Object value) {
+		if (element != null && value != null) {
+			Scaglione scaglione = (Scaglione) element;
+			try {
+				String testo = value.toString();
+				int index = testo.indexOf(" \u20AC");
+				if (index != -1)
+					testo = testo.substring(0, index);
+				double valore = Double.parseDouble(testo);
+				scaglione.setValore(valore);
+			} catch (NumberFormatException e) {
+				//Notifica del valore errato.
+			}
+			viewer.update(element, null);
+		}
+	}
+	
+	
+
+}

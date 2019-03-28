@@ -1,0 +1,110 @@
+package it.ltc.logica.database.model.centrale.listini;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoProporzionale extends Entity implements ValidEntity {
+
+	@JsonIgnore
+	public static final String NOME_TABELLA = "listino_commessa_voce_proporzionale";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Double valore;
+	private Double minimo;
+	private Double massimo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_voce", "id", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addDouble("minimo", "minimo");
+			variabili.addDouble("massimo", "massimo");
+		}
+		return variabili;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VoceDiListinoProporzionale other = (VoceDiListinoProporzionale) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "valore=" + valore + ", minimo=" + minimo + ", massimo=" + massimo;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+	
+	public Double getMinimo() {
+		return minimo;
+	}
+
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+
+	public Double getMassimo() {
+		return massimo;
+	}
+
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+
+}

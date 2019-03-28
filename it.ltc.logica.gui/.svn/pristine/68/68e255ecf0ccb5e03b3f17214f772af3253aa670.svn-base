@@ -1,0 +1,95 @@
+package it.ltc.logica.gui.composite;
+
+import java.util.LinkedList;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
+import it.ltc.logica.gui.input.InputElement;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+public abstract class GruppoSemplice extends Composite implements ParentValidationHandler {
+	
+	protected boolean valid;
+	protected boolean dirty;
+	private ParentValidationHandler successor;
+	private final LinkedList<ValidationHandler> children;
+
+	public GruppoSemplice(Composite parent, int style) {
+		super(parent, style);
+		if (parent instanceof ParentValidationHandler) {
+			successor = (ParentValidationHandler) parent;
+			successor.addChild(this);
+		} else
+			successor = null;
+		children = new LinkedList<ValidationHandler>();
+		aggiungiElementiGrafici();
+	}
+	
+	public abstract void aggiungiElementiGrafici();
+	
+	public boolean isDirty() {
+		dirty = false;
+		for (Control child : getChildren()) {
+			if (child instanceof InputElement) {
+				InputElement i = (InputElement) child;
+				dirty = i.isDirty();
+				if (dirty)
+					break;
+			}
+		}
+		return dirty;
+	}
+	
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public boolean validate() {
+		valid = true;
+		for (ValidationHandler child : children) {
+			valid = child.isValid();
+			if (!valid)
+				break;
+		}
+		forwardValidation();
+		return valid;
+	}
+
+	@Override
+	public void forwardValidation() {
+		if (successor != null)
+			successor.validate();
+	}
+
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		successor = parent;
+	}
+
+	@Override
+	public void addChild(ValidationHandler child) {
+		child.setParent(this);
+		children.add(child);
+	}
+	
+	/**
+	 * Abilita o disabilita tutti gli elementi di input.
+	 * @param enable true -> abilita, false-> disabilita
+	 */
+	public void enableInputElements(boolean enable) {
+		for (Control child : getChildren()) {
+			if (child instanceof InputElement)
+				child.setEnabled(enable);
+		}
+	}
+	
+	@Override
+	protected void checkSubclass() {
+		//DO NOTHING!
+	}
+
+}

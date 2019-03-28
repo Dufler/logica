@@ -1,0 +1,27 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ILazyContentProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.Viewer;
+
+import it.ltc.logica.database.model.Spedizione;
+
+public class SpedizioniContentProvider implements ILazyContentProvider {
+
+	private final TableViewer viewer;
+	private Spedizione[] elements;
+	
+	public SpedizioniContentProvider(TableViewer v) {
+		viewer = v;
+	}
+	
+	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		this.elements = (Spedizione[]) newInput;
+	}
+	
+	@Override
+	public void updateElement(int index) {
+		viewer.replace(elements[index], index);
+	}
+
+}

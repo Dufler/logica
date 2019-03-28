@@ -1,0 +1,99 @@
+package it.ltc.logica.database.model.centrale;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Feature extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "feature";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+//	@JsonIgnore
+//	private static List<Feature> features;
+//	@JsonIgnore
+//	private static final EntityManager<Feature> manager = new EntityManager<Feature>(Feature.class, ConfigurationManager.getDefault());
+	
+	private String nome;
+	private String versione;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("nome", "nome", true, false);
+			variabili.addString("versione", "versione");
+		}
+		return variabili;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Feature other = (Feature) obj;
+		if (nome == null) {
+			if (other.nome != null)
+				return false;
+		} else if (!nome.equals(other.nome))
+			return false;
+		return true;
+	}
+
+//	public static List<Feature> getFeatures() {
+//		if (features == null) {
+//			features = manager.getEntities();
+//		}
+//		return features;
+//	}
+//	
+//	public static Feature getFeature(String name) {
+//		Feature feature = null;
+//		for (Feature f : getFeatures()) {
+//			if (f.getNome().equals(name)) {
+//				feature = f;
+//				break;
+//			}
+//		}
+//		return feature;
+//	}
+	
+	public String toString() {
+		return nome + ", versione: " + versione;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getVersione() {
+		return versione;
+	}
+
+	public void setVersione(String versione) {
+		this.versione = versione;
+	}
+
+}

@@ -1,0 +1,15 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.Cap;
+
+public class Ore10LabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Cap cap = (Cap) element;
+		String text = cap.getTntOre10() ? "Si" : "No";
+		return text;
+	}
+
+}

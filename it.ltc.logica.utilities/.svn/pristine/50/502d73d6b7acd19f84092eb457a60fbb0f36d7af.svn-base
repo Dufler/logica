@@ -1,0 +1,190 @@
+package it.ltc.logica.utilities.ftp;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.sauronsoftware.ftp4j.FTPAbortedException;
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferException;
+import it.sauronsoftware.ftp4j.FTPException;
+import it.sauronsoftware.ftp4j.FTPFile;
+import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
+import it.sauronsoftware.ftp4j.FTPListParseException;
+
+/**
+ * Classe che offre semplici funzionalita' FTP.
+ *
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ * @version 1.0
+ *
+ */
+public class FTPUtility {
+	
+	private final static int DEFAULT_PORT = 21;
+	
+	private final String host, username, password;
+	
+	private final FTPClient ftpClient;
+	
+	/**
+	 * Costruisce un connettore FTP per l'upload o il download di file.
+	 * @param path il sito FTP
+	 * @param user il nume utente da utilizzare, lasciare vuoto o null per accessi anonimi
+	 * @param pwd la password da utilizzare, lasciare vuoto o null per accessi anonimi
+	 */
+	public FTPUtility(String path, String user, String pwd) {
+		if (path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+		host = path;
+		username = user;
+		password = pwd;
+		ftpClient = new FTPClient();
+		ftpClient.setType(FTPClient.TYPE_AUTO);
+		try {
+			ftpClient.connect(host, DEFAULT_PORT);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void disconnect() {
+		try {
+			ftpClient.disconnect(true);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void changeDirectory(String remotePath) {
+		try {
+			ftpClient.changeDirectory(remotePath);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void changeDirectoryUp() {
+		try {
+			ftpClient.changeDirectoryUp();
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Restituisce tutti i nomi dei file nel path relativo corrente
+	 * @return una lista di stringhe che rappresentano i nomi dei file
+	 */
+	public List<String> getFiles() {
+		LinkedList<String> contenuto = new LinkedList<String>();
+		try {
+			ftpClient.login(username, password);
+			FTPFile[] list = ftpClient.list();
+			for (FTPFile file :list) {
+				if (file.getType() == FTPFile.TYPE_FILE)
+					contenuto.add(file.getName());
+			}
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
+			e.printStackTrace();
+		}
+		return contenuto;
+	}
+	
+	/**
+	 * Restituisce tutti i nomi delle sottocartelle nel path relativo corrente
+	 * @return una lista di stringhe che rappresentano i nomi delle sottocartelle
+	 */
+	public List<String> getFolders() {
+		LinkedList<String> contenuto = new LinkedList<String>();
+		try {
+			ftpClient.login(username, password);
+			FTPFile[] list = ftpClient.list();
+			for (FTPFile file :list) {
+				if (file.getType() == FTPFile.TYPE_DIRECTORY)
+					contenuto.add(file.getName());
+			}
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException | FTPListParseException e) {
+			e.printStackTrace();
+		}
+		return contenuto;
+	}
+	
+	/**
+	 * Esegue l'upload di un file locale sul percorso relativo specificato
+	 * @param localPath il percorso in locale del file da 'uploadare'
+	 * @param remoteRelativePath il percorso relativo (cartella + nome) che avra' il file sul sito FTP
+	 * @return l'esito dell'operazione.
+	 */
+	public boolean upload(String localPath) {
+		boolean upload = true;
+		try {
+			ftpClient.login(username, password);
+			ftpClient.upload(new File(localPath));
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException e) {
+			upload = false;
+			e.printStackTrace();
+		}
+		
+		return upload;
+	}
+	
+	/**
+	 * Esegue il download di un file dal percorso relativo specificato sul percorso locale desiderato
+	 * @param localPath il percorso locale dove verra' salvato il file
+	 * @param remotePath il percorso della risorsa remota da scaricare
+	 * @return l'esito dell'operazione
+	 */
+	public boolean download(String localFile, String remoteFile) {
+		boolean download = true;
+		try {
+			ftpClient.login(username, password);
+			ftpClient.download(remoteFile, new File(localFile));
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException | FTPDataTransferException | FTPAbortedException e) {
+			download = false;
+			e.printStackTrace();
+		}
+		
+		return download;
+	}
+	
+	/**
+	 * Cancella il file specificato sul server FTP
+	 * @param remoteRelativePath il percorso della risorsa remota da cancellare
+	 * @return l'esito dell'operazione
+	 */
+	public boolean deleteFile(String remoteRelativePath) {
+		boolean delete = true;
+		try {
+			ftpClient.login(username, password);
+			ftpClient.deleteFile(remoteRelativePath);
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+		return delete;
+	}
+	
+	/**
+	 * Cancella la cartella sul percorso specificato
+	 * @param remoteRelativePath il percorso relativo della cartella da cancellare sul server FTP
+	 * @return l'esito dell'operazione
+	 */
+	public boolean deleteFolder(String remoteRelativePath) {
+		boolean delete = true;
+		try {
+			ftpClient.login(username, password);
+			ftpClient.deleteDirectory(remoteRelativePath);
+			//ftpClient.disconnect(false);
+		} catch (IllegalStateException | IOException | FTPIllegalReplyException | FTPException e) {
+			e.printStackTrace();
+		}
+		return delete;
+	}
+
+}

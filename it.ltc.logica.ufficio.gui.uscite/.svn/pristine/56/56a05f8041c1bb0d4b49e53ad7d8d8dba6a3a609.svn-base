@@ -1,0 +1,69 @@
+package it.ltc.logica.ufficio.gui.uscite.elements;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.elements.TabellaCheckBox;
+
+public class TabellaOrdini extends TabellaCheckBox<Ordine> {
+
+	public TabellaOrdini(Composite parent) {
+		super(parent,  new OrdinatoreOrdini());
+		
+		aggiungiColonna("Commessa", 100, new EtichettatoreOrdini(), 0);
+		aggiungiColonna("Data", 100, new EtichettatoreOrdini(), 1);
+		aggiungiColonna("Riferimento Cliente", 100, new EtichettatoreOrdini(), 2);
+		aggiungiColonna("Riferimento Interno", 100, new EtichettatoreOrdini(), 3);
+		aggiungiColonna("Pezzi", 100, new EtichettatoreOrdini(), 4);
+		aggiungiColonna("Tipo", 100, new EtichettatoreOrdini(), 5);
+		aggiungiColonna("Stato", 100, new EtichettatoreOrdini(), 6);
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialog("Modifica");
+	    	}
+	    });
+	    MenuItem assign = new MenuItem(menu, SWT.PUSH);
+	    assign.setText("Assegna");
+	    assign.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialog("Assegna");
+	    	}
+	    });
+	    MenuItem print = new MenuItem(menu, SWT.PUSH);
+	    print.setText("Stampa");
+	    print.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialog("Stampa");
+	    	}
+	    });	
+	}
+	
+	private void apriDialog(String nomeFunzione) {
+		DialogMessaggio.openInformation("Funzione non disponibile", "La funzione '" + nomeFunzione + "' non \u00E8 ancora disponibile!");
+	}
+
+}

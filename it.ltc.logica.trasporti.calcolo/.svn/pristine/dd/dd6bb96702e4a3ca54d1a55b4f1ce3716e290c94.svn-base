@@ -1,0 +1,57 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Cap;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class SupplementoIsoleMinori implements IAmbito {
+	
+	private static final List<Cap> listaCap = new ArrayList<Cap>();
+	
+	public static final String CODICE = "NOLO_ISOLE_MINORI";
+	private static SupplementoIsoleMinori instance;
+	
+	private SupplementoIsoleMinori() {}
+	
+	public static SupplementoIsoleMinori getInstance() {
+		if (instance == null) {
+			instance = new SupplementoIsoleMinori();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		Cap cap = new Cap();
+		cap.setCap(destinazione.getCap());
+		cap.setLocalita(destinazione.getLocalita());
+		boolean applicabile = getListaCapIsoleMinori().contains(destinazione.getCap());
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+	
+	public static List<Cap> getListaCapIsoleMinori() {
+		if (listaCap.isEmpty()) {
+			listaCap.addAll(Cap.getIsole());
+		}
+		return listaCap;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

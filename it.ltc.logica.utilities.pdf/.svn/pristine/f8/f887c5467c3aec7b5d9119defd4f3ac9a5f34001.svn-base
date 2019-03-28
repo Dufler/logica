@@ -1,0 +1,67 @@
+package it.ltc.logica.utilities.pdf.parti;
+
+import java.awt.Color;
+import java.io.IOException;
+
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+
+import it.ltc.logica.utilities.pdf.ElementoPDF;
+import it.ltc.logica.utilities.pdf.elementi.BoxPDF;
+import it.ltc.logica.utilities.pdf.elementi.TestoMultilineaPDF;
+import it.ltc.logica.utilities.pdf.stili.StileTestoPDF;
+
+public class InfoClienteFattura extends ElementoPDF {
+	
+	private static final float margine = 25;
+	private static final float margineTesto = 10;
+	
+	private static final float larghezzaRiquadroDati = 180;
+	
+	private final TestoMultilineaPDF datiCliente;
+	private final TestoMultilineaPDF datiFattura;
+	private final BoxPDF riquadro;
+	private final BoxPDF riquadroDatiFattura;
+	
+	private final float altezza;
+	private final float larghezza;
+
+	public InfoClienteFattura(float y, String nome, String numeroCliente, String indirizzo, String citta, String cap, String provincia, String telefono, String piva, String numeroFattura, String dataFattura) {
+		String[] testo = new String[8];
+		testo[0] = "Numero cliente: " + numeroCliente;
+		testo[1] = "Nome: " + nome;
+		testo[2] = "Indirizzo: " + indirizzo;
+		testo[3] = "Citta': " + citta;
+		testo[4] = "Provincia: " + provincia;
+		testo[5] = "C.A.P. " + cap;
+		testo[6] = "Telefono: " + telefono;
+		testo[7] = "C.F/P.IVA: " + piva;
+		this.datiCliente = new TestoMultilineaPDF(testo, margine + margineTesto, y, 15, StileTestoPDF.HELVETICA_12);
+		String[] testoFattura = new String[2];
+		testoFattura[0] = "Numero: " + numeroFattura;
+		testoFattura[1] = "Data: " + dataFattura;
+		float xRiquadroDati = PDRectangle.A4.getWidth() - margine - larghezzaRiquadroDati;
+		this.datiFattura = new TestoMultilineaPDF(testoFattura, xRiquadroDati + margineTesto, y, 15, StileTestoPDF.HELVETICA_12);
+		this.altezza = datiCliente.getAltezza() + margineTesto * 2;
+		this.larghezza = PDRectangle.A4.getWidth() - margine * 2;
+		this.riquadro = new BoxPDF(margine, datiCliente.getyFineTesto() - margineTesto, larghezza, altezza, Color.BLACK);
+		this.riquadroDatiFattura = new BoxPDF(xRiquadroDati, datiCliente.getyFineTesto() - margineTesto, larghezzaRiquadroDati, altezza, Color.BLACK);
+	}
+
+	@Override
+	public void aggiungi(PDPageContentStream stream) throws IOException {
+		datiCliente.aggiungi(stream);
+		datiFattura.aggiungi(stream);
+		riquadro.aggiungi(stream);
+		riquadroDatiFattura.aggiungi(stream);
+	}
+
+	public float getAltezza() {
+		return altezza;
+	}
+
+	public float getLarghezza() {
+		return larghezza;
+	}
+
+}

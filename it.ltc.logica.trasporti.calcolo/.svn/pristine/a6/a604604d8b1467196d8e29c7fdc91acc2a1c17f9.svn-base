@@ -1,0 +1,88 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.ListinoCorriere;
+
+public class CorriereCalcolato {
+	
+	private List<VoceCalcolata> voci;
+	private final ListinoCorriere listino;
+	
+	public CorriereCalcolato(ListinoCorriere l) {
+		listino = l;
+		voci = new ArrayList<VoceCalcolata>();
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof CorriereCalcolato) {
+			CorriereCalcolato c = (CorriereCalcolato) o;
+			uguali = listino.equals(c.getListino());
+		}
+		return uguali;
+	}
+	
+	public void aggiungiVoce(VoceCalcolata voce) {
+		voci.add(voce);
+	}
+
+	public List<VoceCalcolata> getVoci() {
+		return voci;
+	}
+
+	public void setVoci(List<VoceCalcolata> voci) {
+		this.voci = voci;
+	}
+
+	public ListinoCorriere getListino() {
+		return listino;
+	}
+
+	public double getCostoNoloBase() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			String tipo = ambito.getTipo();
+			if (AmbitoDiTrasporto.TIPO_NOLO_BASE.equals(tipo)) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getCostoNolo() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			String tipo = ambito.getTipo();
+			if (AmbitoDiTrasporto.TIPO_NOLO_BASE.equals(tipo) || AmbitoDiTrasporto.TIPO_NOLO_EXTRA.equals(tipo)) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getTotale() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			totale += voce.getCosto();
+		}
+		return totale;
+	}
+
+	public double getCostoContrassegno() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			String tipo = ambito.getTipo();
+			if (AmbitoDiTrasporto.TIPO_CONTRASSEGNO.equals(tipo)) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+
+}

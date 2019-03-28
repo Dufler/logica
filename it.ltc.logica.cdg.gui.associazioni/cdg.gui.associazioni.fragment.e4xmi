@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_SM_gsPRVEeescvoLoxEbeA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_UC6ggPRVEeescvoLoxEbeA" elementId="it.ltc.logica.cdg.gui.associazioni.part.funzioneassociazioni" contributionURI="bundleclass://it.ltc.logica.cdg.gui.associazioni/it.ltc.logica.cdg.gui.associazioni.parts.FunzioneAssociazioniPart" label="Funzione - Costo del Personale" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/uomoScrivania_16x16.png" tooltip="Qui puoi gestire il costo del personale"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_pcOncPRVEeescvoLoxEbeA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_qglncPRVEeescvoLoxEbeA" elementId="it.ltc.logica.cdg.gui.associazioni.part.associazioni" contributionURI="bundleclass://it.ltc.logica.cdg.gui.associazioni/it.ltc.logica.cdg.gui.associazioni.parts.AssociazioniPart" label="Costo del personale" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/uomoScrivania_16x16.png" tooltip="Qui puoi gestire il costo del personale"/>
+  </fragments>
+</fragment:ModelFragments>

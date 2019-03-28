@@ -1,0 +1,97 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
+import it.ltc.logica.database.model.locale.ListinoSimulazione;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+import it.ltc.logica.gui.wizard.WizardConRisultati;
+
+public class NuovaVoceListinoSimulazioneWizard extends WizardConRisultati {
+	
+	private ListiniSimulazioneController controller;
+	
+	private final LinkedList<PaginaWizardRisultati> result;
+	
+	private NuovaVoceListinoSimulazioneProprietaWizardPage paginaProprieta;
+	private NuovaVoceListinoSimulazioneFissaWizardPage paginaFisso;
+	private NuovaVoceListinoSimulazioneProporzionaleWizardPage paginaProporzionale;
+	private NuovaVoceListinoSimulazionePercentualeWizardPage paginaPercentuale;
+	private NuovaVoceListinoSimulazioneScaglioniWizardPage paginaScaglioni;
+	private NuovaVoceListinoSimulazioneScaglioniRipetutiWizardPage paginaScaglioniRipetuti;
+	private NuovaVoceListinoSimulazioneRiepilogoWizardPage paginaRiepilogo;
+
+	private IWizardPage algoritmoSelezionato;
+
+	public NuovaVoceListinoSimulazioneWizard(ListinoSimulazione listinoSelezionato) {
+		setWindowTitle("Nuova Voce di Listino");
+		controller = ListiniSimulazioneController.getInstance();
+		paginaProprieta = new NuovaVoceListinoSimulazioneProprietaWizardPage(listinoSelezionato);
+		paginaFisso = new NuovaVoceListinoSimulazioneFissaWizardPage();
+		paginaProporzionale = new NuovaVoceListinoSimulazioneProporzionaleWizardPage();
+		paginaPercentuale = new NuovaVoceListinoSimulazionePercentualeWizardPage();
+		paginaScaglioni = new NuovaVoceListinoSimulazioneScaglioniWizardPage();
+		paginaScaglioniRipetuti = new NuovaVoceListinoSimulazioneScaglioniRipetutiWizardPage();
+		paginaRiepilogo = new NuovaVoceListinoSimulazioneRiepilogoWizardPage();
+		result = new LinkedList<PaginaWizardRisultati>();
+		result.add(paginaRiepilogo);
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+		addPage(paginaFisso);
+		addPage(paginaProporzionale);
+		addPage(paginaPercentuale);
+		addPage(paginaScaglioni);
+		addPage(paginaScaglioniRipetuti);
+		addPage(paginaRiepilogo);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(paginaProprieta)) {
+			TipoAlgoritmo tipoAlgoritmo = paginaProprieta.getTipoAlgoritmoSelezionato();
+			switch (tipoAlgoritmo) {
+				case FISSO : {nextPage = paginaFisso; break;}
+				case PROPORZIONALE : {nextPage = paginaProporzionale; break;}
+				case SCAGLIONI : {nextPage = paginaScaglioni; break;}
+				case SCAGLIONI_RIPETUTI : {nextPage = paginaScaglioniRipetuti; break;}
+				case PERCENTUALE : {nextPage = paginaPercentuale; break;}
+				default : break;
+			}
+			algoritmoSelezionato = nextPage;
+		} else if (currentPage.equals(algoritmoSelezionato)) {
+			nextPage = paginaRiepilogo;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean finisci() {
+		boolean finish = controller.creaNuovaListinoSimulazioneVoce();
+		if (!finish) {
+			MessageDialog.openError(null, "Errore", "Ci sono stati problemi con l'inserimento.");
+		}
+		return finish;
+	}
+	
+//	@Override
+//	public boolean canFinish() {
+//		boolean finish = false;
+//		if(getContainer().getCurrentPage() == paginaRiepilogo)
+//			finish = true;
+//		return finish;
+//	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		return result;
+	}
+
+}

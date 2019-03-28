@@ -1,0 +1,15 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.centrale.Cap;
+
+public class IsoleLabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Cap cap = (Cap) element;
+		String text = cap.getBrtIsole() ? "Si" : "No";
+		return text;
+	}
+
+}

@@ -1,0 +1,45 @@
+package it.ltc.logica.gui.container;
+
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+/**
+ * Classe astratta da implementare nei punti di codice dove vanno eseguite operazioni lente.
+ * @author Damiano
+ *
+ */
+public abstract class Processo implements IRunnableWithProgress {
+	
+	private final String titolo;
+	private final Integer operazioni;
+	
+	/**
+	 * Costruisce un processo per cui andranno specificate le operazioni da eseguire.
+	 * Se viene indicato un numero di operazioni nullo o minore di 0 allora vienesupposto che non si sappia quante sono.
+	 * @param titolo Il messaggio da mostrare nella schermata di caricamento
+	 * @param operazioni Il numero di operazioni da eseguire
+	 */
+	public Processo(String titolo, Integer operazioni) {
+		this.titolo = titolo;
+		if (operazioni == null || operazioni <= 0)
+			operazioni = IProgressMonitor.UNKNOWN;
+		this.operazioni = operazioni;
+	}
+
+	@Override
+	public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+		monitor.beginTask(titolo, operazioni);
+		eseguiOperazioni(monitor);
+		monitor.done();
+	}
+	
+	/**
+	 * Questo metodo va implementato, qui vanno inserite le operazioni da eseguire.
+	 * E' possibile e doveroso chiamare all'interno il metodo <code>monitor.worked(1)</code> ogniqualvolta viene eseguita una operazione
+	 * @param monitor Il monitor che indica l'avanzamento di processo.
+	 */
+	public abstract void eseguiOperazioni(IProgressMonitor monitor);
+
+}

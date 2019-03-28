@@ -1,0 +1,121 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+public class AlgoritmoPercentuale implements IAlgoritmo {
+
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "Percentuale";
+	
+	public static final String SCOPO_RICAVO = "RICAVO";
+	public static final String SCOPO_COSTO = "COSTO";
+	public static final String SCOPO_NESSUNO = "NESSUNO";
+	
+	public static final String TIPO_NESSUNA_SELEZIONE = "NESSUNA_SELEZIONE";
+	public static final String TIPO_SOLO_NOLO = "SOLO_NOLO";
+	public static final String TIPO_SOLO_AGGIUNTIVI = "SOLO_AGGIUNTIVI";
+	public static final String TIPO_SOLO_CONTRASSEGNO = "SOLO_CONTRASSEGNO";
+	public static final String TIPO_TUTTO = "TUTTO";
+	
+	public static final String NOME_NESSUNA_SELEZIONE = "";
+	public static final String NOME_SOLO_NOLO = "Solo Nolo";
+	public static final String NOME_SOLO_AGGIUNTIVI = "Solo Costi Aggiuntivi";
+	public static final String NOME_SOLO_CONTRASSEGNO = "Solo Contrassegno";
+	public static final String NOME_TUTTO = "Su Tutto";
+	
+	private static final HashMap<String, String> nomiTipi = new HashMap<String, String>(5);
+	private static final HashMap<String, AlgoritmoPercentuale> tipi = new HashMap<String, AlgoritmoPercentuale>(5);
+	public static final List<AlgoritmoPercentuale> listaTipi = new ArrayList<AlgoritmoPercentuale>();
+	
+	private String nome;
+	private String tipo;
+	private String scopo;
+	
+	private AlgoritmoPercentuale(String name, String type, String scope) {
+		nome = name;
+		tipo = type;
+		scopo = scope;
+	}
+	
+	public String getTipo() {
+		return tipo;
+	}
+	
+	public String getScopo() {
+		return scopo;
+	}
+	
+	public String toString() {
+		String toString = (nome != null && !nome.isEmpty()) ? nome : NOME;
+		return toString;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AlgoritmoPercentuale) {
+			AlgoritmoPercentuale algoritmo = (AlgoritmoPercentuale) o;
+			if (algoritmo.getTipo().equals(tipo))
+				uguali = true;
+		}
+		return uguali;
+	}
+	
+	public static AlgoritmoPercentuale getInstance(String tipo, String scopo) {
+		if (!tipi.containsKey(tipo)) {
+			tipi.put(tipo, new AlgoritmoPercentuale(daiNome(tipo), tipo, scopo));
+		}
+		AlgoritmoPercentuale algoritmo = tipi.get(tipo);
+		return algoritmo;
+	}
+	
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		if (voce.getAmbito().isApplicabile(spedizione)) {
+			double base = voce.getAmbito().getValore(spedizione, this);
+			double percentuale = voce.getValore();
+			costo = base * (percentuale / 100);
+			Double minimo = voce.getMinimo();
+			Double massimo = voce.getMassimo();
+			if (minimo != null && minimo > costo)
+				costo = minimo;
+			if (massimo != null && massimo < costo)
+				costo = massimo;
+		}
+		return costo;
+	}
+	
+	public static List<AlgoritmoPercentuale> getListaTipi() {
+		if (listaTipi.isEmpty()) {
+			listaTipi.add(getInstance(TIPO_SOLO_NOLO, SCOPO_NESSUNO));
+			listaTipi.add(getInstance(TIPO_SOLO_AGGIUNTIVI, SCOPO_NESSUNO));
+			listaTipi.add(getInstance(TIPO_SOLO_CONTRASSEGNO, SCOPO_NESSUNO));
+			listaTipi.add(getInstance(TIPO_TUTTO, SCOPO_NESSUNO));
+		}
+		return listaTipi;
+	}
+	
+	private static String daiNome(String tipo) {
+		if (nomiTipi.isEmpty()) {
+			nomiTipi.put(TIPO_SOLO_NOLO, NOME_SOLO_NOLO);
+			nomiTipi.put(TIPO_SOLO_AGGIUNTIVI, NOME_SOLO_AGGIUNTIVI);
+			nomiTipi.put(TIPO_SOLO_CONTRASSEGNO, NOME_SOLO_CONTRASSEGNO);
+			nomiTipi.put(TIPO_TUTTO, NOME_TUTTO);
+			nomiTipi.put(TIPO_NESSUNA_SELEZIONE, NOME_NESSUNA_SELEZIONE);
+		}
+		return nomiTipi.get(tipo);
+	}
+
+}

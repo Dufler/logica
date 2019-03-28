@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Bdva0PCUEeeIOZ8LEd4sWA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_FAUwwPCUEeeIOZ8LEd4sWA" elementId="it.ltc.logica.cdg.gui.eventi.part.funzioneeventi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.eventi/it.ltc.logica.cdg.gui.eventi.parts.FunzioneEventiPart" label="Funzione - Eventi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/timer_16x16.png" tooltip="Qui puoi gestire i tipi di evento."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_s-CnAPCUEeeIOZ8LEd4sWA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_vHzv4PCUEeeIOZ8LEd4sWA" elementId="it.ltc.logica.cdg.gui.eventi.part.eventi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.eventi/it.ltc.logica.cdg.gui.eventi.parts.EventiPart" label="Eventi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/timer_16x16.png" tooltip="Qui puoi gestire i tipi di evento."/>
+  </fragments>
+</fragment:ModelFragments>

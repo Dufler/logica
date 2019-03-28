@@ -1,0 +1,574 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.model.Cap;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.Corriere;
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.Regione;
+import it.ltc.logica.database.model.SpedizioneStorica;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.utilities.chart.DatiGraficoSemplice;
+import it.ltc.logica.utilities.chart.DatiGraficoTorta;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class ReportController {
+
+	private static ReportController instance;
+
+	private Date dataDa;
+	private Date dataA;
+	private Commessa commessa;
+	private Corriere corriere;
+	private Boolean contrassegno;
+	private Integer minimoColli;
+	private Integer massimoColli;
+	private Integer minimoPezzi;
+	private Integer massimoPezzi;
+	private Double minimoPeso;
+	private Double massimoPeso;
+	private Double minimoVolume;
+	private Double massimoVolume;
+
+	private int rapportoPesoVolume;
+	
+	private final SpedizioniController controllerSpedizioni;
+
+	public Date getDataDa() {
+		return dataDa;
+	}
+
+	public void setDataDa(Date dataDa) {
+		this.dataDa = dataDa;
+	}
+
+	public Date getDataA() {
+		return dataA;
+	}
+
+	public void setDataA(Date dataA) {
+		this.dataA = dataA;
+	}
+
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setCommessa(Commessa commessa) {
+		this.commessa = commessa;
+	}
+
+	public Corriere getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Corriere corriere) {
+		this.corriere = corriere;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public Integer getMinimoColli() {
+		return minimoColli;
+	}
+
+	public void setMinimoColli(Integer minimoColli) {
+		this.minimoColli = minimoColli;
+	}
+
+	public Integer getMassimoColli() {
+		return massimoColli;
+	}
+
+	public void setMassimoColli(Integer massimoColli) {
+		this.massimoColli = massimoColli;
+	}
+
+	public Integer getMinimoPezzi() {
+		return minimoPezzi;
+	}
+
+	public void setMinimoPezzi(Integer minimoPezzi) {
+		this.minimoPezzi = minimoPezzi;
+	}
+
+	public Integer getMassimoPezzi() {
+		return massimoPezzi;
+	}
+
+	public void setMassimoPezzi(Integer massimoPezzi) {
+		this.massimoPezzi = massimoPezzi;
+	}
+
+	public Double getMinimoPeso() {
+		return minimoPeso;
+	}
+
+	public void setMinimoPeso(Double minimoPeso) {
+		this.minimoPeso = minimoPeso;
+	}
+
+	public Double getMassimoPeso() {
+		return massimoPeso;
+	}
+
+	public void setMassimoPeso(Double massimoPeso) {
+		this.massimoPeso = massimoPeso;
+	}
+
+	public Double getMinimoVolume() {
+		return minimoVolume;
+	}
+
+	public void setMinimoVolume(Double minimoVolume) {
+		this.minimoVolume = minimoVolume;
+	}
+
+	public Double getMassimoVolume() {
+		return massimoVolume;
+	}
+
+	public void setMassimoVolume(Double massimoVolume) {
+		this.massimoVolume = massimoVolume;
+	}
+
+	public int getRapportoPesoVolume() {
+		return rapportoPesoVolume;
+	}
+
+	public void setRapportoPesoVolume(int rapportoPesoVolume) {
+		this.rapportoPesoVolume = rapportoPesoVolume;
+	}
+
+	public void resetFiltri() {
+		dataDa = null;
+		dataA = null;
+		commessa = null;
+		corriere = null;
+		contrassegno = null;
+		minimoColli = null;
+		massimoColli = null;
+		minimoPezzi = null;
+		massimoPezzi = null;
+		minimoPeso = null;
+		massimoPeso = null;
+		minimoVolume = null;
+		massimoVolume = null;
+	}
+
+	private ReportController() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+
+	public static ReportController getInstance() {
+		if (instance == null) {
+			instance = new ReportController();
+		}
+		return instance;
+	}
+
+	private List<SpedizioneStorica> getSpedizioni() {
+		// Recupero le spedizioni che corrispondono ai criteri selezionati
+		LinkedList<SpedizioneStorica> spedizioni = new LinkedList<SpedizioneStorica>();
+		for (SpedizioneStorica spedizione : SpedizioneStorica.geSpedizioni()) {
+			boolean aggiungi = checkCommessa(spedizione);
+			if (aggiungi)
+				aggiungi = checkCorriere(spedizione);
+			if (aggiungi)
+				aggiungi = checkData(spedizione);
+			if (aggiungi)
+				aggiungi = checkContrassegno(spedizione);
+			if (aggiungi)
+				aggiungi = checkColli(spedizione);
+			if (aggiungi)
+				aggiungi = checkPezzi(spedizione);
+			if (aggiungi)
+				aggiungi = checkPeso(spedizione);
+			if (aggiungi)
+				aggiungi = checkVolume(spedizione);
+			// Se ha superato i test la aggiungo
+			if (aggiungi)
+				spedizioni.add(spedizione);
+		}
+		return spedizioni;
+	}
+
+	public List<ReportElement> calcolaReportSemplice() {
+		List<ReportElement> report = new ArrayList<ReportElement>();
+		// Recupero le spedizioni che corrispondono ai criteri selezionati
+		List<SpedizioneStorica> spedizioni = getSpedizioni();
+		// Preparo le variabili necessarie
+		int totaleSpedizioni = spedizioni.size();
+		int totaleColli = 0;
+		int totalePezzi = 0;
+		int totaleContrassegni = 0;
+		// Contro i valori null che potrebbero falsare le medie
+		int spedizioniSenzaColli = 0;
+		int spedizioniSenzaPezzi = 0;
+		double totaleValoreContrassegni = 0;
+		double totalePeso = 0;
+		double totaleVolume = 0;
+		for (SpedizioneStorica spedizione : spedizioni) {
+			// Colli
+			if (spedizione.getColli() != null)
+				totaleColli += spedizione.getColli();
+			else
+				spedizioniSenzaColli += 1;
+			// Pezzi
+			if (spedizione.getPezzi() != null)
+				totalePezzi += spedizione.getPezzi();
+			else
+				spedizioniSenzaPezzi += 1;
+			// Peso
+			if (spedizione.getPeso() != null)
+				totalePeso += spedizione.getPeso();
+			// Volume
+			if (spedizione.getVolume() != null)
+				totaleVolume += spedizione.getVolume();
+			// Contrassegno
+			if (spedizione.getContrassegno() != null) {
+				totaleContrassegni += 1;
+				totaleValoreContrassegni += spedizione.getContrassegno();
+			}
+		}
+		// calcolo
+		double mediaColliSpedizione = (totaleColli * 1.0 / (totaleSpedizioni - spedizioniSenzaColli));
+		double mediaPezziSpedizione = (totalePezzi * 1.0 / (totaleSpedizioni - spedizioniSenzaPezzi));
+		double mediaPezziCollo = (totalePezzi * 1.0 / totaleColli);
+		double mediaPesoCollo = totalePeso / totaleColli;
+		double mediaVolumeCollo = totaleVolume / totaleColli;
+		double mediaContrassegno = (totaleContrassegni > 0) ? (totaleValoreContrassegni / totaleContrassegni) : 0.0;
+		// Genero gli elementi del report
+		ReportElement reportTotaleSpedizioni = new ReportElement("Totale delle spedizioni", totaleSpedizioni, ReportElement.UM.INTERI);
+		ReportElement reportTotaleColli = new ReportElement("Totale dei colli", totaleColli, ReportElement.UM.INTERI);
+		ReportElement reportTotalePezzi = new ReportElement("Totale dei pezzi", totalePezzi, ReportElement.UM.INTERI);
+		ReportElement reportTotalePeso = new ReportElement("Peso totale", totalePeso, ReportElement.UM.KG);
+		ReportElement reportTotaleVolume = new ReportElement("Volume totale", totaleVolume, ReportElement.UM.MC);
+		ReportElement reportTotaleSpedizioniContrassegno = new ReportElement("Totale delle spedizioni in contrassegno", totaleContrassegni, ReportElement.UM.INTERI);
+		ReportElement reportTotaleValoreContrassegni = new ReportElement("Totale del valore dei contrassegni", totaleValoreContrassegni, ReportElement.UM.EURO);
+		ReportElement reportMediaValoreContrassegni = new ReportElement("Valore medio del contrassegno", mediaContrassegno, ReportElement.UM.EURO);
+		ReportElement reportMediaColliSpedizione = new ReportElement("Media dei colli per spedizione", mediaColliSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziSpedizione = new ReportElement("Media dei pezzi per spedizione", mediaPezziSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziCollo = new ReportElement("Media dei pezzi per collo", mediaPezziCollo, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPesoCollo = new ReportElement("Peso medio di un collo", mediaPesoCollo, ReportElement.UM.KG);
+		ReportElement reportMediaVolumeCollo = new ReportElement("Volume medio di un collo", mediaVolumeCollo, ReportElement.UM.MC);
+		// Aggiungo gli elementi al report
+		report.add(reportTotaleSpedizioni);
+		report.add(reportTotaleColli);
+		report.add(reportTotalePezzi);
+		report.add(reportTotalePeso);
+		report.add(reportTotaleVolume);
+		report.add(reportTotaleSpedizioniContrassegno);
+		report.add(reportTotaleValoreContrassegni);
+		report.add(reportMediaValoreContrassegni);
+		report.add(reportMediaColliSpedizione);
+		report.add(reportMediaPezziSpedizione);
+		report.add(reportMediaPezziCollo);
+		report.add(reportMediaPesoCollo);
+		report.add(reportMediaVolumeCollo);
+		return report;
+	}
+
+	private boolean checkVolume(SpedizioneStorica spedizione) {
+		boolean check = true;
+		Double volume = spedizione.getVolume();
+		if (volume != null) {
+			if (minimoVolume != null)
+				check = (minimoVolume < volume);
+			if (check && massimoVolume != null)
+				check = (massimoVolume > volume);
+		}
+		return check;
+	}
+
+	private boolean checkPeso(SpedizioneStorica spedizione) {
+		boolean check = true;
+		Double peso = spedizione.getPeso();
+		if (peso != null) {
+			if (minimoPeso != null)
+				check = (minimoPeso < peso);
+			if (check && massimoPeso != null)
+				check = (massimoPeso > peso);
+		}
+		return check;
+	}
+
+	private boolean checkPezzi(SpedizioneStorica spedizione) {
+		boolean check = true;
+		Integer pezzi = spedizione.getPezzi();
+		if (pezzi != null) {
+			if (minimoPezzi != null)
+				check = (minimoPezzi < pezzi);
+			if (check && massimoPezzi != null)
+				check = (massimoPezzi > pezzi);
+		}
+		return check;
+	}
+
+	private boolean checkColli(SpedizioneStorica spedizione) {
+		boolean check = true;
+		Integer colli = spedizione.getColli();
+		if (colli != null) {
+			if (minimoColli != null)
+				check = (minimoColli < colli);
+			if (check && massimoColli != null)
+				check = (massimoColli > colli);
+		}
+		return check;
+	}
+
+	private boolean checkContrassegno(SpedizioneStorica spedizione) {
+		boolean check = true;
+		if (contrassegno != null) {
+			check = (contrassegno == (spedizione.getContrassegno() != null));
+		}
+		return check;
+	}
+
+	private boolean checkData(SpedizioneStorica spedizione) {
+		boolean check = true;
+		if (dataDa != null && dataA != null) {
+			Date data = spedizione.getData();
+			if (data != null) 
+				check = dataDa.compareTo(data) <= 0 && dataA.compareTo(data) >= 0;
+			else
+				check = false;
+		}
+		return check;
+	}
+
+	private boolean checkCorriere(SpedizioneStorica spedizione) {
+		boolean check = true;
+		if (corriere != null) {
+			check = corriere.getId().equals(spedizione.getIdCorriere());
+		}
+		return check;
+	}
+
+	private boolean checkCommessa(SpedizioneStorica spedizione) {
+		boolean check = true;
+		if (commessa != null) {
+			check = commessa.getId().equals(spedizione.getIdCommessa());
+		}
+		return check;
+	}
+
+	public void esportaDati(String path, List<ReportElement> report) {
+		String nomeFile = path + "/report.xls";
+		String titoloReport = "Report";
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		boolean successo = false;
+		if (workbook != null) {
+			String nomeFoglio = "Report";
+			workbook.creaFoglio(nomeFoglio);
+			workbook.aggiungiTitolo(nomeFoglio, 0, 0, titoloReport);
+			int riga = 2;
+			for (ReportElement element : report) {
+				workbook.aggiungiTesto(nomeFoglio, 0, riga, element.getKey());
+				workbook.aggiungiTesto(nomeFoglio, 1, riga, element.getValue());
+				riga += 1;
+			}
+			successo = workbook.salvaEChiudi();
+		}
+		if (successo) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file:\r\n" + nomeFile);
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+
+	public DatiGraficoSemplice calcolaDatiPesoVolume() {
+		// Preparo le variabili di appoggio
+		int fascia_0_5 = 0;
+		int fascia_5_10 = 0;
+		int fascia_10_20 = 0;
+		int fascia_20_30 = 0;
+		int fascia_30_40 = 0;
+		int fascia_40_50 = 0;
+		int fascia_50_60 = 0;
+		int fascia_60_70 = 0;
+		int fascia_70_80 = 0;
+		int fascia_80_100 = 0;
+		int fascia_oltre100 = 0;
+		int spedizioniSenzaDati = 0;
+		// Recupero le spedizioni e calcolo
+		List<SpedizioneStorica> spedizioni = getSpedizioni();
+		for (SpedizioneStorica spedizione : spedizioni) {
+			Double volume = spedizione.getVolume();
+			Double peso = spedizione.getPeso();
+			if (volume != null && peso != null) {
+				volume = volume * rapportoPesoVolume;
+				double valore = (volume > peso) ? volume : peso;
+				if (valore < 0) {
+					spedizioniSenzaDati += 1;
+				} else if (valore <= 5) {
+					fascia_0_5 += 1;
+				} else if (valore <= 10) {
+					fascia_5_10 += 1;
+				} else if (valore <= 20) {
+					fascia_10_20 += 1;
+				} else if (valore <= 30) {
+					fascia_20_30 += 1;
+				} else if (valore <= 40) {
+					fascia_30_40 += 1;
+				} else if (valore <= 50) {
+					fascia_40_50 += 1;
+				} else if (valore <= 60) {
+					fascia_50_60 += 1;
+				} else if (valore <= 70) {
+					fascia_60_70 += 1;
+				} else if (valore <= 80) {
+					fascia_70_80 += 1;
+				} else if (valore <= 100) {
+					fascia_80_100 += 1;
+				} else {
+					fascia_oltre100 += 1;
+				}
+			} else {
+				spedizioniSenzaDati += 1;
+			}
+		}
+		// Pubblico i dati calcolati
+		DatiGraficoSemplice dati = new DatiGraficoSemplice("Distribuzione del rapporto peso/volume per le spedizioni", "Percentuale", "");
+		String riga = "Rapporto Peso/Volume 1:" + rapportoPesoVolume + "  ";
+		double percentuale = 1.0;
+		dati.aggiungiValore((fascia_0_5 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "0-5 Kg");
+		dati.aggiungiValore((fascia_5_10 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "5-10 Kg");
+		dati.aggiungiValore((fascia_10_20 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "10-20 Kg");
+		dati.aggiungiValore((fascia_20_30 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "20-30 Kg");
+		dati.aggiungiValore((fascia_30_40 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "30-40 Kg");
+		dati.aggiungiValore((fascia_40_50 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "40-50 Kg");
+		dati.aggiungiValore((fascia_50_60 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "50-60 Kg");
+		dati.aggiungiValore((fascia_60_70 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "60-70 Kg");
+		dati.aggiungiValore((fascia_70_80 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "70-80 Kg");
+		dati.aggiungiValore((fascia_80_100 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "80-100 Kg");
+		dati.aggiungiValore((fascia_oltre100 * percentuale) / (spedizioni.size() - spedizioniSenzaDati), riga, "Oltre 100 Kg");
+		if (spedizioniSenzaDati > 0)
+			dati.aggiungiValore((spedizioniSenzaDati * percentuale) / spedizioni.size(), riga, "Senza dati");
+		return dati;
+	}
+
+	public DatiGraficoSemplice calcolaDatiDistribuzioneColli() {
+		// Preparo le variabili di appoggio
+		// nello 0 ci sono le spedizioni senza dati sul numero di colli
+		// nelle altre ci sono rispettivamente le spedizioni con quello
+		// specifico numero di colli
+		int[] numeroColli = new int[11];
+		// Recupero le spedizioni e calcolo
+		List<SpedizioneStorica> spedizioni = getSpedizioni();
+		for (SpedizioneStorica spedizione : spedizioni) {
+			Integer colli = spedizione.getColli();
+			if (colli != null) {
+				if (colli > 10)
+					colli = 10;
+				numeroColli[colli] += 1;
+			} else {
+				numeroColli[0] += 1;
+			}
+		}
+		// Pubblico i dati calcolati
+		DatiGraficoSemplice dati = new DatiGraficoSemplice("Distribuzione del numero di colli per le spedizioni", "Percentuale", "");
+		String riga = "Numero di colli";
+		double percentuale = 1.0;
+		// for (int index = 1; index <= 10; index++)
+		// dati.aggiungiValore((numeroColli[index] * percentuale) /
+		// (spedizioni.size() - numeroColli[0]), riga, Integer.toString(index));
+		dati.aggiungiValore((numeroColli[1] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "1 Collo");
+		dati.aggiungiValore((numeroColli[2] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "2 Colli");
+		dati.aggiungiValore((numeroColli[3] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "3 Colli");
+		dati.aggiungiValore((numeroColli[4] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "4 Colli");
+		dati.aggiungiValore((numeroColli[5] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "5 Colli");
+		dati.aggiungiValore((numeroColli[6] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "6 Colli");
+		dati.aggiungiValore((numeroColli[7] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "7 Colli");
+		dati.aggiungiValore((numeroColli[8] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "8 Colli");
+		dati.aggiungiValore((numeroColli[9] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "9 Colli");
+		dati.aggiungiValore((numeroColli[10] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "10 o pi\u00F9 Colli");
+		dati.aggiungiValore((numeroColli[0] * percentuale) / (spedizioni.size() - numeroColli[0]), riga, "Senza Dati");
+		return dati;
+	}
+	
+	public DatiGraficoTorta calcolaDatiDistribuzioneColliPerTorta() {
+		// Preparo le variabili di appoggio
+		// nello 0 ci sono le spedizioni senza dati sul numero di colli
+		// nelle altre ci sono rispettivamente le spedizioni con quello
+		// specifico numero di colli
+		int[] numeroColli = new int[11];
+		// Recupero le spedizioni e calcolo
+		List<SpedizioneStorica> spedizioni = getSpedizioni();
+		for (SpedizioneStorica spedizione : spedizioni) {
+			Integer colli = spedizione.getColli();
+			if (colli != null) {
+				if (colli > 10)
+					colli = 10;
+				numeroColli[colli] += 1;
+			} else {
+				numeroColli[0] += 1;
+			}
+		}
+		// Pubblico i dati calcolati
+		DatiGraficoTorta dati = new DatiGraficoTorta("Distribuzione del numero di colli per le spedizioni");
+		double percentuale = 1.0;
+		// for (int index = 1; index <= 10; index++)
+		// dati.aggiungiValore((numeroColli[index] * percentuale) /
+		// (spedizioni.size() - numeroColli[0]), riga, Integer.toString(index));
+		dati.aggiungiValore("Spedizioni con 1 Collo", (numeroColli[1] * percentuale));
+		dati.aggiungiValore("Spedizioni con 2 Colli", (numeroColli[2] * percentuale));
+		dati.aggiungiValore("Spedizioni con 3 Colli", (numeroColli[3] * percentuale));
+		dati.aggiungiValore("Spedizioni con 4 Colli", (numeroColli[4] * percentuale));
+		dati.aggiungiValore("Spedizioni con 5 Colli", (numeroColli[5] * percentuale));
+		dati.aggiungiValore("Spedizioni con 6 Colli", (numeroColli[6] * percentuale));
+		dati.aggiungiValore("Spedizioni con 7 Colli", (numeroColli[7] * percentuale));
+		dati.aggiungiValore("Spedizioni con 8 Colli", (numeroColli[8] * percentuale));
+		dati.aggiungiValore("Spedizioni con 9 Colli", (numeroColli[9] * percentuale));
+		dati.aggiungiValore("Spedizioni con 10 o pi\u00F9 Colli", (numeroColli[10] * percentuale));
+		dati.aggiungiValore("Spedizioni senza dati", (numeroColli[0] * percentuale));
+		return dati;
+	}
+
+	public DatiGraficoSemplice calcolaDatiDistribuzioneDestinazioni() {
+		HashMap<String, Integer> spedizioniPerRegione = new HashMap<String, Integer>();
+		List<SpedizioneStorica> spedizioni = getSpedizioni();
+		for (SpedizioneStorica spedizione : spedizioni) {
+			Integer numeroSpedizioni = 1; //Conto la spedizione attuale
+			Integer idDestinazione = spedizione.getIdIndirizzoDestinazione();
+			Indirizzo destinazione = controllerSpedizioni.getIndirizzo(idDestinazione);
+			String cap = destinazione.getCap();
+			String regione = "EST";
+			//Vado a verificare se trovo la destinazione tra i CAP presenti a sistema
+			//Se non è presente assumo che sia diretta all'estero.
+			Cap c = Cap.getInfoGeneraliCap(cap);
+			if (c != null) {
+				regione = c.getRegione();
+			} else {
+				System.out.println(cap);
+			}
+			//Controllo se ne avevo gia' dirette in quella regione
+			Integer i = spedizioniPerRegione.get(regione);
+			if (i != null) {
+				numeroSpedizioni += i;
+			}
+			//Aggiorno il totale
+			spedizioniPerRegione.put(regione, numeroSpedizioni);
+			
+		}
+		DatiGraficoSemplice dati = new DatiGraficoSemplice("Distribuzione del numero di spedizioni per destinazione", "Destinazione", "Spedizioni");
+		for (String regione : spedizioniPerRegione.keySet()) {
+			double value = spedizioniPerRegione.get(regione) * 1.0;
+			Regione r = Regione.getRegione(regione);
+			dati.aggiungiValore(value, r.getNome(), r.getZona());
+		}
+		return dati;
+	}
+
+}

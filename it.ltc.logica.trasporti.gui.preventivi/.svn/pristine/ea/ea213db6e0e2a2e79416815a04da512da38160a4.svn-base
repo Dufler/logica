@@ -1,0 +1,191 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.trasporti.controller.PreventivoEsistentiController;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class PreventivoSpedizioniEsistentiSelezioneSpedizioniWizardPage extends WizardPage {
+	
+	private PreventivoEsistentiController controllerPreventivo;
+	private SpedizioniController controllerSpedizioni;
+	private SimpleDateFormat sdf;
+	
+	private CheckboxTableViewer checkboxTableViewer;
+	private Table table;
+	
+	private boolean canFlip;
+
+	public PreventivoSpedizioniEsistentiSelezioneSpedizioniWizardPage() {
+		super("wizardPage");
+		setTitle("Preventivo di costo e fatturazione per una spedizione gi\u00E0 esistente");
+		setDescription("Seleziona una o pi\u00F9 spedizioni gi\u00E0 effettuate per vedere quanto sarebbero costate.");
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+		controllerPreventivo = PreventivoEsistentiController.getInstance();
+		canFlip = false;
+	}
+
+	public void createControl(Composite parent) {
+		Composite container = new Composite(parent, SWT.NULL);
+
+		setControl(container);
+		container.setLayout(new GridLayout(1, false));
+		
+		checkboxTableViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxTableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		checkboxTableViewer.setComparator(new ViewerComparator() {
+			public int compare(Viewer viewer, Object e1, Object e2) {
+				Spedizione s1 = (Spedizione) e1;
+				Spedizione s2 = (Spedizione) e2;
+				Date d1 = s1.getData();
+				Date d2 = s2.getData();
+				return d1.compareTo(d2);
+			}
+		});
+		
+		table = checkboxTableViewer.getTable();
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		table.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				valida();
+			}
+		});
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn colonnaData = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
+		colonnaData.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				Spedizione spedizione = (Spedizione) element;
+				String data = sdf.format(spedizione.getData());
+				return data;
+			}
+		});
+		
+		TableColumn tblclmnDataInserimento = colonnaData.getColumn();
+		tblclmnDataInserimento.setWidth(100);
+		tblclmnDataInserimento.setText("Data Inserimento");
+		
+		TableViewerColumn colonnaDestinatario = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
+		colonnaDestinatario.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				Spedizione spedizione = (Spedizione) element;
+				Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+				Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+				String ragioneSociale = destinatario.getRagioneSociale();
+				return ragioneSociale;
+			}
+		});
+		
+		TableColumn tblclmnDestinatario = colonnaDestinatario.getColumn();
+		tblclmnDestinatario.setWidth(100);
+		tblclmnDestinatario.setText("Destinatario");
+		
+		TableViewerColumn colonnaColli = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
+		colonnaColli.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				Spedizione spedizione = (Spedizione) element;
+				String colli = spedizione.getColli().toString();
+				return colli;
+			}
+		});
+		
+		TableColumn tblclmnColli = colonnaColli.getColumn();
+		tblclmnColli.setWidth(100);
+		tblclmnColli.setText("Colli");
+		
+		TableViewerColumn colonnaPezzi = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
+		colonnaPezzi.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				Spedizione spedizione = (Spedizione) element;
+				String colli = spedizione.getPezzi().toString();
+				return colli;
+			}
+		});
+		
+		TableColumn tblclmnPezzi = colonnaPezzi.getColumn();
+		tblclmnPezzi.setWidth(100);
+		tblclmnPezzi.setText("Pezzi");
+		
+		Composite compositeSelezione = new Composite(container, SWT.NONE);
+		compositeSelezione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeSelezione.setLayout(new GridLayout(2, false));
+		
+		Button btnSelezionaTutte = new Button(compositeSelezione, SWT.NONE);
+		btnSelezionaTutte.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkboxTableViewer.setAllChecked(true);
+				valida();
+			}
+		});
+		btnSelezionaTutte.setText("Seleziona tutte");
+		
+		Button btnDeselezionaTutte = new Button(compositeSelezione, SWT.NONE);
+		btnDeselezionaTutte.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkboxTableViewer.setAllChecked(false);
+				valida();
+			}
+		});
+		btnDeselezionaTutte.setText("Deseleziona tutte");
+	}
+	
+	private void valida() {
+		canFlip = checkboxTableViewer.getCheckedElements().length > 0;
+		setPageComplete(canFlip);
+	}
+	
+	@Override
+	public boolean canFlipToNextPage() {
+		return canFlip;
+	}
+	
+	@Override
+	public IWizardPage getNextPage() {
+		Object[] spedizioniSelezionate = checkboxTableViewer.getCheckedElements();
+		controllerPreventivo.setSpedizioniSelezionate(spedizioniSelezionate);
+		return super.getNextPage();
+	}
+	
+	@Override
+	public IWizardPage getPreviousPage() {
+		return null;
+	}
+	
+	public void caricaSpedizioni() {
+		Commessa commessaSelezionata = controllerPreventivo.getCommessa();
+		Date da = controllerPreventivo.getDataDa();
+		Date a = controllerPreventivo.getDataA();
+		checkboxTableViewer.setInput(controllerSpedizioni.getListaSpedizioni(commessaSelezionata, da, a));
+		for (TableColumn column : table.getColumns()) {
+			column.pack();
+		}
+	}
+	
+}

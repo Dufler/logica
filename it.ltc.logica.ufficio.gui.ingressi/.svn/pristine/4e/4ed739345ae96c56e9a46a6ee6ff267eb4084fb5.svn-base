@@ -1,0 +1,100 @@
+package it.ltc.logica.ufficio.gui.ingressi.elements;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.StatoIngresso;
+import it.ltc.logica.database.model.centrale.ingressi.TipoIngresso;
+import it.ltc.logica.gui.elements.Etichettatore;
+
+public class EtichettatoreIngressi extends Etichettatore<Ingresso> {
+	
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy"); 
+
+	@Override
+	public String getTesto(Ingresso oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto); break;
+			case 1 : testo = getRiferimentoCliente(oggetto); break;
+			case 2 : testo = getRiferimentoInterno(oggetto); break;
+			case 3 : testo = getPezzi(oggetto); break;
+			case 4 : testo = getStato(oggetto); break;
+			case 5 : testo = getTipo(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	private String getTipo(Ingresso oggetto) {
+		TipoIngresso tipo = TipoIngresso.getTipo(oggetto.getTipo());
+		String testo = tipo != null ? tipo.getNome() : "-";
+		return testo;
+	}
+	
+	private String getDescrizioneTipo(Ingresso oggetto) {
+		TipoIngresso tipo = TipoIngresso.getTipo(oggetto.getTipo());
+		String testo = tipo != null ? tipo.getDescrizione() : "-";
+		return testo;
+	}
+
+	private String getStato(Ingresso oggetto) {
+		StatoIngresso stato = StatoIngresso.getStato(oggetto.getStato());
+		String testo = stato != null ? stato.getNome() : "-";
+		return testo;
+	}
+	
+	private String getDescrizioneStato(Ingresso oggetto) {
+		StatoIngresso stato = StatoIngresso.getStato(oggetto.getStato());
+		String testo = stato != null ? stato.getDescrizione() : "-";
+		return testo;
+	}
+
+	private String getPezzi(Ingresso oggetto) {
+		String pezziStimati = oggetto.getPezziStimati() != null ? oggetto.getPezziStimati().toString() : "N.D.";
+		int pezziLetti = oggetto.getPezziLetti() != null ? oggetto.getPezziLetti() : 0;
+		String testo = pezziLetti + " / " + pezziStimati;
+		return testo;
+	}
+
+	private String getRiferimentoInterno(Ingresso oggetto) {
+		String testo = oggetto.getRiferimentoInterno() != null ? oggetto.getRiferimentoInterno() : "-";
+		return testo;
+	}
+
+	private String getRiferimentoCliente(Ingresso oggetto) {
+		String testo = oggetto.getRiferimentoCliente() != null ? oggetto.getRiferimentoCliente() : "-";
+		return testo;
+	}
+
+	private String getData(Ingresso oggetto) {
+		Date data = oggetto.getDataArrivo();
+		String testo = data != null ? sdf.format(data) : "Non Disponibile";
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(Ingresso oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto); break;
+			case 1 : testo = getRiferimentoCliente(oggetto); break;
+			case 2 : testo = getRiferimentoInterno(oggetto); break;
+			case 3 : testo = getPezzi(oggetto); break;
+			case 4 : testo = getDescrizioneStato(oggetto); break;
+			case 5 : testo = getDescrizioneTipo(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public Image getIcona(Ingresso oggetto, int colonna) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

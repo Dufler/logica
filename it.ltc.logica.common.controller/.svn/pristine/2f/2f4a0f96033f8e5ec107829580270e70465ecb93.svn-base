@@ -1,0 +1,94 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioCorriere;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerCorrieri {
+	
+	private static ControllerCorrieri instance;
+	
+	private final HashMap<Integer, Corriere> corrieri;
+	private final List<ServizioCorriere> servizi;
+
+	private ControllerCorrieri() {
+		corrieri = new HashMap<>();
+		servizi = new LinkedList<>();
+		caricaDati();
+	}
+
+	public static ControllerCorrieri getInstance() {
+		if (instance == null) {
+			instance = new ControllerCorrieri();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoCorrieri pc = new ProcessoCaricamentoCorrieri();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pc);
+		if (pc.getEsito()) {
+			corrieri.clear();
+			List<Corriere> list = pc.getLista();
+			for (Corriere corriere : list) {
+				corrieri.put(corriere.getId(), corriere);
+			}
+		}
+		
+		ProcessoCaricamentoServizi pcs = new ProcessoCaricamentoServizi();
+		DialogProgresso dialogServizi = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialogServizi.esegui(pcs);
+		if (pcs.getEsito()) {
+			servizi.clear();
+			servizi.addAll(pcs.getLista());
+		}
+	}
+	
+	public Corriere getCorriere(int id) {
+		return corrieri.get(id);
+	}
+	
+	public Collection<Corriere> getCorrieri() {
+		return corrieri.values();
+	}
+	
+	public List<ServizioCorriere> getServiziPerCorriere(int idCorriere) {
+		List<ServizioCorriere> serviziPerCorriere = new LinkedList<>();
+		for (ServizioCorriere servizio : servizi) {
+			if (servizio.getIdCorriere() == idCorriere) {
+				serviziPerCorriere.add(servizio);
+			}
+		}
+		return serviziPerCorriere;
+	}
+	
+	private class ProcessoCaricamentoCorrieri extends ProcessoCaricamentoDati<Corriere> {
+
+		private static final String title = "Caricamento corrieri";
+		private static final String resource = "corriere";
+		
+		public ProcessoCaricamentoCorrieri() {
+			super(title, resource, Corriere.class);
+		}
+		
+	}
+	
+	private class ProcessoCaricamentoServizi extends ProcessoCaricamentoDati<ServizioCorriere> {
+
+		private static final String title = "Caricamento corrieri";
+		private static final String resource = "corriere/servizio";
+		
+		public ProcessoCaricamentoServizi() {
+			super(title, resource, ServizioCorriere.class);
+		}
+		
+	}
+
+}

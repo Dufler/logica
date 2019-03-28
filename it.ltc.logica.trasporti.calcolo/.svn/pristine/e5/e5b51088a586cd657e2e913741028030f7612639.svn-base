@@ -1,0 +1,88 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.List;
+
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbito;
+
+public class VoceModel {
+	
+	private IAmbito ambito;
+	private double valore;
+	private Double minimo;
+	private Double massimo;
+	private Double intervallo;
+	private List<Scaglione> scaglioni;
+	
+	private String tipoAlgoritmo;
+	private String strategiaAlgoritmo;
+	
+	public VoceModel(IAmbito a, double v) {
+		ambito = a;
+		valore = v;
+	}
+	
+	public IAmbito getAmbito() {
+		return ambito;
+	}
+	
+	public void setAmbito(IAmbito ambito) {
+		this.ambito = ambito;
+	}
+	
+	public Double getValore() {
+		return valore;
+	}
+	
+	public void setValore(double valore) {
+		this.valore = valore;
+	}
+	
+	public Double getMinimo() {
+		return minimo;
+	}
+	
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+	
+	public Double getMassimo() {
+		return massimo;
+	}
+	
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+	
+	public Double getIntervallo() {
+		return intervallo;
+	}
+	
+	public void setIntervallo(Double intervallo) {
+		this.intervallo = intervallo;
+	}
+
+	public List<Scaglione> getScaglioni() {
+		return scaglioni;
+	}
+
+	public void setScaglioni(List<Scaglione> scaglioni) {
+		this.scaglioni = scaglioni;
+	}
+
+	public String getTipoAlgoritmo() {
+		return tipoAlgoritmo;
+	}
+
+	public void setTipoAlgoritmo(String tipoAlgoritmo) {
+		this.tipoAlgoritmo = tipoAlgoritmo;
+	}
+
+	public String getStrategiaAlgoritmo() {
+		return strategiaAlgoritmo;
+	}
+
+	public void setStrategiaAlgoritmo(String strategiaAlgoritmo) {
+		this.strategiaAlgoritmo = strategiaAlgoritmo;
+	}
+
+}

@@ -1,0 +1,297 @@
+package it.ltc.logica.trasporti.controller.preventivi;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino.Scopo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.listini.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione.TipoSpedizione;
+import it.ltc.logica.database.model.locale.ListinoSimulazione;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class PreventivoEsistentiController extends PreventivoController {
+
+	private static PreventivoEsistentiController instance;
+	
+	private final ListiniSimulazioneController controllerListiniSimulazione;
+	private final ControllerAmbitiFatturazione controllerAmbiti;
+	
+	//Criteri di selezione delle spedizioni
+	private Date da;
+	private Date a;
+	private Commessa commessa;
+	private Corriere corriere;
+	private CodiceClienteCorriere codiceCliente;
+	private ServizioCorriere servizio;
+	private TipoSpedizione tipoSpedizione;
+	private Boolean contrassegno;
+	
+	private boolean pezziNecessari;
+	private boolean colliNecessari;
+	private boolean pesoNecessario;
+	private boolean volumeNecassario;
+	
+	private final List<Spedizione> listaSpedizioniSelezionate;
+	
+	private PreventivoEsistentiController() {
+		listaSpedizioniSelezionate = new ArrayList<Spedizione>();
+		controllerListiniSimulazione = ListiniSimulazioneController.getInstance();
+		controllerAmbiti = ControllerAmbitiFatturazione.getInstance();
+	}
+	
+	public static PreventivoEsistentiController getInstance() {
+		if (instance == null) {
+			instance = new PreventivoEsistentiController();
+		}
+		return instance;
+	}
+	
+	/**
+	 * Metodo da chiamare solo dentro il wizard per resettare eventuali dati sporchi rimasti da precedenti utilizzi.
+	 * @return una nuova istanza vuota.
+	 */
+	public static PreventivoEsistentiController resetInstance() {
+		instance = new PreventivoEsistentiController();
+		return instance;
+	}
+	
+	public List<Spedizione> getListaSpedizioniSelezionate() {
+		return listaSpedizioniSelezionate;
+	}
+
+	public void setSpedizioniSelezionate(Object[] spedizioniSelezionate) {
+		listaSpedizioniSelezionate.clear();
+		for (Object o : spedizioniSelezionate) {
+			Spedizione spedizione = (Spedizione) o;
+			listaSpedizioniSelezionate.add(spedizione);
+		}
+	}
+	
+	public void setCommessa(Commessa commessaSelezionata) {
+		commessa = commessaSelezionata;		
+	}
+	
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setDataDa(Date da) {
+		this.da = da;		
+	}
+	
+	public void setDataA(Date a) {
+		this.a = a;		
+	}
+
+	public Date getDataDa() {
+		return da;
+	}
+	
+	public Date getDataA() {
+		return a;
+	}
+
+	public Corriere getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Corriere corriere) {
+		this.corriere = corriere;
+	}
+	
+	public CodiceClienteCorriere getCodice() {
+		return codiceCliente;
+	}
+	
+	public void setCodice(CodiceClienteCorriere codiceCliente) {
+		this.codiceCliente = codiceCliente;		
+	}
+
+	public ServizioCorriere getServizio() {
+		return servizio;
+	}
+
+	public void setServizio(ServizioCorriere servizio) {
+		this.servizio = servizio;
+	}
+	
+	public TipoSpedizione getTipoSpedizione() {
+		return tipoSpedizione;
+	}
+	
+	public void setTipoSpedizione(TipoSpedizione tipo) {
+		this.tipoSpedizione = tipo;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+	
+	public boolean isPezziNecessari() {
+		return pezziNecessari;
+	}
+
+	public void setPezziNecessari(boolean pezziNecessari) {
+		this.pezziNecessari = pezziNecessari;
+	}
+
+	public boolean isColliNecessari() {
+		return colliNecessari;
+	}
+
+	public void setColliNecessari(boolean colliNecessari) {
+		this.colliNecessari = colliNecessari;
+	}
+
+	public boolean isPesoNecessario() {
+		return pesoNecessario;
+	}
+
+	public void setPesoNecessario(boolean pesoNecessario) {
+		this.pesoNecessario = pesoNecessario;
+	}
+
+	public boolean isVolumeNecassario() {
+		return volumeNecassario;
+	}
+
+	public void setVolumeNecassario(boolean volumeNecassario) {
+		this.volumeNecassario = volumeNecassario;
+	}
+
+	public EsitoSimulazione calcola(IProgressMonitor monitor) {
+		int spedizioni = 0;
+		int colli = 0;
+		int pezzi = 0;
+		//Carico e calcolo le singole spedizioni
+		List<SpedizioneModel> calcoli = new LinkedList<SpedizioneModel>();
+		for (Spedizione spedizione  : listaSpedizioniSelezionate) {
+			SpedizioneModel model = SpedizioneModel.caricaSpedizione(spedizione);
+			calcoli.add(model);
+			spedizioni += 1;
+			colli += model.getSpedizione().getColli();
+			pezzi += model.getSpedizione().getPezzi();
+			monitor.worked(1);
+		}
+		calcola(calcoli);
+		//Calcolo i totali: listini cliente
+		List<TotaleListino> listaTotali = new LinkedList<TotaleListino>();
+		for (ListinoCommessa listino : listiniCliente) {
+			String nome = listino.getNome();
+			AmbitoFattura ambito = controllerAmbiti.getAmbito(listino.getTipo());
+			String tipoListino = ambito != null ? ambito.getNome() : "-";
+			double[] totali = getTotali(calcoli, listino.getId());
+			TotaleListino totaleListino = new TotaleListino(listino.getId(), Scopo.RICAVO);
+			totaleListino.setNome(nome);
+			totaleListino.setTipoListino(tipoListino);
+			totaleListino.setTotale(totali[0]);
+			totaleListino.setNolo(totali[1]);
+			totaleListino.setContrassegno(totali[2]);
+			totaleListino.setExtra(totali[3]);
+			listaTotali.add(totaleListino);
+		}
+		//Calcolo i totali: listini corriere
+		for (ListinoCorriere listino : listiniCorriere) {
+			String nome = listino.getNome();
+			AmbitoFattura ambito = controllerAmbiti.getAmbito(listino.getTipo());
+			String tipoListino = ambito != null ? ambito.getNome() : "-";
+			double[] totali = getTotali(calcoli, listino.getId());
+			TotaleListino totaleListino = new TotaleListino(listino.getId(), Scopo.COSTO);
+			totaleListino.setNome(nome);
+			totaleListino.setTipoListino(tipoListino);
+			totaleListino.setTotale(totali[0]);
+			totaleListino.setNolo(totali[1]);
+			totaleListino.setContrassegno(totali[2]);
+			totaleListino.setExtra(totali[3]);
+			listaTotali.add(totaleListino);
+		}
+		//Calcolo i totali: listini di simulazione
+		for (ListinoSimulazione listino : listiniSimulazione) {
+			String nome = listino.getNome();
+			AmbitoFattura ambito = controllerAmbiti.getAmbito(listino.getTipo());
+			String tipoListino = ambito != null ? ambito.getNome() : "-";
+			double[] totali = getTotali(calcoli, listino.getId());
+			TotaleListino totaleListino = new TotaleListino(listino.getId(), controllerListiniSimulazione.getScopo(listino.getId()));
+			totaleListino.setNome(nome);
+			totaleListino.setTipoListino(tipoListino);
+			totaleListino.setTotale(totali[0]);
+			totaleListino.setNolo(totali[1]);
+			totaleListino.setContrassegno(totali[2]);
+			totaleListino.setExtra(totali[3]);
+			listaTotali.add(totaleListino);
+		}
+		//Marco i totali di interesse
+		trovaTotaliMigliori(listaTotali);
+		EsitoSimulazione simulazione = new EsitoSimulazione(colli, pezzi, spedizioni, calcoli, listaTotali);
+		return simulazione;
+	}
+
+	private void trovaTotaliMigliori(List<TotaleListino> listaTotali) {
+		TotaleListino costoMinore = null;
+		TotaleListino ricavoMaggiore = null;
+		for (TotaleListino totale : listaTotali) {
+			if (totale.getScopo() == Scopo.COSTO) {
+				if (costoMinore == null || costoMinore.getTotale() > totale.getTotale()) {
+					costoMinore = totale;
+				}
+			} else if (totale.getScopo() == Scopo.RICAVO) {
+				if (ricavoMaggiore == null || ricavoMaggiore.getTotale() < totale.getTotale()) {
+					ricavoMaggiore = totale;
+				}
+			}
+		}
+		//Segno i migliori trovati, se trovati
+		if (costoMinore != null)
+			costoMinore.setCostoMinore(true);
+		if (ricavoMaggiore != null)
+			ricavoMaggiore.setRicavoMaggiore(true);
+	}
+
+	/**
+	 * Restituisce un array di double contenente i totali dei calcoli fatti per il listino.
+	 * 0 - il totale
+	 * 1 - il totale del nolo
+	 * 2 - il totale dei contrassegni
+	 * 3 - il totale degli extra
+	 * @param calcoli
+	 * @param idListino
+	 * @return
+	 */
+	private double[] getTotali(List<SpedizioneModel> calcoli, Integer idListino) {
+		double[] totali = new double[4];
+		for (SpedizioneModel model : calcoli) {
+			//Calcolo i listini clienti
+			Calcolo calcolo = model.getCalcolo(idListino);
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				totali[0] += voce.getCosto();
+				switch (voce.getCategoriaAmbito()) {
+					case "NOLO_BASE" : totali[1] += voce.getCosto(); break;
+					case "NOLO_EXTRA" : totali[1] += voce.getCosto(); break;
+					case "CONTRASSEGNO" : totali[2] += voce.getCosto(); break;
+					default : totali[3] += voce.getCosto(); break;
+				}
+			}
+		}
+		return totali;
+	}
+
+}

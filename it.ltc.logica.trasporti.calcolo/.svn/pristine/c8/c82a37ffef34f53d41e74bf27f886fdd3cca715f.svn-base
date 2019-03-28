@@ -1,0 +1,41 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class SupplementoCampioneItalia implements IAmbito {
+	
+	public static final String CAP_CAMPIONE = "22060";
+	public static final String LOCALITA_CAMPIONE = "CAMPIONE";
+	
+	public static final String CODICE = "NOLO_CAMPIONE";
+	private static SupplementoCampioneItalia instance;
+	
+	private SupplementoCampioneItalia() {}
+	
+	public static SupplementoCampioneItalia getInstance() {
+		if (instance == null) {
+			instance = new SupplementoCampioneItalia();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean cap = CAP_CAMPIONE.equalsIgnoreCase(destinazione.getCap());
+		boolean localita = destinazione.getLocalita().toUpperCase().contains(LOCALITA_CAMPIONE);
+		boolean applicabile = cap && localita;
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+
+}

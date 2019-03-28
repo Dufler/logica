@@ -1,0 +1,86 @@
+package it.ltc.logica.amministrazione.gui.listini.wizards;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.gui.wizard.WizardConFinale;
+
+public class NuovaVoceListinoCommessaWizard extends WizardConFinale {
+	
+	private ListiniClientiController controller;
+	
+	private NuovaVoceListinoCommessaProprietaWizardPage paginaProprieta;
+	private NuovaVoceListinoCommessaFissoWizardPage paginaFisso;
+	private NuovaVoceListinoCommessaProporzionaleWizardPage paginaProporzionale;
+	private NuovaVoceListinoCommessaPercentualeWizardPage paginaPercentuale;
+	private NuovaVoceListinoCommessaScaglioniWizardPage paginaScaglioni;
+	private NuovaVoceListinoCommessaScaglioniRipetutiWizardPage paginaScaglioniRipetuti;
+	private NuovaVoceListinoCommessaRiepilogoWizardPage paginaRiepilogo;
+
+	private IWizardPage algoritmoSelezionato;
+
+	public NuovaVoceListinoCommessaWizard(ListinoCommessa listinoSelezionato) {
+		setWindowTitle("Nuova Voce di Listino");
+		controller = ListiniClientiController.getInstance();
+		paginaProprieta = new NuovaVoceListinoCommessaProprietaWizardPage(listinoSelezionato);
+		paginaFisso = new NuovaVoceListinoCommessaFissoWizardPage();
+		paginaProporzionale = new NuovaVoceListinoCommessaProporzionaleWizardPage();
+		paginaPercentuale = new NuovaVoceListinoCommessaPercentualeWizardPage();
+		paginaScaglioni = new NuovaVoceListinoCommessaScaglioniWizardPage();
+		paginaScaglioniRipetuti = new NuovaVoceListinoCommessaScaglioniRipetutiWizardPage();
+		paginaRiepilogo = new NuovaVoceListinoCommessaRiepilogoWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+		addPage(paginaFisso);
+		addPage(paginaProporzionale);
+		addPage(paginaPercentuale);
+		addPage(paginaScaglioni);
+		addPage(paginaScaglioniRipetuti);
+		addPage(paginaRiepilogo);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(paginaProprieta)) {
+			TipoAlgoritmo tipoAlgoritmo = paginaProprieta.getTipoAlgoritmoSelezionato();
+			switch (tipoAlgoritmo) {
+				case FISSO : {nextPage = paginaFisso; break;}
+				case PROPORZIONALE : {nextPage = paginaProporzionale; break;}
+				case SCAGLIONI : {nextPage = paginaScaglioni; break;}
+				case SCAGLIONI_RIPETUTI : {nextPage = paginaScaglioniRipetuti; break;}
+				case PERCENTUALE : {nextPage = paginaPercentuale; break;}
+				default : break;
+			}
+			algoritmoSelezionato = nextPage;
+		} else if (currentPage.equals(algoritmoSelezionato)) {
+			nextPage = paginaRiepilogo;
+			paginaRiepilogo.setValues();
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean finisci() {
+		boolean finish = controller.creaNuovaVoceDiListino();
+		if (!finish) {
+			MessageDialog.openError(null, "Errore", "Ci sono stati problemi con l'inserimento.");
+		}
+		return finish;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = false;
+		if(getContainer().getCurrentPage() == paginaRiepilogo)
+			finish = true;
+		return finish;
+	}
+
+}

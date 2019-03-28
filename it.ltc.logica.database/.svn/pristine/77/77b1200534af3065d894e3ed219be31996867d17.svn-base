@@ -1,0 +1,119 @@
+package it.ltc.logica.database.model.sqlserver.ltc;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Compare;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.Type;
+
+public class TrackingEsiti extends Entity implements Comparable<TrackingEsiti> {
+
+	private static final String nomeTabella = "dbo.Tracking_Esiti";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private String stato;
+	private Date data;
+	private Integer idOrdine;
+	private String descrizione;
+	//Variabili per le query
+	private Date dataDa;
+	private Date dataA;
+
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("id", "id");
+			variabili.addString("stato", "stato");
+			variabili.addDate("data", "data");
+			variabili.addInt("idOrdine", "idOrdine");
+			variabili.addString("descrizione", "descrizione");
+			//Variabili per le query
+			variabili.add(new Column("data", Type.DATE, "dataDa", Compare.MAGGIORE));
+			variabili.add(new Column("data", Type.DATE, "dataA", Compare.MINORE));
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public Date getData() {
+		return data;
+	}
+
+	public void setData(Date data) {
+		this.data = data;
+	}
+
+	public Integer getIdOrdine() {
+		return idOrdine;
+	}
+
+	public void setIdOrdine(Integer idOrdine) {
+		this.idOrdine = idOrdine;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public Date getDataDa() {
+		return dataDa;
+	}
+
+	public void setDataDa(Date dataDa) {
+		this.dataDa = dataDa;
+	}
+
+	public Date getDataA() {
+		return dataA;
+	}
+
+	public void setDataA(Date dataA) {
+		this.dataA = dataA;
+	}
+
+	@Override
+	public int compareTo(TrackingEsiti arg) {
+		int compare = 0;
+		Date data2 = arg.getData();
+		if (data == null) {
+			if (data2 == null)
+				compare = 0;
+			else
+				compare = 1;
+		} else {
+			if (data2 == null)
+				compare = -1;
+			else
+				compare = (data.compareTo(data2) * -1);
+		}		
+		return compare;
+	}
+
+}

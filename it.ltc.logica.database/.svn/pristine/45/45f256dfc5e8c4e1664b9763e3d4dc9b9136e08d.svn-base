@@ -1,0 +1,73 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.orm.ColumnList;
+
+public class GiacenzaStorica extends Giacenza {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "storico_giacenza";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+//	@JsonIgnore
+//	private static final HashMap<Integer, GiacenzaStorica> giacenze = new HashMap<Integer, GiacenzaStorica>();
+//	@JsonIgnore
+//	private static final LinkedList<GiacenzaStorica> listaGiacenze = new LinkedList<GiacenzaStorica>();
+//	@JsonIgnore
+//	private static final EntityManager<GiacenzaStorica> manager = new EntityManager<GiacenzaStorica>(GiacenzaStorica.class, ConfigurationManager.getDefault());
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addInt("id_spedizione", "idSpedizione");
+			variabili.addInt("id_ordine", "idOrdine");
+			variabili.addInt("id_mittente", "idMittente");
+			variabili.addInt("id_destinatario", "idDestinatario");
+			variabili.addDate("data_apertura", "apertura");
+			variabili.addDate("data_chiusura", "chiusura");
+			variabili.addString("lettera_di_vettura", "letteraDiVettura");
+			variabili.addString("lettera_di_vettura_originale", "letteraDiVetturaOriginale");
+			variabili.addInt("fatturazione", "fatturazione", false, true);
+			variabili.addDouble("costo", "costo");
+			variabili.addDouble("ricavo", "ricavo");
+		}
+		return variabili;
+	}
+	
+//	public static List<GiacenzaStorica> getGiacenze() {
+//		if (listaGiacenze.isEmpty()) {
+//			listaGiacenze.addAll(manager.getEntities());
+//		}
+//		return listaGiacenze;
+//	}
+//	
+//	public static GiacenzaStorica getGiacenza(Integer id) {
+//		if (!giacenze.containsKey(id)) {
+//			//Lo inizializzo se non è stato ancora fatto
+//			if (giacenze.isEmpty()) {
+//				for (GiacenzaStorica gs : getGiacenze()) {
+//					giacenze.put(gs.getId(), gs);
+//				}
+//			} else {
+//				GiacenzaStorica filtro = new GiacenzaStorica();
+//				filtro.setId(id);
+//				GiacenzaStorica trovata = manager.getEntity(filtro, true);
+//				if (trovata != null) {
+//					giacenze.put(id, trovata);
+//				}
+//			}
+//		}
+//		return giacenze.get(id);
+//	}
+
+}

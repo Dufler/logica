@@ -1,0 +1,46 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione.voce;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.locale.ListinoSimulazioneVoce;
+import it.ltc.logica.database.model.locale.ListinoSimulazioneVocePercentuale;
+import it.ltc.logica.gui.wizard.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeVocePercentuale;
+
+public class NuovaVoceListinoSimulazionePercentualeWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino di simulazione - Algoritmo";
+	private static final String descrizione = "Specifica il valore percentuale.";
+
+	private final ListinoSimulazioneVoce voce;
+	private final ListinoSimulazioneVocePercentuale vocePercentuale;
+	
+	private CompositeVocePercentuale compositePercentuale;
+	
+	public NuovaVoceListinoSimulazionePercentualeWizardPage(ListinoSimulazioneVoce voce) {
+		super(titolo, descrizione);
+		this.voce = voce;
+		this.vocePercentuale = new ListinoSimulazioneVocePercentuale();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositePercentuale = new CompositeVocePercentuale(container, SWT.NONE);
+		compositePercentuale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositePercentuale);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		vocePercentuale.setValore(compositePercentuale.getValore());
+		vocePercentuale.setMassimo(compositePercentuale.getMassimo());
+		vocePercentuale.setMinimo(compositePercentuale.getMinimo());
+		voce.setPercentuale(vocePercentuale);
+	}
+
+}

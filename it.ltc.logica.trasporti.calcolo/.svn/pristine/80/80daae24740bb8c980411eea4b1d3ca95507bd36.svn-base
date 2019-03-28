@@ -1,0 +1,445 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo.Tipo;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino.Scopo;
+import it.ltc.logica.common.calcolo.algoritmi.ModelDaCalcolare;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.storico.ContrassegnoStorico;
+import it.ltc.logica.database.model.centrale.storico.SpedizioneStorica;
+import it.ltc.logica.database.model.centrale.trasporti.Assicurazione;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.Giacenza;
+import it.ltc.logica.database.model.centrale.trasporti.ParticolaritaSpedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbitoTrasporto;
+
+/**
+ * Model che ingloba tutti i dati relativi a una spedizione.
+ * Viene utilizzato per il calcolo del costo di spedizioni, resi, ritiri e giacenze.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class SpedizioneModel extends ModelDaCalcolare {
+	
+	private static final EntityManager<Contrassegno> managerContrassegni = new EntityManager<Contrassegno>(Contrassegno.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Assicurazione> managerAssicurazioni = new EntityManager<Assicurazione>(Assicurazione.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Indirizzo> managerIndirizzi = new EntityManager<Indirizzo>(Indirizzo.class, ConfigurationManager.getDefault());
+	private static final EntityManager<ParticolaritaSpedizione> managerParticolarita = new EntityManager<ParticolaritaSpedizione>(ParticolaritaSpedizione.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Giacenza> managerGiacenze = new EntityManager<Giacenza>(Giacenza.class, ConfigurationManager.getDefault());
+	
+	private String label;
+	
+	private Spedizione spedizione;
+	private Contrassegno contrassegno;
+	private Assicurazione assicurazione;
+	private Indirizzo destinazione;
+	private Indirizzo partenza;
+	private Indirizzo destinazioneGiacenza;
+	private ParticolaritaSpedizione particolarita;
+	private Giacenza giacenza;
+	
+	private Calcolo preventivoRicavo;
+	private Calcolo preventivoCosto;
+	
+	private boolean datiPerCalcoloCompleti;
+	private boolean datiPezzi;
+	private boolean datiColli;
+	private boolean datiPeso;
+	private boolean datiVolume;
+
+	public SpedizioneModel(Spedizione s, Contrassegno c, Assicurazione a, Indirizzo d, Indirizzo p, Indirizzo dg, ParticolaritaSpedizione ps, Giacenza g) {
+		spedizione = s;
+		contrassegno = c;
+		assicurazione = a;
+		destinazione = d;
+		partenza = p;
+		destinazioneGiacenza = dg;
+		particolarita = ps;
+		giacenza = g;
+		setLabel("");
+		verificaDatiFatturazione();
+	}
+	
+	/**
+	 * Verifica che i dati di fatturazione siano completi e salva l'esito in variabili d'appoggio interne all'oggetto.
+	 */
+	public void verificaDatiFatturazione() {
+		Double peso = spedizione.getPeso();
+		Double volume = spedizione.getVolume();
+		Integer pezzi = spedizione.getPezzi();
+		Integer colli = spedizione.getColli();
+		datiPezzi = pezzi != null && pezzi > 0;
+		datiColli = colli != null && colli > 0;
+		datiPeso = peso != null && peso > 0;
+		datiVolume = volume != null && volume > 0;
+		datiPerCalcoloCompleti = datiPezzi && datiColli && datiPeso && datiVolume;
+	}
+	
+	@Override
+	public void resettaCalcoli() {
+		mappaCalcoli.clear();
+		if (preventivoRicavo != null)
+			preventivoRicavo.pulisciVoci();
+		if (preventivoCosto != null)
+			preventivoCosto.pulisciVoci();
+	}
+	
+	/**
+	 * Genera un model a partire dai dati di una spedizione storica.
+	 * @param ss la spedizione storica da cui recuperare i dati.
+	 * @return il model per effettuare i calcoli.
+	 */
+	public static SpedizioneModel caricaSpedizione(SpedizioneStorica ss) {
+		SpedizioneModel spedizione = null;
+		if (ss != null) {
+			Spedizione s = caricaSpedizioneDaStorico(ss);
+			Contrassegno c = caricaContrassegnoDaStorico(ss);
+			Assicurazione a = null;
+			Indirizzo d = caricaDestinazione(s);
+			Indirizzo p = caricaPartenza(s);
+			Indirizzo dg = caricaDestiniatarioGiacenza(null);
+			ParticolaritaSpedizione ps = null;
+			spedizione = new SpedizioneModel(s, c, a, d, p, dg, ps, null);
+		}
+		return spedizione;
+	}
+	
+	/**
+	 * Genera un model a partire dai dati di una spedizione.
+	 * @param ss la spedizione da cui recuperare i dati.
+	 * @return il model per effettuare i calcoli.
+	 */
+	public static SpedizioneModel caricaSpedizione(Spedizione s) {
+		SpedizioneModel spedizione = null;
+		if (s != null) {
+			Contrassegno c = caricaContrassegno(s);
+			Assicurazione a = caricaAssicurazione(s);
+			Indirizzo d = caricaDestinazione(s);
+			Indirizzo p = caricaPartenza(s);
+			ParticolaritaSpedizione ps = caricaParticolarita(s);
+			Giacenza g = caricaPrimaGiacenza(s);
+			Indirizzo dg = caricaDestiniatarioGiacenza(g);
+			spedizione = new SpedizioneModel(s, c, a, d, p, dg, ps, g);
+		}
+		return spedizione;
+	}
+
+	/**
+	 * Genera un model a partire dai dati di una spedizione storica.
+	 * @param ss la spedizione storica da cui recuperare i dati.
+	 * @return il model per effettuare i calcoli.
+	 */
+	public static SpedizioneModel caricaSpedizione(Spedizione s, Giacenza g) {
+		SpedizioneModel spedizione = null;
+		if (s != null) {
+			Contrassegno c = caricaContrassegno(s);
+			Assicurazione a = caricaAssicurazione(s);
+			Indirizzo d = caricaDestinazione(s);
+			Indirizzo p = caricaPartenza(s);
+			ParticolaritaSpedizione ps = caricaParticolarita(s);
+			Indirizzo dg = caricaDestiniatarioGiacenza(g);
+			spedizione = new SpedizioneModel(s, c, a, d, p, dg, ps, g);
+		}
+		return spedizione;
+	}
+	
+	private static Indirizzo caricaDestiniatarioGiacenza(Giacenza g) {
+		Indirizzo d = null;
+		if (g != null) {
+			Indirizzo filtroIndirizzo = new Indirizzo();
+			filtroIndirizzo.setId(g.getIdDestinatario());
+			d = managerIndirizzi.getEntity(filtroIndirizzo);
+		}
+		return d;
+	}
+
+	private static Spedizione caricaSpedizioneDaStorico(SpedizioneStorica ss) {
+		Spedizione s = new Spedizione();
+		s.setCodiceCliente(ss.getCodiceCliente());
+		s.setColli(ss.getColli());
+		s.setDataPartenza(ss.getDataPartenza());
+		s.setDatiCompleti(ss.getDatiCompleti());
+		s.setGiacenza(ss.getGiacenza());
+		s.setId(ss.getId());
+		s.setIdCommessa(ss.getIdCommessa());
+		s.setIdCorriere(ss.getIdCorriere());
+		s.setIndirizzoDestinazione(ss.getIndirizzoDestinazione());
+		s.setIndirizzoPartenza(ss.getIndirizzoPartenza());
+		s.setIdDocumento(ss.getIdDocumento());
+		s.setLetteraDiVettura(ss.getLetteraDiVettura());
+		s.setParticolarita(false);
+		s.setContrassegno(ss.getContrassegno());
+		s.setPeso(ss.getPeso());
+		s.setPezzi(ss.getPezzi());
+		s.setServizio(ss.getServizio());
+		s.setVolume(ss.getVolume());
+		s.setRiferimentoCliente(ss.getRiferimentoCliente());
+		s.setRiferimentoMittente(ss.getRiferimentoMittente());
+		s.setInRitardo(ss.getInRitardo());
+		return s;
+	}
+	
+	private static Contrassegno caricaContrassegnoDaStorico(SpedizioneStorica ss) {
+		Contrassegno c = null;
+		if (ss.getContrassegno()) {
+			c = ContrassegnoStorico.getContrassegno(ss.getId());
+		}
+		return c;
+	}
+	
+	private static Contrassegno caricaContrassegno(Spedizione s) {
+		Contrassegno c = null;
+		if (s.getContrassegno()) {
+			Contrassegno filtroContrassegno = new Contrassegno();
+			filtroContrassegno.setIdSpedizione(s.getId());
+			c = managerContrassegni.getEntity(filtroContrassegno);
+		}
+		return c;
+	}
+	
+	private static Assicurazione caricaAssicurazione(Spedizione s) {
+		Assicurazione a = null;
+		if (s.getAssicurazione()) {
+			Assicurazione filtroAssicurazione = new Assicurazione();
+			filtroAssicurazione.setIdSpedizione(s.getId());
+			a = managerAssicurazioni.getEntity(filtroAssicurazione);
+		}
+		return a;
+	}
+	
+	private static Indirizzo caricaDestinazione(Spedizione s) {
+		Indirizzo filtroIndirizzo = new Indirizzo();
+		filtroIndirizzo.setId(s.getIndirizzoDestinazione());
+		Indirizzo d = managerIndirizzi.getEntity(filtroIndirizzo);
+		return d;
+	}
+	
+	private static Indirizzo caricaPartenza(Spedizione s) {
+		Indirizzo filtroIndirizzo = new Indirizzo();
+		filtroIndirizzo.setId(s.getIndirizzoPartenza());
+		Indirizzo p = managerIndirizzi.getEntity(filtroIndirizzo);
+		return p;
+	}
+	
+	private static ParticolaritaSpedizione caricaParticolarita(Spedizione s) {
+		ParticolaritaSpedizione ps = null;
+		if (s.getParticolarita() != null && s.getParticolarita()) {
+			ParticolaritaSpedizione filtroParticolarita = new ParticolaritaSpedizione();
+			filtroParticolarita.setIdSpedizione(s.getId());
+			ps = managerParticolarita.getEntity(filtroParticolarita);
+		}
+		return ps;
+	}
+	
+	private static Giacenza caricaPrimaGiacenza(Spedizione s) {
+		Giacenza g = null;
+		if (s.getGiacenza() != null && s.getGiacenza()) {
+			Giacenza filtroGiacenza = new Giacenza();
+			filtroGiacenza.setIdSpedizione(s.getId());
+			g = managerGiacenze.getEntity(filtroGiacenza);
+		}
+		return g;
+	}
+	
+	public Spedizione getSpedizione() {
+		return spedizione;
+	}
+	public void setSpedizione(Spedizione spedizione) {
+		this.spedizione = spedizione;
+	}
+	public Contrassegno getContrassegno() {
+		return contrassegno;
+	}
+	public void setContrassegno(Contrassegno contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+	public Assicurazione getAssicurazione() {
+		return assicurazione;
+	}
+	public void setAssicurazione(Assicurazione assicurazione) {
+		this.assicurazione = assicurazione;
+	}
+
+	public Indirizzo getDestinazione() {
+		return destinazione;
+	}
+
+	public void setDestinazione(Indirizzo destinazione) {
+		this.destinazione = destinazione;
+	}
+
+	public Indirizzo getPartenza() {
+		return partenza;
+	}
+
+	public void setPartenza(Indirizzo partenza) {
+		this.partenza = partenza;
+	}
+
+	public ParticolaritaSpedizione getParticolarita() {
+		return particolarita;
+	}
+
+	public void setParticolarita(ParticolaritaSpedizione particolarita) {
+		this.particolarita = particolarita;
+	}
+
+	public Giacenza getGiacenza() {
+		return giacenza;
+	}
+
+	public void setGiacenze(Giacenza giacenza) {
+		this.giacenza = giacenza;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	public Calcolo getPreventivoRicavo() {
+		return preventivoRicavo;
+	}
+	
+	public void addCalcolo(Calcolo calcolo) {
+		if (calcolo.getTipo() == Tipo.COSTO)
+			this.preventivoCosto = calcolo;
+		else if (calcolo.getTipo() == Tipo.RICAVO)
+			this.preventivoRicavo = calcolo;
+		mappaCalcoli.put(calcolo.getIdListino(), calcolo);
+	}
+
+	public Calcolo getPreventivoCosto() {
+		return preventivoCosto;
+	}
+
+	public List<Calcolo> getPreventiviRicavo() {
+		List<Calcolo> preventiviRicavo = new LinkedList<Calcolo>();
+		for (Calcolo calcolo : getCalcoli()) {
+			if (calcolo.getTipo() == Calcolo.Tipo.RICAVO)
+				preventiviRicavo.add(calcolo);
+		}
+		return preventiviRicavo;
+	}
+
+	public List<Calcolo> getPreventiviCosto() {
+		List<Calcolo> preventiviRicavo = new LinkedList<Calcolo>();
+		for (Calcolo calcolo : getCalcoli()) {
+			if (calcolo.getTipo() == Calcolo.Tipo.COSTO)
+				preventiviRicavo.add(calcolo);
+		}
+		return preventiviRicavo;
+	}
+	
+	public double getCostoTotale(Scopo scopo) {
+		double totale = 0;
+		Calcolo calcolo = getCalcoloRichiesto(scopo);
+		if (calcolo != null)
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				totale += voce.getCosto();
+			}
+		return totale;
+	}
+	
+	public double getCostoNolo(Scopo scopo) {
+		double totale = 0;
+		Calcolo calcolo = getCalcoloRichiesto(scopo);
+		if (calcolo != null)
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				IAmbitoTrasporto.Tipo categoria = IAmbitoTrasporto.Tipo.valueOf(voce.getCategoriaAmbito());
+				if (categoria == IAmbitoTrasporto.Tipo.NOLO_BASE || categoria == IAmbitoTrasporto.Tipo.NOLO_EXTRA)
+					totale += voce.getCosto();
+			}
+		return totale;
+	}
+	
+	public double getCostoNoloBase(Scopo scopo) {
+		double totale = 0;
+		Calcolo calcolo = getCalcoloRichiesto(scopo);
+		if (calcolo != null)
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				IAmbitoTrasporto.Tipo categoria = IAmbitoTrasporto.Tipo.valueOf(voce.getCategoriaAmbito());
+				if (categoria == IAmbitoTrasporto.Tipo.NOLO_BASE)
+					totale += voce.getCosto();
+			}
+		return totale;
+	}
+	
+	public double getCostoContrassegno(Scopo scopo) {
+		double totale = 0;
+		Calcolo calcolo = getCalcoloRichiesto(scopo);
+		if (calcolo != null)
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				IAmbitoTrasporto.Tipo categoria = IAmbitoTrasporto.Tipo.valueOf(voce.getCategoriaAmbito());
+				if (categoria == IAmbitoTrasporto.Tipo.CONTRASSEGNO)
+					totale += voce.getCosto();
+			}
+		return totale;
+	}
+	
+	private Calcolo getCalcoloRichiesto(Scopo scopo) {
+		Calcolo calcolo;
+		if (scopo == Scopo.COSTO)
+			calcolo = preventivoCosto;
+		else if (scopo == Scopo.RICAVO)
+			calcolo = preventivoRicavo;
+		else
+			calcolo = null;
+		return calcolo;
+	}
+
+	public Indirizzo getDestinatarioGiacenza() {
+		return destinazioneGiacenza;
+	}
+
+	/**
+	 * Restituisce un'indicazione sul fatto che i dati sulla spedizione siano sufficienti al corretto calcolo del preventivo.
+	 * @return true se i valori sono tutti validi, false altrimenti
+	 */
+	public boolean isDatiPerCalcoloCompleti() {
+		return datiPerCalcoloCompleti;
+	}
+
+	/**
+	 * Restituisce un'indicazione se è possibile calcolare voci basate sul numero dei pezzi.
+	 * @return true se i pezzi sono validi, false altrimenti
+	 */
+	public boolean isDatiPezzi() {
+		return datiPezzi;
+	}
+
+	/**
+	 * Restituisce un'indicazione se è possibile calcolare voci basate sul numero di colli.
+	 * @return true se i colli sono validi, false altrimenti
+	 */
+	public boolean isDatiColli() {
+		return datiColli;
+	}
+
+	/**
+	 * Restituisce un'indicazione se è possibile calcolare voci basate sul peso.
+	 * @return true se il peso è valido, false altrimenti
+	 */
+	public boolean isDatiPeso() {
+		return datiPeso;
+	}
+
+	/**
+	 * Restituisce un'indicazione se è possibile calcolare voci basate sul volume.
+	 * @return true se il volume è valido, false altrimenti
+	 */
+	public boolean isDatiVolume() {
+		return datiVolume;
+	}
+
+}

@@ -1,0 +1,114 @@
+package it.ltc.logica.database.model.centrale.utenti;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class UtenteCommesseJoin extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "utente_commessa_join";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	@JsonIgnore
+	private static final EntityManager<UtenteCommesseJoin> manager = new EntityManager<UtenteCommesseJoin>(UtenteCommesseJoin.class, ConfigurationManager.getDefault());
+	
+	private String utente;
+	private Integer idCommessa;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("utente", "utente", true, false);
+			variabili.addInt("id_commessa", "idCommessa");
+		}
+		return variabili;
+	}
+	
+	@Override
+	public String toString() {
+		return "UtenteCommesseJoin [utente=" + utente + ", idCommessa=" + idCommessa + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idCommessa == null) ? 0 : idCommessa.hashCode());
+		result = prime * result + ((utente == null) ? 0 : utente.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UtenteCommesseJoin other = (UtenteCommesseJoin) obj;
+		if (idCommessa == null) {
+			if (other.idCommessa != null)
+				return false;
+		} else if (!idCommessa.equals(other.idCommessa))
+			return false;
+		if (utente == null) {
+			if (other.utente != null)
+				return false;
+		} else if (!utente.equals(other.utente))
+			return false;
+		return true;
+	}
+
+	public static List<Commessa> getCommesse(String username) {
+		UtenteCommesseJoin filtro = new UtenteCommesseJoin();
+		filtro.setUtente(username);
+		List<UtenteCommesseJoin> listaCommesse = manager.getEntities(filtro);
+		List<Commessa> commesse = new LinkedList<Commessa>();
+		for (UtenteCommesseJoin ucj : listaCommesse) {
+			commesse.add(Commessa.getCommessa(ucj.getIdCommessa()));
+		}
+		return commesse;
+	}
+	
+	public static Commessa getCommessaDefault(String username) {
+		Commessa commessa = null;
+		UtenteCommesseJoin filtro = new UtenteCommesseJoin();
+		filtro.setUtente(username);
+		UtenteCommesseJoin utente = manager.getEntity(filtro, false);
+		if (utente != null) {
+			commessa = Commessa.getCommessa(utente.getIdCommessa());
+		}
+		return commessa;
+	}
+
+	public String getUtente() {
+		return utente;
+	}
+
+	public void setUtente(String utente) {
+		this.utente = utente;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+}

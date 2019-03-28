@@ -1,0 +1,55 @@
+ 
+package it.ltc.logica.trasporti.gui.listini.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.swt.SWT;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.GridData;
+
+public class FunzioneListiniClientiPart {
+	
+	@Inject private EPartService partService;
+	
+	@Inject
+	public FunzioneListiniClientiPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Label lblListiniClienti = new Label(parent, SWT.NONE);
+		lblListiniClienti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		lblListiniClienti.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mostraPart();
+			}
+		});
+		lblListiniClienti.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		lblListiniClienti.setText("Listini Clienti");
+		
+	}
+	
+	private void mostraPart() {
+		MPart part = partService.findPart(ListiniClientiPart.partID);
+		if (part != null) {
+			System.out.println("Mostro la part: " + ListiniClientiPart.partID);
+			part.setVisible(true);
+			partService.showPart(part, PartState.VISIBLE);
+		}
+	}
+	
+	
+}

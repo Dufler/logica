@@ -1,0 +1,172 @@
+package it.ltc.logica.database.model.centrale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class CodiceClienteCorriere extends Entity {
+	
+	public static final String NOME_TABELLA = "join_commessa_corriere";
+	private static final ColumnList variabili = new ColumnList();
+	
+	//private static List<CodiceClienteCorriere> listaCodiciCliente;
+	//private static final EntityManager<CodiceClienteCorriere> manager = new EntityManager<CodiceClienteCorriere>(CodiceClienteCorriere.class, ConfigurationManager.getDefault());
+
+	private String codiceCliente;
+	private Integer idCommessa;
+	private Integer idListinoCommessa;
+	private Integer idCorriere;
+	private Integer idListinoCorriere;
+	private String descrizione;
+	private String stato;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("codice_cliente", "codiceCliente", true, false);
+			variabili.addInt("commessa", "idCommessa");
+			variabili.addInt("corriere", "idCorriere");
+			variabili.addInt("listino_commessa", "idListinoCommessa");
+			variabili.addInt("listino_corriere", "idListinoCorriere");
+			variabili.addString("descrizione", "descrizione");
+			variabili.addString("stato", "stato");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return codiceCliente;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof CodiceClienteCorriere) {
+			CodiceClienteCorriere c = (CodiceClienteCorriere) o;
+			uguali = codiceCliente.equalsIgnoreCase(c.getCodiceCliente());
+		}
+		return uguali;
+	}
+	
+//	public static List<CodiceClienteCorriere> getListaCodiciCliente() {
+//		if (listaCodiciCliente == null) {
+//			listaCodiciCliente = manager.getEntities();
+//		}
+//		return listaCodiciCliente;
+//	}
+	
+//	public static CodiceClienteCorriere getCodiceCliente(String codice) {
+//		CodiceClienteCorriere codiceCliente = null;
+//		for (CodiceClienteCorriere cc : getListaCodiciCliente()) {
+//			if (cc.getCodiceCliente().equals(codice)) {
+//				codiceCliente = cc;
+//				break;
+//			}
+//		}
+//		return codiceCliente;
+//	}
+
+	public String getCodiceCliente() {
+		return codiceCliente;
+	}
+
+	public void setCodiceCliente(String codiceCliente) {
+		this.codiceCliente = codiceCliente;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public Integer getIdListinoCommessa() {
+		return idListinoCommessa;
+	}
+
+	public void setIdListinoCommessa(Integer idListinoCommessa) {
+		this.idListinoCommessa = idListinoCommessa;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public Integer getIdListinoCorriere() {
+		return idListinoCorriere;
+	}
+
+	public void setIdListinoCorriere(Integer idListinoCorriere) {
+		this.idListinoCorriere = idListinoCorriere;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+	
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		Stato s = Stato.valueOf(stato);
+		if (s == null)
+			throw new IllegalArgumentException("Il valore indicato non è ammissibile.");
+		this.stato = stato;
+	}
+	
+	public Stato getEStato() {
+		Stato s = Stato.valueOf(stato);
+		return s;
+	}
+
+	public enum Stato {
+		
+		DEFAULT("DEFAULT", "Default", "Il codice da abbinare normalmente a quella commessa per quel corriere."),
+		ATTIVO("ATTIVO", "Attivo", "Un codice che può essere utilizzato."),
+		DISATTIVO("DISATTIVO", "Disattivo", "Un codice che non può essere utilizzato."),
+		DISMESSO("DISMESSO", "Dismesso", "Un codice che \u00E8 stato chiuso definitivamente."),
+		PROVVISORIO("PROVVISORIO", "Provvisorio", "Un codice fittizio da usare in attesa che venga aperto quello definitivo."),
+		TEST("TEST", "Test", "Un codice da inserire a fini di test.");
+		
+		private final String codice;
+		private final String nome;
+		private final String descrizione;
+		
+		private Stato(String codice, String nome, String descrizione) {
+			this.codice = codice;
+			this.nome = nome;
+			this.descrizione = descrizione;
+		}
+		
+		public String toString() {
+			return nome;
+		}
+
+		public String getCodice() {
+			return codice;
+		}
+
+		public String getNome() {
+			return nome;
+		}
+
+		public String getDescrizione() {
+			return descrizione;
+		}
+	}
+
+}

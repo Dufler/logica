@@ -1,0 +1,57 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ConsegnaOre12 extends IAmbitoTrasporto {
+
+	public ConsegnaOre12(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODIFICA_SERVIZIO_ORE12 = "O12";
+	
+	public static final String CODICE = "CONSEGNA_ORE_12";
+
+	public static final int ID = 6;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		String servizio = spedizione.getSpedizione().getServizio();
+		boolean applicabile = CODIFICA_SERVIZIO_ORE12.equals(servizio);
+		return applicabile;
+	}
+
+//	@Override
+//	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+//		double valore;
+//		IAlgoritmo algoritmo = voce.getAlgoritmo();
+//		TipoAlgoritmo tipoAlgoritmo = algoritmo.getTipoAlgoritmo();
+//		switch (tipoAlgoritmo) {
+//			case FISSO : valore = 1; 
+//			case PERCENTUALE : valore = getValorePercentuale(spedizione, voce); break;
+//			default : valore = 0; 
+//		}
+//		return valore;
+//	}
+	
+//	public double getValorePercentuale(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+//		double valore;
+//		AlgoritmoPercentuale ap = (AlgoritmoPercentuale) voce.getAlgoritmo();
+//		Scopo scopo = voce.getScopo();
+//		StrategiaPercentualePerTrasporti tipo = (StrategiaPercentualePerTrasporti) ap.getStrategia();
+//		switch (tipo) {
+//			case SOLO_NOLO_BASE : valore = spedizione.getCostoNoloBase(scopo); break;
+//			case SOLO_NOLO : valore = spedizione.getCostoNolo(scopo); break;
+//			case TUTTO : valore = spedizione.getCostoTotale(scopo); break;
+//			default : valore = 0;
+//		}
+//		return valore;
+//	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+	
+}

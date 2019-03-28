@@ -1,0 +1,361 @@
+package it.ltc.logica.database.model.centrale;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class Spedizione extends Entity {
+	
+	public static final int NON_FATTURABILE = 0;
+	public static final int FATTURABILE = 1;
+	public static final int FATTURATA = 2;
+	
+	public static final String NOME_TABELLA = "spedizione";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer idOrdine;
+	private Integer idCorriere;
+	private Integer idCommessa;
+	private Date data;
+	private Integer idIndirizzoPartenza;
+	private Integer idIndirizzoDestinazione;
+	private Integer colli;
+	private Double peso;
+	private Double volume;
+	private Integer pezzi;
+	private String servizio;
+	private Boolean contrassegno;
+	private Boolean assicurazione;
+	private String stato;
+	private Boolean giacenza;
+	private String letteraDiVettura;
+	private Double valoreMerce;
+	private Boolean particolarita;
+	private String codiceCliente;
+	private String riferimentoCliente;
+	private String riferimentoMittente;
+	private String note;
+	private Boolean inRitardo;
+	private Boolean datiCompleti;
+	private Integer fatturazione;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("id", "id");
+			variabili.addInt("id_ordine", "idOrdine");
+			variabili.addInt("id_corriere", "idCorriere");
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addDate("data_partenza", "data");
+			variabili.addInt("indirizzo_partenza", "idIndirizzoPartenza");
+			variabili.addInt("indirizzo_destinazione", "idIndirizzoDestinazione");		
+			variabili.addInt("colli", "colli");
+			variabili.addDouble("peso", "peso");
+			variabili.addDouble("volume", "volume");
+			variabili.addInt("pezzi", "pezzi");
+			variabili.addString("servizio", "servizio");
+			variabili.addBoolean("contrassegno", "contrassegno");
+			variabili.addBoolean("assicurazione", "assicurazione");
+			variabili.addString("stato", "stato");
+			variabili.addBoolean("giacenza", "giacenza", false, true);
+			variabili.addString("lettera_di_vettura", "letteraDiVettura");
+			variabili.addDouble("valore_merce_dichiarato", "valoreMerce");
+			variabili.addBoolean("particolarita", "particolarita");
+			variabili.addString("codice_cliente", "codiceCliente");
+			variabili.addString("riferimento_cliente", "riferimentoCliente");
+			variabili.addString("riferimento_mittente", "riferimentoMittente");
+			variabili.addString("note", "note");
+			variabili.addBoolean("in_ritardo", "inRitardo", false, true);
+			variabili.addBoolean("dati_completi", "datiCompleti", false, true);
+			variabili.addInt("fatturazione", "fatturazione", false, true);
+		}
+		return variabili;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((codiceCliente == null) ? 0 : codiceCliente.hashCode());
+		result = prime * result + ((colli == null) ? 0 : colli.hashCode());
+		result = prime * result + ((data == null) ? 0 : data.hashCode());
+		result = prime * result + ((idCommessa == null) ? 0 : idCommessa.hashCode());
+		result = prime * result + ((idCorriere == null) ? 0 : idCorriere.hashCode());
+		result = prime * result + ((letteraDiVettura == null) ? 0 : letteraDiVettura.hashCode());
+		result = prime * result + ((pezzi == null) ? 0 : pezzi.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Spedizione other = (Spedizione) obj;
+		if (codiceCliente == null) {
+			if (other.codiceCliente != null)
+				return false;
+		} else if (!codiceCliente.equals(other.codiceCliente))
+			return false;
+		if (colli == null) {
+			if (other.colli != null)
+				return false;
+		} else if (!colli.equals(other.colli))
+			return false;
+		if (data == null) {
+			if (other.data != null)
+				return false;
+		} else if (!data.equals(other.data))
+			return false;
+		if (idCommessa == null) {
+			if (other.idCommessa != null)
+				return false;
+		} else if (!idCommessa.equals(other.idCommessa))
+			return false;
+		if (idCorriere == null) {
+			if (other.idCorriere != null)
+				return false;
+		} else if (!idCorriere.equals(other.idCorriere))
+			return false;
+		if (letteraDiVettura == null) {
+			if (other.letteraDiVettura != null)
+				return false;
+		} else if (!letteraDiVettura.equals(other.letteraDiVettura))
+			return false;
+		if (pezzi == null) {
+			if (other.pezzi != null)
+				return false;
+		} else if (!pezzi.equals(other.pezzi))
+			return false;
+		return true;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdOrdine() {
+		return idOrdine;
+	}
+
+	public void setIdOrdine(Integer idOrdineUscita) {
+		this.idOrdine = idOrdineUscita;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public Date getData() {
+		return data;
+	}
+
+	public void setData(Date data) {
+		if (data != null)
+			this.data = new Date(data.getTime());
+		else
+			this.data = null;
+	}
+
+	public Integer getIdIndirizzoPartenza() {
+		return idIndirizzoPartenza;
+	}
+
+	public void setIdIndirizzoPartenza(Integer idIndirizzoPartenza) {
+		this.idIndirizzoPartenza = idIndirizzoPartenza;
+	}
+
+	public Integer getIdIndirizzoDestinazione() {
+		return idIndirizzoDestinazione;
+	}
+
+	public void setIdIndirizzoDestinazione(Integer idIndirizzoDestinazione) {
+		this.idIndirizzoDestinazione = idIndirizzoDestinazione;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public Integer getColli() {
+		return colli;
+	}
+
+	public void setColli(Integer colli) {
+		this.colli = colli;
+	}
+
+	public Double getPeso() {
+		return peso;
+	}
+
+	public void setPeso(Double peso) {
+		this.peso = peso;
+	}
+
+	public Double getVolume() {
+		return volume;
+	}
+
+	public void setVolume(Double volume) {
+		this.volume = volume;
+	}
+
+	public Integer getPezzi() {
+		return pezzi;
+	}
+
+	public void setPezzi(Integer pezzi) {
+		this.pezzi = pezzi;
+	}
+
+	public String getServizio() {
+		return servizio;
+	}
+
+	public void setServizio(String servizio) {
+		this.servizio = servizio;
+	}	
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public Boolean getAssicurazione() {
+		return assicurazione;
+	}
+
+	public void setAssicurazione(Boolean assicurazione) {
+		this.assicurazione = assicurazione;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public Boolean getGiacenza() {
+		return giacenza;
+	}
+
+	public void setGiacenza(Boolean giacenza) {
+		this.giacenza = giacenza;
+	}
+
+	public String getLetteraDiVettura() {
+		return letteraDiVettura;
+	}
+
+	public void setLetteraDiVettura(String letteraDiVettura) {
+		this.letteraDiVettura = letteraDiVettura;
+	}
+
+	public Double getValoreMerce() {
+		return valoreMerce;
+	}
+
+	public void setValoreMerce(Double valoreMerce) {
+		this.valoreMerce = valoreMerce;
+	}
+
+	public Boolean getParticolarita() {
+		return particolarita;
+	}
+
+	public void setParticolarita(Boolean particolarita) {
+		this.particolarita = particolarita;
+	}
+
+	public String getCodiceCliente() {
+		return codiceCliente;
+	}
+
+	public void setCodiceCliente(String codiceCliente) {
+		this.codiceCliente = codiceCliente;
+	}
+
+	public String getRiferimentoCliente() {
+		return riferimentoCliente;
+	}
+
+	public void setRiferimentoCliente(String riferimentoCliente) {
+		this.riferimentoCliente = riferimentoCliente;
+	}
+
+	public String getRiferimentoMittente() {
+		return riferimentoMittente;
+	}
+
+	public void setRiferimentoMittente(String riferimentoMittente) {
+		this.riferimentoMittente = riferimentoMittente;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public Boolean getInRitardo() {
+		return inRitardo;
+	}
+
+	public void setInRitardo(Boolean inRitardo) {
+		this.inRitardo = inRitardo;
+	}
+
+	public Boolean getDatiCompleti() {
+		return datiCompleti;
+	}
+
+	public void setDatiCompleti(Boolean datiCompleti) {
+		this.datiCompleti = datiCompleti;
+	}
+
+	public Integer getFatturazione() {
+		return fatturazione;
+	}
+
+	public void setFatturazione(Integer fatturazione) {
+		this.fatturazione = fatturazione;
+	}
+
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		//TODO - validazione model
+		return esito;
+	}
+
+}

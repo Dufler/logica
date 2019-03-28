@@ -1,0 +1,150 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class AmbitoDiTrasporto extends Entity {
+	
+	public static final String TIPO_NOLO_BASE = "NOLO_BASE";
+	public static final String TIPO_NOLO_EXTRA = "NOLO_EXTRA";
+	public static final String TIPO_EXTRA = "EXTRA";
+	public static final String TIPO_CONTRASSEGNO = "CONTRASSEGNO";
+	public static final String TIPO_ISTAT = "ISTAT";
+	
+	public static final String NOME_TABELLA = "ambito_trasporto";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+	
+	private static List<AmbitoDiTrasporto> listaAmbiti;
+	private static final List<AmbitoDiTrasporto> listaAmbitiCorrieri = new ArrayList<AmbitoDiTrasporto>();
+	private static final List<AmbitoDiTrasporto> listaAmbitiClienti = new ArrayList<AmbitoDiTrasporto>();
+	private static final EntityManager<AmbitoDiTrasporto> managerAmbiti = new EntityManager<AmbitoDiTrasporto>(AmbitoDiTrasporto.class);
+
+	private String codice;
+	private String nome;
+	private String descrizione;
+	private String tipo;
+	private Boolean usoCorriere;
+	private Boolean usoCliente;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("codice", Column.STRING, "codice", true, false));
+			variabili.add(new Column("nome", Column.STRING, "nome"));
+			variabili.add(new Column("descrizione", Column.STRING, "descrizione"));
+			variabili.add(new Column("tipo", Column.STRING, "tipo"));
+			variabili.add(new Column("uso_corriere", Column.BOOLEAN, "usoCorriere"));
+			variabili.add(new Column("uso_cliente", Column.BOOLEAN, "usoCliente"));
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return (nome != null) ? nome : "";
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AmbitoDiTrasporto) {
+			AmbitoDiTrasporto ambito = (AmbitoDiTrasporto) o;
+			uguali = codice.equals(ambito.getCodice());
+		}
+		return uguali;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbiti() {
+		if (listaAmbiti == null) {
+			listaAmbiti = managerAmbiti.getEntities();
+		}
+		return listaAmbiti;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbitiClienti() {
+		if (listaAmbitiClienti.isEmpty()) {
+			for (AmbitoDiTrasporto ambito : getListaAmbiti()) {
+				if (ambito.getUsoCliente())
+					listaAmbitiClienti.add(ambito);
+			}
+		}
+		return listaAmbitiClienti;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbitiCorrieri() {
+		if (listaAmbitiCorrieri.isEmpty()) {
+			for (AmbitoDiTrasporto ambito : getListaAmbiti()) {
+				if (ambito.getUsoCorriere())
+					listaAmbitiCorrieri.add(ambito);
+			}
+		}
+		return listaAmbitiCorrieri;
+	}
+	
+	public static AmbitoDiTrasporto getAmbito(String codice) {
+		AmbitoDiTrasporto ambito = null;
+		for (AmbitoDiTrasporto a : getListaAmbiti()) {
+			if (a.getCodice().equals(codice)) {
+				ambito = a;
+				break;
+			}
+		}
+		return ambito;
+	}
+
+	public String getCodice() {
+		return codice;
+	}
+
+	public void setCodice(String codice) {
+		this.codice = codice;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Boolean getUsoCorriere() {
+		return usoCorriere;
+	}
+
+	public void setUsoCorriere(Boolean usoCorriere) {
+		this.usoCorriere = usoCorriere;
+	}
+
+	public Boolean getUsoCliente() {
+		return usoCliente;
+	}
+
+	public void setUsoCliente(Boolean usoCliente) {
+		this.usoCliente = usoCliente;
+	}
+
+}

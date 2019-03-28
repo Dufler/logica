@@ -1,0 +1,195 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class ResiRichieste extends Entity {
+	
+	public static final String NOME_TABELLA = "dbo.ResiRichieste";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private String ragioneSociale;
+	private String numeroReso;
+	private String indirizzo;
+	private String cap;
+	private String localita;
+	private String contatto;
+	private String telefono;
+	private String email;
+	private Integer colli;
+	private String dataRitiro;
+	private String stato;
+	private String letteraDiVettura;
+	private String note;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("RagSoc", "ragioneSociale");
+			variabili.addString("NAR", "numeroReso");
+			variabili.addString("Indirizzo", "indirizzo");
+			variabili.addString("Cap", "cap");
+			variabili.addString("Localita", "localita");
+			variabili.addString("PersonaContatto", "contatto");
+			variabili.addString("Telefono", "telefono");
+			variabili.addString("Email", "email");
+			variabili.addInt("NrColli", "colli");
+			variabili.addString("DataOraRitiro", "dataRitiro");
+			variabili.addString("Stato", "stato");
+			variabili.addString("LetteraDiVettura", "letteraDiVettura");
+			variabili.addString("CaricoNote", "note");
+		}
+		return variabili;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResiRichieste other = (ResiRichieste) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "ResiRichieste [id=" + id + ", ragioneSociale=" + ragioneSociale + ", numeroReso=" + numeroReso
+				+ ", stato=" + stato + ", letteraDiVettura=" + letteraDiVettura + "]";
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRagioneSociale() {
+		return ragioneSociale;
+	}
+
+	public void setRagioneSociale(String ragioneSociale) {
+		this.ragioneSociale = ragioneSociale;
+	}
+
+	public String getNumeroReso() {
+		return numeroReso;
+	}
+
+	public void setNumeroReso(String numeroReso) {
+		this.numeroReso = numeroReso;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getLocalita() {
+		return localita;
+	}
+
+	public void setLocalita(String localita) {
+		this.localita = localita;
+	}
+
+	public String getContatto() {
+		return contatto;
+	}
+
+	public void setContatto(String contatto) {
+		this.contatto = contatto;
+	}
+
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Integer getColli() {
+		return colli;
+	}
+
+	public void setColli(Integer colli) {
+		this.colli = colli;
+	}
+
+	public String getDataRitiro() {
+		return dataRitiro;
+	}
+
+	public void setDataRitiro(String dataRitiro) {
+		this.dataRitiro = dataRitiro;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public String getLetteraDiVettura() {
+		return letteraDiVettura;
+	}
+
+	public void setLetteraDiVettura(String letteraDiVettura) {
+		this.letteraDiVettura = letteraDiVettura;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+}

@@ -1,0 +1,256 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class MagaMov extends Entity {
+	
+	private static final String nomeTabella = "dbo.MagaMov";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private String causale;
+	private Date dataMovMag;
+	private Integer oraMovMag;
+	private String idUniArticolo;
+	private Date docData;
+	private String docCat;
+	private String docTipo;
+	private String docNr;
+	private String docNote;
+	private Integer quantita;
+	private String segno;
+	private String tipo;
+	private String utente;
+	private String tipoCollo;
+	private String segnoEsi;
+	private String segnoImp;
+	private String segnoDis;
+	private String incTotali;
+	private String codMaga;
+	private Integer esistenzaMov;
+	private Integer disponibileMov;
+	private Integer impegnatoMov;
+	
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdMagaMov", "id");
+			variabili.addString("Causale", "causale");
+			variabili.addDate("DataMovMag", "dataMovMag");
+			variabili.addInt("OraMovMag", "oraMovMag");
+			variabili.addString("IdUniArticolo", "idUniArticolo");
+			variabili.addDate("DocData", "docData");
+			variabili.addString("DocCat", "docCat");
+			variabili.addString("DocTipo", "docTipo");
+			variabili.addString("DocNr", "docNr");
+			variabili.addString("DocNote", "docNote");
+			variabili.addInt("Quantita", "quantita");
+			variabili.addString("Segno", "segno");
+			variabili.addString("Tipo", "tipo");
+			variabili.addString("Utente", "utente");
+			variabili.addString("TipoCollo", "tipoCollo");
+			variabili.addString("SegnoEsi", "segnoEsi");
+			variabili.addString("SegnoImp", "segnoImp");
+			variabili.addString("SegnoDis", "segnoDis");
+			variabili.addString("IncTotali", "incTotali");
+			variabili.addString("CodMaga", "codMaga");
+			variabili.addInt("Esistenzamov", "esistenzaMov");
+			variabili.addInt("disponibilemov", "disponibileMov");
+			variabili.addInt("impegnatomov", "impegnatoMov");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getCausale() {
+		return causale;
+	}
+
+	public void setCausale(String causale) {
+		this.causale = causale;
+	}
+
+	public Date getDataMovMag() {
+		return dataMovMag;
+	}
+
+	public void setDataMovMag(Date dataMovMag) {
+		this.dataMovMag = dataMovMag;
+	}
+
+	public Integer getOraMovMag() {
+		return oraMovMag;
+	}
+
+	public void setOraMovMag(Integer oraMovMag) {
+		this.oraMovMag = oraMovMag;
+	}
+
+	public String getIdUniArticolo() {
+		return idUniArticolo;
+	}
+
+	public void setIdUniArticolo(String idUniArticolo) {
+		this.idUniArticolo = idUniArticolo;
+	}
+
+	public Date getDocData() {
+		return docData;
+	}
+
+	public void setDocData(Date docData) {
+		this.docData = docData;
+	}
+
+	public String getDocCat() {
+		return docCat;
+	}
+
+	public void setDocCat(String docCat) {
+		this.docCat = docCat;
+	}
+
+	public String getDocTipo() {
+		return docTipo;
+	}
+
+	public void setDocTipo(String docTipo) {
+		this.docTipo = docTipo;
+	}
+
+	public String getDocNr() {
+		return docNr;
+	}
+
+	public void setDocNr(String docNr) {
+		this.docNr = docNr;
+	}
+
+	public String getDocNote() {
+		return docNote;
+	}
+
+	public void setDocNote(String docNote) {
+		this.docNote = docNote;
+	}
+
+	public Integer getQuantita() {
+		return quantita;
+	}
+
+	public void setQuantita(Integer quantita) {
+		this.quantita = quantita;
+	}
+
+	public String getSegno() {
+		return segno;
+	}
+
+	public void setSegno(String segno) {
+		this.segno = segno;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public String getUtente() {
+		return utente;
+	}
+
+	public void setUtente(String utente) {
+		this.utente = utente;
+	}
+
+	public String getTipoCollo() {
+		return tipoCollo;
+	}
+
+	public void setTipoCollo(String tipoCollo) {
+		this.tipoCollo = tipoCollo;
+	}
+
+	public String getSegnoEsi() {
+		return segnoEsi;
+	}
+
+	public void setSegnoEsi(String segnoEsi) {
+		this.segnoEsi = segnoEsi;
+	}
+
+	public String getSegnoImp() {
+		return segnoImp;
+	}
+
+	public void setSegnoImp(String segnoImp) {
+		this.segnoImp = segnoImp;
+	}
+
+	public String getSegnoDis() {
+		return segnoDis;
+	}
+
+	public void setSegnoDis(String segnoDis) {
+		this.segnoDis = segnoDis;
+	}
+
+	public String getIncTotali() {
+		return incTotali;
+	}
+
+	public void setIncTotali(String incTotali) {
+		this.incTotali = incTotali;
+	}
+
+	public String getCodMaga() {
+		return codMaga;
+	}
+
+	public void setCodMaga(String codMaga) {
+		this.codMaga = codMaga;
+	}
+
+	public Integer getEsistenzaMov() {
+		return esistenzaMov;
+	}
+
+	public void setEsistenzaMov(Integer esistenzaMov) {
+		this.esistenzaMov = esistenzaMov;
+	}
+
+	public Integer getDisponibileMov() {
+		return disponibileMov;
+	}
+
+	public void setDisponibileMov(Integer disponibileMov) {
+		this.disponibileMov = disponibileMov;
+	}
+
+	public Integer getImpegnatoMov() {
+		return impegnatoMov;
+	}
+
+	public void setImpegnatoMov(Integer impegnatoMov) {
+		this.impegnatoMov = impegnatoMov;
+	}
+
+}

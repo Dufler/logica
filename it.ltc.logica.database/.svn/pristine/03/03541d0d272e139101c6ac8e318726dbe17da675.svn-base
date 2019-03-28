@@ -1,0 +1,94 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import com.jolbox.bonecp.BoneCP;
+import com.jolbox.bonecp.BoneCPConfig;
+
+public class MySQL extends DBMS {
+	
+	private BoneCP connectionPool = null;
+	
+	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	private final String driverName = "com.mysql.jdbc.Driver";
+	private final String dbms = "mysql";
+	private final String defaultPortNumber = "3306";
+
+	protected MySQL(Database db) {
+		super(db);
+		try {
+			Class.forName(driverName);
+			setup(db);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public String getConnectionURL(Database db) {
+		String connectionURL = "jdbc:" + dbms + "://" + db.getIndirizzoDB() + ":" + defaultPortNumber + "/" + db.getNomeDB() + "?";
+		return connectionURL;
+	}
+
+	public void setup(Database db) throws Exception {
+		BoneCPConfig config = new BoneCPConfig();
+		config.setJdbcUrl(getConnectionURL(db));
+		config.setUsername(db.getUsername()); 
+		config.setPassword(db.getPassword());
+		Properties configuration = new Properties();
+		configuration.setProperty("db_username", db.getUsername());
+		configuration.setProperty("db_password", db.getPassword());
+		configuration.setProperty("db_dbms", dbms);
+		configuration.setProperty("db_host", db.getIndirizzoDB());
+		configuration.setProperty("db_port", defaultPortNumber);
+		configuration.setProperty("db_name", db.getNomeDB());
+		configuration.setProperty("useSSL", "false");
+		configuration.setProperty("autoReconnect", "true");
+		config.setProperties(configuration);
+		config.setMinConnectionsPerPartition(1);
+		config.setMaxConnectionsPerPartition(2);
+		config.setPartitionCount(1);
+		connectionPool = new BoneCP(config);
+	}
+
+	@Override
+	public String getDefaultDateFormat() {
+		return dateFormat;
+	}
+	
+	@Override
+	public Connection getConnection() {
+//		Connection connection = null;
+//		try {
+//			connection = connectionPool.getConnection();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//		return connection;
+		Connection connection = getConnection(true);
+		return connection;
+	}
+	
+	@Override
+	public Connection getTransactionConnection() {
+		Connection connection = getConnection(false);
+		return connection;
+	}
+	
+	private Connection getConnection(boolean autocommit) {
+		Connection connection = null;
+		try {
+			connection = connectionPool.getConnection();
+			connection.setAutoCommit(autocommit);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+	
+	public void finalize() {
+		connectionPool.shutdown();
+	}
+
+}

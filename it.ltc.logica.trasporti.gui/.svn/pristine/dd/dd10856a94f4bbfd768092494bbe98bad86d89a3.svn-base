@@ -1,0 +1,239 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Contrassegno;
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.Nazione;
+import it.ltc.logica.database.model.centrale.Provincia;
+import it.ltc.logica.database.model.centrale.ServizioSpedizione;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.database.model.centrale.TipoContrassegno;
+import it.ltc.logica.database.model.centrale.Valuta;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeContrassegno;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiOrdineDaSpedizione;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiSpedizione;
+import it.ltc.logica.trasporti.gui.composite.CompositeIndirizzo;
+
+public class DialogSpedizioneModel extends DialogModel<SpedizioneModel> {
+
+	private static final String titolo = "Dettaglio dei dati della spedizione e dei preventivi";
+	
+	private SpedizioneModel model;
+	
+	private CompositeDatiSpedizione compositeDatiSpedizione;
+	private CompositeDatiOrdineDaSpedizione compositeOrdine;
+	private CompositeIndirizzo compositeDestinazione;
+	private CompositeContrassegno compositeContrassegno;
+	
+	private CTabFolder tabFolder;
+	private final TabellaVoceCalcolata[] listaTableViewerRicavi;
+	private final TabellaVoceCalcolata[] listaTableViewerCosti;
+	
+	private final boolean modifica;
+	
+	public DialogSpedizioneModel(SpedizioneModel sm, boolean modify) {
+		super(titolo, sm);
+		model = sm;
+		modifica = modify;
+		listaTableViewerRicavi = new TabellaVoceCalcolata[sm.getPreventiviRicavo().size()];
+		listaTableViewerCosti = new TabellaVoceCalcolata[sm.getPreventiviCosto().size()];
+	}
+
+	@Override
+	public void loadModel() {
+		//Dati Spedizione
+		Spedizione spedizione = model.getSpedizione();
+		compositeDatiSpedizione.setCorriere(Corriere.getCorriere(spedizione.getIdCorriere()));
+		compositeDatiSpedizione.setServizio(ServizioSpedizione.getServizio(spedizione.getServizio()));
+		String letteraDiVettura = spedizione.getLetteraDiVettura() != null ? spedizione.getLetteraDiVettura() : "";
+		compositeDatiSpedizione.setLetteraDiVettura(letteraDiVettura);
+		compositeDatiSpedizione.setColli(spedizione.getColli());
+		compositeDatiSpedizione.setVolume(spedizione.getVolume());
+		compositeDatiSpedizione.setPeso(spedizione.getPeso());
+		//Dati Ordine
+		compositeOrdine.setCommessa(Commessa.getCommessa(spedizione.getIdCommessa()));
+		String riferimentoCliente = spedizione.getRiferimentoCliente() != null ? spedizione.getRiferimentoCliente() : "";
+		compositeOrdine.setRiferimentoCliente(riferimentoCliente);
+		String riferimentoInterno = spedizione.getRiferimentoMittente() != null ? spedizione.getRiferimentoMittente() : "";
+		compositeOrdine.setRiferimentoInterno(riferimentoInterno);
+		compositeOrdine.setPezzi(spedizione.getPezzi());
+		String note = spedizione.getNote() != null ? spedizione.getNote() : "";
+		compositeOrdine.setNote(note);
+		//Destinatario
+		Indirizzo destinazione = model.getDestinazione();
+		compositeDestinazione.setIndirizzo(destinazione.getIndirizzo());
+		compositeDestinazione.setCap(destinazione.getCap());
+		compositeDestinazione.setRagioneSociale(destinazione.getRagioneSociale());
+		compositeDestinazione.setLocalita(destinazione.getLocalita());
+		compositeDestinazione.setNazione(Nazione.getNazione(destinazione.getNazione()));
+		compositeDestinazione.setProvincia(Provincia.getProvincia(destinazione.getProvincia()));
+		compositeDestinazione.setPiano(destinazione.getConsegnaPiano());
+		compositeDestinazione.setPrivato(destinazione.getConsegnaPrivato());
+		compositeDestinazione.setGDO(destinazione.getConsegnaGDO());
+		compositeDestinazione.setAppuntamento(destinazione.getConsegnaAppuntamento());
+		//Contrassegno, se presente
+		if (model.getContrassegno() != null) {
+			Contrassegno contrassegno = model.getContrassegno();
+			compositeContrassegno.setValore(contrassegno.getValore());
+			compositeContrassegno.setValuta(Valuta.getValuta(contrassegno.getValuta()));
+			compositeContrassegno.setTipoContrassegno(TipoContrassegno.getTipoContrassegno(contrassegno.getTipo()));
+			compositeContrassegno.setAnnullato(contrassegno.getAnnullato());
+		}
+		//Ricavi
+		int indexR = 0;
+		for (Calcolo ricavo : model.getPreventiviRicavo()) {
+			listaTableViewerRicavi[indexR].setInput(ricavo);
+			indexR += 1;
+		}
+		//Costi
+		int index = 0;
+		for (Calcolo costo : model.getPreventiviCosto()) {
+			listaTableViewerCosti[index].setInput(costo);
+			index += 1;
+		}
+	}
+
+	@Override
+	public void copyDataToModel() {
+		//DO NOTHING!
+	}
+
+	@Override
+	public boolean updateModel() {
+		//DO NOTHING!
+		return true;
+	}
+	
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return true;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		
+		tabFolder = new CTabFolder(container, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		
+		aggiungiTabDettagliSpedizione();
+		
+		aggiungiTabRicavi();
+		
+		aggiungiTabsCosti();
+	}
+	
+	private void aggiungiTabDettagliSpedizione() {
+		CTabItem tbtmDettagliSpedizione = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDettagliSpedizione.setText("Dettagli Spedizione");
+		
+		compositeDatiSpedizione = new CompositeDatiSpedizione(tabFolder, SWT.NONE);
+		compositeDatiSpedizione.enableInputElements(false);
+		tbtmDettagliSpedizione.setControl(compositeDatiSpedizione);
+		
+		CTabItem tbtmDettagliOrdine = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDettagliOrdine.setText("Dettagli Ordine");
+		
+		compositeOrdine = new CompositeDatiOrdineDaSpedizione(tabFolder, SWT.NONE);
+		compositeOrdine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeOrdine.enableInputElements(false);
+		
+		tbtmDettagliOrdine.setControl(compositeOrdine);
+		
+		CTabItem tbtmDettagliDestinazione = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDettagliDestinazione.setText("Destinazione");
+		
+		compositeDestinazione = new CompositeIndirizzo(tabFolder, SWT.NONE, CompositeIndirizzo.TipoIndirizzo.DESTINATARIO);
+		compositeDestinazione.enableInputElements(false);
+		tbtmDettagliDestinazione.setControl(compositeDestinazione);
+		
+		if (model.getContrassegno() != null) {
+			CTabItem tbtmDettagliContrassegno = new CTabItem(tabFolder, SWT.NONE);
+			tbtmDettagliContrassegno.setText("Contrassegno");
+			
+			compositeContrassegno = new CompositeContrassegno(tabFolder, SWT.NONE);
+			compositeContrassegno.enableInputElements(false);
+			tbtmDettagliContrassegno.setControl(compositeContrassegno);
+		}
+	}
+	
+	private void aggiungiTabRicavi() {
+		int index = 0;
+		for (Calcolo ricavo : getValore().getPreventiviRicavo()) {
+			CTabItem tbtmRicavo = new CTabItem(tabFolder, SWT.NONE);
+			tbtmRicavo.setText(ricavo.getNome());
+			
+			Composite compositeRicavo = new Composite(tabFolder, SWT.NONE);
+			compositeRicavo.setLayout(new GridLayout(1, false));
+			tbtmRicavo.setControl(compositeRicavo);
+			
+			Label lblListaDelleVoci = new Label(compositeRicavo, SWT.NONE);
+			lblListaDelleVoci.setText("Lista delle voci di ricavo per la spedizione");
+			
+			TabellaVoceCalcolata tableViewerRicavi = new TabellaVoceCalcolata(compositeRicavo);
+			tableViewerRicavi.abilitaMenu(modifica);
+			listaTableViewerRicavi[index] = tableViewerRicavi;
+			index += 1;
+			
+			Table tableCosti = tableViewerRicavi.getTable();
+			tableCosti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		}
+	}
+	
+	private void aggiungiTabsCosti() {
+		int index = 0;
+		for (Calcolo costo : getValore().getPreventiviCosto()) {
+			CTabItem tbtmCosto = new CTabItem(tabFolder, SWT.NONE);
+			tbtmCosto.setText(costo.getNome());
+			
+			Composite compositeCosto = new Composite(tabFolder, SWT.NONE);
+			compositeCosto.setLayout(new GridLayout(1, false));
+			tbtmCosto.setControl(compositeCosto);
+			
+			Label lblListaDelleVoci = new Label(compositeCosto, SWT.NONE);
+			lblListaDelleVoci.setText("Lista delle voci di costo per la spedizione");
+			
+			TabellaVoceCalcolata tableViewerCosti = new TabellaVoceCalcolata(compositeCosto);
+			tableViewerCosti.abilitaMenu(modifica);
+			listaTableViewerCosti[index] = tableViewerCosti;
+			index += 1;
+			
+			Table tableCosti = tableViewerCosti.getTable();
+			tableCosti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		}
+	}
+
+	@Override
+	public boolean isDirty() {
+		return false;
+	}
+
+	@Override
+	public SpedizioneModel createNewModel() {
+		//DO NOTHING!
+		return null;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		//DO NOTHING!
+		return null;
+	}
+}

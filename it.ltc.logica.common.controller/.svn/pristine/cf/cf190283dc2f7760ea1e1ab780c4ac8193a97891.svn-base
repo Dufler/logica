@@ -1,0 +1,62 @@
+package it.ltc.logica.common.controller.sistema;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.StatoOrdine;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerStatoTracking {
+	
+	private static ControllerStatoTracking instance;
+	
+	private final HashMap<String, StatoOrdine> stati;
+
+	private ControllerStatoTracking() {
+		stati = new HashMap<String, StatoOrdine>();
+		caricaDati();
+	}
+
+	public static ControllerStatoTracking getInstance() {
+		if (instance == null) {
+			instance = new ControllerStatoTracking();
+		}
+		return instance;
+	}
+	
+	public StatoOrdine getStato(String nome) {
+		return stati.get(nome);
+	}
+	
+	public Collection<StatoOrdine> getStati() {
+		return stati.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle features.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoStatoOrdine pcc = new ProcessoCaricamentoStatoOrdine();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			stati.clear();
+			for (StatoOrdine stato : pcc.getLista()) {
+				stati.put(stato.getCodice(), stato);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoStatoOrdine extends ProcessoCaricamentoDati<StatoOrdine> {
+
+		private static final String title = "Caricamento Stati Tracking";
+		private static final String resource = "trackingstato";
+		
+		public ProcessoCaricamentoStatoOrdine() {
+			super(title, resource, StatoOrdine.class);
+		}
+		
+	}
+
+}

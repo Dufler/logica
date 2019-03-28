@@ -1,0 +1,166 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import java.util.Collection;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+
+public class CapTableViewer extends TableViewer {
+	
+	private Table table;
+	
+	private TableViewerColumn colonnaVuota;
+	private TableViewerColumn colonnaCap;
+	private TableViewerColumn colonnaLocalita;
+	private TableViewerColumn colonnaDisagiate;
+	private TableViewerColumn colonnaOre10;
+	private TableViewerColumn colonnaOre12;
+	private TableViewerColumn colonnaIsole;
+	private TableViewerColumn colonnaZTL;
+	
+	private CapComparator comparator;
+	private FiltroCAP filter;
+
+	public CapTableViewer(Composite parent) {
+		super(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		setContentProvider(ArrayContentProvider.getInstance());
+		setOrdinamento();
+		setFiltro();
+		table = getTable();
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		aggiungiColonne();
+		aggiungiListener();
+	}
+	
+	private void aggiungiColonne() {
+		
+		//La colonna vuota viene usata perchè esiste un bug in windows 
+		//per cui se si utilizzano immagini lo stile della prima colonna viene sbagliato
+		//e viene aumentato uno spazio per far posto all'immagine (anche se deve essere posizionata in un'altra colonna)
+		colonnaVuota = new TableViewerColumn(this, SWT.CENTER);
+		colonnaVuota.setLabelProvider(new CellLabelProvider() {
+			
+			@Override
+			public void update(ViewerCell cell) {
+				//DO NOTHING	
+			}
+		});
+		TableColumn tblclmnVuota = colonnaVuota.getColumn();
+		tblclmnVuota.setWidth(0);
+		tblclmnVuota.setText("");
+		
+		colonnaCap = new TableViewerColumn(this, SWT.CENTER);
+		colonnaCap.setLabelProvider(new CapLabelProvider());
+		
+		TableColumn tblclmnCap = colonnaCap.getColumn();
+		tblclmnCap.setWidth(70);
+		tblclmnCap.setText("CAP");
+		//tblclmnCap.setAlignment(SWT.CENTER);
+		
+		colonnaLocalita = new TableViewerColumn(this, SWT.NONE);
+		colonnaLocalita.setLabelProvider(new LocalitaLabelProvider());
+		
+		TableColumn tblclmnLocalita = colonnaLocalita.getColumn();
+		tblclmnLocalita.setWidth(250);
+		tblclmnLocalita.setText("Localit\u00E0");
+		
+		colonnaOre10 = new TableViewerColumn(this, SWT.NONE);
+		colonnaOre10.setLabelProvider(new Ore10LabelProvider());
+		
+		TableColumn tblclmnOre10 = colonnaOre10.getColumn();
+		tblclmnOre10.setWidth(50);
+		tblclmnOre10.setText("Ore 10");
+		//tblclmnOre10.setAlignment(SWT.CENTER);
+		
+		colonnaOre12 = new TableViewerColumn(this, SWT.NONE);
+		colonnaOre12.setLabelProvider(new Ore12LabelProvider());
+		
+		TableColumn tblclmnOre12 = colonnaOre12.getColumn();
+		tblclmnOre12.setWidth(50);
+		tblclmnOre12.setText("Ore 12");
+		//tblclmnOre12.setAlignment(SWT.CENTER);
+		
+		colonnaDisagiate = new TableViewerColumn(this, SWT.NONE);
+		colonnaDisagiate.setLabelProvider(new DisagiateLabelProvider());
+		
+		TableColumn tblclmnDisagiata = colonnaDisagiate.getColumn();
+		tblclmnDisagiata.setWidth(80);
+		tblclmnDisagiata.setText("Disagiata");
+		tblclmnDisagiata.setAlignment(SWT.CENTER);
+		
+		colonnaIsole = new TableViewerColumn(this, SWT.NONE);
+		colonnaIsole.setLabelProvider(new IsoleLabelProvider());
+		
+		TableColumn tblclmnIsolaMinore = colonnaIsole.getColumn();
+		tblclmnIsolaMinore.setWidth(80);
+		tblclmnIsolaMinore.setText("Isola Minore");
+		tblclmnIsolaMinore.setAlignment(SWT.CENTER);
+		
+		colonnaZTL = new TableViewerColumn(this, SWT.NONE);
+		colonnaZTL.setLabelProvider(new ZTLLabelProvider());
+		
+		TableColumn tblclmnZTL = colonnaZTL.getColumn();
+		tblclmnZTL.setWidth(80);
+		tblclmnZTL.setText("ZTL");
+		tblclmnZTL.setAlignment(SWT.CENTER);	
+		
+	}
+	
+	private void setOrdinamento() {
+		comparator = new CapComparator();
+		setComparator(comparator);
+	}
+	
+	private void setFiltro() {
+		filter = new FiltroCAP();
+		setFilters(filter);
+	}
+
+	private void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModificaCap();
+			}
+		});
+	}
+	
+	private void apriDialogModificaCap() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			Cap cap = (Cap) selectedItem.getData();
+			DialogCap dialog = new DialogCap(cap);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+		
+	}
+	
+	public void mostraCap(Collection<Cap> input) {
+		setInput(input);
+	}
+	
+	public void filtra(String cap, String localita) {
+		filter.setCap(cap);
+		filter.setLocalita(localita);
+		refresh();
+	}
+
+}

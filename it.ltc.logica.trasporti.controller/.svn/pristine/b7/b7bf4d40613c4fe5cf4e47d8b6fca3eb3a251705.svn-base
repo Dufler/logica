@@ -1,0 +1,45 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.ListinoCorriere;
+
+public class PreventivoFittiziaController {
+	
+	private static PreventivoFittiziaController instance;
+	
+	private Commessa commessa;
+	private List<ListinoCorriere> listiniCorriere;
+	
+	private PreventivoFittiziaController() {}
+	
+	public static PreventivoFittiziaController getInstance() {
+		if (instance == null) {
+			instance = new PreventivoFittiziaController();
+		}
+		return instance;
+	}
+
+	public void setCommessa(Commessa commessaSelezionata) {
+		commessa = commessaSelezionata;		
+	}
+	
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setListiniCorriere(Object[] listiniSelezionati) {
+		listiniCorriere = new ArrayList<ListinoCorriere>();
+		for (Object o : listiniSelezionati) {
+			ListinoCorriere listino = (ListinoCorriere) o;
+			listiniCorriere.add(listino);
+		}
+	}
+	
+	public List<ListinoCorriere> getListiniCorriere() {
+		return listiniCorriere;
+	}
+
+}

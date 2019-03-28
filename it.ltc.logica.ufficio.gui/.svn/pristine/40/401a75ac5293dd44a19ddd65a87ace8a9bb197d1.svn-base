@@ -1,0 +1,356 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+
+import it.ltc.logica.common.controller.prodotti.ProdottiPerModello;
+import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
+import it.ltc.logica.common.controller.sistema.ControllerCategorieMerceologiche;
+import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
+import it.ltc.logica.database.model.centrale.Prodotto;
+
+public class AlberoProdotti extends TreeViewer {
+	
+	private final ControllerCategorieMerceologiche controllerCategorie;
+	
+	private final HashMap<Prodotto, Integer> mappaProdottiQuantita;
+	private Collection<ProdottiPerModello> prodotti;
+	
+	private String filterString;
+	private ViewerFilter filter;
+	private final Tree tree;
+
+	public AlberoProdotti(Composite parent) {
+		super(parent,  SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
+		
+		controllerCategorie = ControllerCategorieMerceologiche.getInstance();
+		
+		setContentProvider(new ViewContentProvider());
+		
+		filterString = "";
+		filter = new ViewerFilter() {
+
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean select = true;
+				if (element instanceof ProdottiPerModello) {
+					ProdottiPerModello ppm = (ProdottiPerModello) element;
+					String modello = ppm.getCodiceModello() != null ? ppm.getCodiceModello().toUpperCase() : "";
+					select = modello.contains(filterString);
+				}
+				return select;
+			}
+			
+		};
+		
+		setFilters(filter);
+        
+		tree = getTree();
+        tree.setHeaderVisible(true);
+        tree.setLinesVisible(true);
+        
+        TreeViewerColumn brandColumn = new TreeViewerColumn(this, SWT.NONE);
+        brandColumn.getColumn().setText("Brand");
+        brandColumn.getColumn().setWidth(100);
+        brandColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewLabelProvider(0)));
+        
+        TreeViewerColumn categoriaColumn = new TreeViewerColumn(this, SWT.NONE);
+        categoriaColumn.getColumn().setText("Categoria Merceologica");
+        categoriaColumn.getColumn().setWidth(100);
+        categoriaColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewLabelProvider(1)));
+        
+        TreeViewerColumn modelloColumn = new TreeViewerColumn(this, SWT.NONE);
+        modelloColumn.getColumn().setText("Modello");
+        modelloColumn.getColumn().setWidth(100);
+        modelloColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewLabelProvider(2)));
+        
+        TreeViewerColumn articoloColumn = new TreeViewerColumn(this, SWT.NONE);
+        articoloColumn.getColumn().setText("Articolo");
+        articoloColumn.getColumn().setWidth(100);
+        articoloColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewLabelProvider(3)));
+        
+        TreeViewerColumn quantitaColumn = new TreeViewerColumn(this, SWT.NONE);
+        quantitaColumn.getColumn().setText("Quantit\u00E0");
+        quantitaColumn.getColumn().setWidth(100);
+        quantitaColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewLabelProvider(4)));
+        quantitaColumn.setEditingSupport(new ProdottiConQuantitaEditingSupport(this));
+        
+        mappaProdottiQuantita = new HashMap<Prodotto, Integer>();
+        
+	}
+	
+	public void setProdotti(Collection<ProdottiPerModello> prodottiPerModello) {
+		this.prodotti = prodottiPerModello;
+		setInput(prodotti);
+		for (TreeColumn tc : tree.getColumns()) {
+			tc.pack();
+		}
+	}
+	
+	public void resettaQuantita() {
+		mappaProdottiQuantita.clear();
+		for (ProdottiPerModello ppm : prodotti) {
+			ppm.svuotaListaProdotti();
+		}
+		refresh();
+	}
+	
+	public void impostaQuantita(HashMap<Prodotto, Integer> mappaQuantita) {
+		mappaProdottiQuantita.clear();
+		for (ProdottiPerModello ppm : prodotti) {
+			ppm.svuotaListaProdotti();
+		}
+		for (Prodotto p : mappaQuantita.keySet()) {
+			int quantita = mappaQuantita.get(p);
+			if (quantita > 0) {
+				mappaProdottiQuantita.put(p, quantita);
+				for (ProdottiPerModello ppm : prodotti) {
+					if (ppm.appartieneProdotto(p.getId()))
+						ppm.addProdotto(p, quantita);
+				}
+			}
+		}
+		refresh();
+	}
+	
+	/**
+	 * Filtra il contenuto della tabella sul modello in base alla stringa passata come argomento.
+	 * il confronto è case insensitive.
+	 * @param searchString la stringa che deve essere contenuta nel codice modello affinchè un elemento venga mostrato.
+	 */
+	public void filtra(String searchString) {
+		filterString = searchString.toUpperCase();
+		refresh();
+	}
+	
+	/**
+	 * Restituisce la lista dei prodotti con le corrispettive quantita'.
+	 * Alcuni prodotti potrebbero avere quantita' a 0 e vanno scartati.
+	 * @return un oggetto HashMap che ha per chiave il prodotto e contiene la sua quantita' selezionata.
+	 */
+	public HashMap<Prodotto, Integer> getProdottiSelezionati() {
+		HashMap<Prodotto, Integer> copia = new HashMap<Prodotto, Integer>();
+		for (Prodotto prodotto : mappaProdottiQuantita.keySet()) {
+			copia.put(prodotto, mappaProdottiQuantita.get(prodotto));
+		}
+		return copia;
+	}
+	
+	private class ProdottiConQuantitaEditingSupport extends EditingSupport {
+
+		private final TreeViewer viewer;
+		private final CellEditor editor;
+		
+		public ProdottiConQuantitaEditingSupport(TreeViewer viewer) {
+			super(viewer);
+			this.viewer = viewer;
+			this.editor = new TextCellEditor(viewer.getTree());
+		}
+
+		@Override
+		protected CellEditor getCellEditor(Object element) {
+			return editor;
+		}
+
+		@Override
+		protected boolean canEdit(Object element) {
+			return true;
+		}
+
+		@Override
+		protected Object getValue(Object element) {
+			String value;
+			if (element instanceof ProdottoConQuantita) {
+				ProdottoConQuantita pcq = (ProdottoConQuantita) element;
+				value = Integer.toString(pcq.getQuantita());
+			} else {
+				value = "";
+			}
+			return value;
+		}
+
+		@Override
+		protected void setValue(Object element, Object value) {
+			if (element != null && element instanceof ProdottoConQuantita && value != null) {
+				try {
+					Integer nuovaQuantita = Integer.parseInt(value.toString());
+					//La quantita' inserita deve essere almeno 0.
+					if (nuovaQuantita < 0)
+						nuovaQuantita = 0;
+					ProdottoConQuantita pcq = (ProdottoConQuantita) element;
+					pcq.setQuantita(nuovaQuantita);
+					mappaProdottiQuantita.put(pcq.getProdotto(), nuovaQuantita);
+					//viewer.update(element, null);
+					viewer.refresh();
+				} catch (NumberFormatException e) {}
+			}
+		}
+
+	}
+	
+	private class ViewContentProvider implements ITreeContentProvider {
+		
+        public void inputChanged(Viewer v, Object oldInput, Object newInput) {}
+
+        @Override
+        public Object[] getElements(Object inputElement) {
+        	@SuppressWarnings("rawtypes")
+			Collection c = (Collection) inputElement;
+            return (Object[]) c.toArray();
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+        	Object[] children;
+        	if (parentElement instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) parentElement;
+        		children = ppm.getProdotti().toArray();
+        	} else {
+        		children = null;
+        	}
+            return children;
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            Object parent;
+            if (element instanceof ProdottoConQuantita) {
+            	ProdottoConQuantita pcq = (ProdottoConQuantita) element;
+            	parent = pcq.getModello();
+            } else {
+            	parent = null;
+            }
+            return parent;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+        	boolean hasChildren;
+        	if (element instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) element;
+        		hasChildren = !ppm.getProdotti().isEmpty();
+        	} else {
+        		hasChildren = false;
+        	}
+        	return hasChildren;
+        }
+
+    }
+
+	class ViewLabelProvider extends LabelProvider implements IStyledLabelProvider {
+
+		private final int index;
+
+        public ViewLabelProvider(int index) {
+            this.index = index;
+        }
+        
+        @Override
+        public Image getImage(Object element) {
+        	return null;
+        }
+
+        @Override
+        public StyledString getStyledText(Object element) {
+        	StyledString styledString;
+        	switch (index) {
+	        	case 0 : styledString = getBrand(element); break;
+	        	case 1 : styledString = getCategoriaMerceologica(element); break;
+	        	case 2 : styledString = getModello(element); break;
+	        	case 3 : styledString = getArticolo(element); break;
+	        	case 4 : styledString = getQuantita(element); break;
+	        	default : styledString = new StyledString("");
+        	}
+        	
+        	return styledString;
+        }
+
+        private StyledString getCategoriaMerceologica(Object element) {
+        	StyledString testo;
+        	if (element instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) element;
+        		CategoriaMerceologica categoria = controllerCategorie.getCategoria(ppm.getCategoriaMerceologica());
+        		String testoSemplice = categoria != null ? categoria.getNome() : "-";
+        		testo = new StyledString(testoSemplice);
+        	} else {
+        		testo = new StyledString("");
+        	}
+        	return testo;
+		}
+
+		private StyledString getQuantita(Object element) {
+        	StyledString testo;
+        	if (element instanceof ProdottoConQuantita) {
+        		ProdottoConQuantita pcq = (ProdottoConQuantita) element;
+        		int quantita = pcq.getQuantita();
+        		if (quantita > 0)
+        			testo = new StyledString(Integer.toString(quantita));
+        		else
+        			testo = new StyledString("-");
+        	} else if (element instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) element;
+        		int totale = ppm.getTotale();
+        		if (totale > 0)
+        			testo = new StyledString(Integer.toString(totale));
+        		else
+        			testo = new StyledString("");
+        	} else {
+        		testo = new StyledString("");
+        	}
+        	return testo;
+		}
+
+		private StyledString getArticolo(Object element) {
+			StyledString testo;
+        	if (element instanceof ProdottoConQuantita) {
+        		ProdottoConQuantita pcq = (ProdottoConQuantita) element;
+        		testo = new StyledString(pcq.getProdotto().getCodificaCliente());
+        	} else {
+        		testo = new StyledString("");
+        	}
+        	return testo;
+		}
+
+		private StyledString getModello(Object element) {
+			StyledString testo;
+        	if (element instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) element;
+        		testo = new StyledString(ppm.getCodiceModello());
+        	} else {
+        		testo = new StyledString("");
+        	}
+        	return testo;
+		}
+        
+        private StyledString getBrand(Object element) {
+        	StyledString testo;
+        	if (element instanceof ProdottiPerModello) {
+        		ProdottiPerModello ppm = (ProdottiPerModello) element;
+        		String testoSemplice = ppm.getBrand() != null ? ppm.getBrand() : "-";
+        		testo = new StyledString(testoSemplice);
+        	} else {
+        		testo = new StyledString("");
+        	}
+        	return testo;
+        }
+    }
+
+}

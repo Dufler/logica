@@ -1,0 +1,81 @@
+package it.ltc.logica.amministrazione.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.sistema.ControllerSedi;
+import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeCommessa extends Gruppo {
+	
+	public static final String title = "Commessa";
+	
+	private TextForString textNome;
+	private TextForString textDescrizione;
+	private ComboBox<Sede> comboSede;
+
+	public CompositeCommessa(Composite parent, int style) {
+		super(parent, style, title);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(2, false));
+		
+		Label lblNome = new Label(this, SWT.NONE);
+		lblNome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNome.setText("Nome: ");
+		
+		textNome = new TextForString(this, SWT.BORDER);
+		textNome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textNome.setEditable(false);
+		
+		Label lblSede = new Label(this, SWT.NONE);
+		lblSede.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblSede.setText("Sede: ");
+		
+		comboSede = new ComboBox<Sede>(this);
+		comboSede.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboSede.setItems(ControllerSedi.getInstance().getSedi());
+		comboSede.setEnabled(false);
+		
+		Label lblDescrizione = new Label(this, SWT.NONE);
+		lblDescrizione.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDescrizione.setText("Descrizione: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textDescrizione.setEditable(false);
+	}
+	
+	public String getNome() {
+		return textNome.getText();
+	}
+	
+	public void setNome(String text) {
+		textNome.setText(text);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+	
+	public void setDescrizione(String text) {
+		textDescrizione.setText(text);
+	}
+	
+	public Sede getSede() {
+		return comboSede.getSelectedValue();
+	}
+	
+	public void setSede(Sede value) {
+		comboSede.setSelectedValue(value);
+	}
+
+}

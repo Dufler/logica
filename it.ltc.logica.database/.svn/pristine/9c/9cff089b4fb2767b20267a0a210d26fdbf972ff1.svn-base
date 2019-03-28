@@ -1,0 +1,59 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+public class MySQLDataSource extends DBMS {
+	
+	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	
+	private DataSource ds;
+
+	protected MySQLDataSource(Database db) {
+		super(db);
+		try {
+			Context ctx = new InitialContext();
+			ds = (DataSource) ctx.lookup(db.getNomeDB());
+		} catch(NamingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Connection getConnection() {
+		Connection connection = null;
+		try {
+			connection = ds.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+
+	@Override
+	public Connection getTransactionConnection() {
+		Connection connection = null;
+		try {
+			connection = ds.getConnection();
+			connection.setAutoCommit(false);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+
+	@Override
+	public String getDefaultDateFormat() {
+		return dateFormat;
+	}
+	
+	public void finalize() {
+		ds = null;
+	}
+
+}

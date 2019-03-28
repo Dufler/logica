@@ -1,0 +1,172 @@
+package it.ltc.logica.gui.common.composite.fatturazione;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.ControllerCoordinateBancarie;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.CoordinateBancarie;
+import it.ltc.logica.database.model.centrale.fatturazione.ModalitaPagamentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.PreferenzeFatturazione;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class CompositePreferenzeFatturazione extends Gruppo {
+	
+	private static final String title = "Preferenze di Fatturazione";
+	
+	private static final String TITOLO_PREFERENZE_ESISTENTI = "Attenzione! Preferenze gi\u00E0 impostata";
+	private static final String MESSAGGIO_PREFERENZE_ESISTENTI = "Attenzione! \u00C8 gi\u00E0 stata impostata una preferenza di fatturazione per questa commessa in questo ambito.\r\nNon sar\u00E0 possibile sovrascriverla.\r\nAprire e modificare la preferenza gi\u00E0 esistente.";
+	
+	private final ControllerPreferenzeFatturazione controllerPreferenzeFatturazione;
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<AmbitoFattura> comboAmbito;
+	private ComboBox<ModalitaPagamentoFattura> comboPagamento;
+	private ComboBox<CoordinateBancarie> comboCoordinate;
+	private TextForString textDescrizione;
+
+	public CompositePreferenzeFatturazione(Composite parent, int style) {
+		super(parent, style, title);
+		
+		controllerPreferenzeFatturazione = ControllerPreferenzeFatturazione.getInstance();
+	}
+	
+	public void enablePrimaryKeyValues(boolean enable) {
+		comboCommessa.setEnabled(enable);
+		comboAmbito.setEnabled(enable);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		Label lblCommessa = new Label(this, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkPrimaryKey();
+			}
+		});
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(ControllerCommesse.getInstance().getCommesse());	
+		
+		new SpacerLabel(this);
+		
+		Label lblAmbito = new Label(this, SWT.NONE);
+		lblAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAmbito.setText("Ambito:");
+		
+		comboAmbito = new ComboBox<AmbitoFattura>(this);
+		comboAmbito.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkPrimaryKey();
+			}
+		});
+		comboAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboAmbito.setItems(ControllerAmbitiFatturazione.getInstance().getAmbiti());
+		
+		new SpacerLabel(this);
+		
+		Label lblPagamento = new Label(this, SWT.NONE);
+		lblPagamento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPagamento.setText("Modalità Pagamento: ");
+		
+		comboPagamento = new ComboBox<ModalitaPagamentoFattura>(this);
+		comboPagamento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboPagamento.setItems(ModalitaPagamentoFattura.values());
+		
+		new SpacerLabel(this);
+		
+		Label lblCoordinatePagamento = new Label(this, SWT.NONE);
+		lblCoordinatePagamento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCoordinatePagamento.setText("Coordinate Pagamento: ");
+		
+		comboCoordinate = new ComboBox<CoordinateBancarie>(this);
+		comboCoordinate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCoordinate.setItems(ControllerCoordinateBancarie.getInstance().getCoordinate());
+		
+		new SpacerLabel(this);
+		
+		Label lblDescrizioneFattura = new Label(this, SWT.NONE);
+		lblDescrizioneFattura.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizioneFattura.setText("Descrizione Fattura: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER | SWT.MULTI | SWT.WRAP);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		new SpacerLabel(this);
+	}
+	
+	private void checkPrimaryKey() {
+		AmbitoFattura ambitoSelezionato = comboAmbito.getSelectedValue();
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		if (ambitoSelezionato != null && commessaSelezionata != null) {
+			int ambito = ambitoSelezionato.getId();
+			int commessa = commessaSelezionata.getId();
+			PreferenzeFatturazione preferenze = controllerPreferenzeFatturazione.getPreferenzePerCommessaSuAmbito(commessa, ambito);
+			if (preferenze != null) {
+				DialogMessaggio.openWarning(TITOLO_PREFERENZE_ESISTENTI, MESSAGGIO_PREFERENZE_ESISTENTI);
+			}
+		}
+		
+	}
+	
+	public void setCommessa(Commessa value) {
+		comboCommessa.setSelectedValue(value);
+	}
+	
+	public Commessa getCommessa() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public void setAmbito(AmbitoFattura value) {
+		comboAmbito.setSelectedValue(value);
+	}
+	
+	public AmbitoFattura getAmbito() {
+		return comboAmbito.getSelectedValue();
+	}
+	
+	public void setModalitaPagamaneto(ModalitaPagamentoFattura value) {
+		comboPagamento.setSelectedValue(value);
+	}
+	
+	public ModalitaPagamentoFattura getModalitaPagamento() {
+		return comboPagamento.getSelectedValue();
+	}
+	
+	public void setCoordinatePagamento(CoordinateBancarie value) {
+		comboCoordinate.setSelectedValue(value);
+	}
+	
+	public CoordinateBancarie getCoordinatePagamento() {
+		return comboCoordinate.getSelectedValue();
+	}
+	
+	public void setDescrizione(String value) {
+		textDescrizione.setText(value);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+
+}

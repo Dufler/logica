@@ -1,0 +1,57 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class OrdineStorico extends Ordine {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "storico_ordine";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	@JsonIgnore
+	private static final LinkedList<OrdineStorico> ordini = new LinkedList<OrdineStorico>();
+	@JsonIgnore
+	private static final EntityManager<OrdineStorico> manager = new EntityManager<OrdineStorico>(OrdineStorico.class, ConfigurationManager.getDefault());
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addString("riferimento_interno", "riferimentoInterno");
+			variabili.addString("riferimento_cliente", "riferimentoCliente");
+			variabili.addString("riferimento_documento_fiscale", "riferimentoDocumentoFiscale");
+			variabili.addString("tipo", "tipo");
+			variabili.addInt("priorita", "priorita", false, true);
+			variabili.addDate("data_ricezione", "dataRicezione");
+			variabili.addDate("data_consegna", "dataConsegna");
+			variabili.addString("stato", "stato");
+			variabili.addString("origine", "origine");
+			variabili.addBoolean("archiviato", "archiviato", false, true);
+			variabili.addDate("data_ultimo_stato", "dataUltimoStato");
+		}
+		return variabili;
+	}
+	
+	public static List<OrdineStorico> getOrdini() {
+		if (ordini.isEmpty()) {
+			ordini.addAll(manager.getEntities());
+		}
+		return ordini;
+	}
+
+}

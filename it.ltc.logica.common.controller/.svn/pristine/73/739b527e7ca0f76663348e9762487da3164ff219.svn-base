@@ -1,0 +1,45 @@
+package it.ltc.logica.common.controller.processi;
+
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+
+public class ProcessoAggiornamentoDati<T> extends ProcessoWebService {
+	
+	protected static final String PREFISSO_TITOLO = "Aggiornamento: ";
+	
+	private final String resource;
+	private final Class<T> c;
+	private T object;
+	private boolean esito;
+
+	@SuppressWarnings("unchecked")
+	public ProcessoAggiornamentoDati(String title, String resource, T object) {
+		super(PREFISSO_TITOLO + title, -1);
+		this.resource = resource;
+		this.object = object;
+		this.c = (Class<T>) object.getClass();
+	}
+	
+	public boolean getEsito() {
+		return esito;
+	}
+
+	public T getObject() {
+		return object;
+	}
+
+
+	@Override
+	public void eseguiOperazioni() throws Exception {
+		String json = mapper.writeValueAsString(object);
+		WSAnswer wsAnswer = consumer.put(resource, json);
+		if (wsAnswer.getStatus() == 200) {
+			object = mapper.readValue(wsAnswer.getMessage(), c);
+			esito = true;
+		} else {
+			esito = false;
+			throw new RuntimeException("Errore durante l'aggiornamento dati: '" + wsAnswer.getMessage() + "'");
+		}
+
+	}
+
+}

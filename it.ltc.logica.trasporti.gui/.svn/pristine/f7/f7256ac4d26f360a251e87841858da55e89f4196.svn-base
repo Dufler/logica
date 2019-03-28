@@ -1,0 +1,33 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.Contrassegno;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class ContrassegnoLabelProvider extends ColumnLabelProvider {
+	
+	private final SpedizioniController controller;
+	
+	public ContrassegnoLabelProvider() {
+		controller = SpedizioniController.getInstance();
+	}
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		String contrassegno;
+		if (spedizione.getContrassegno()) {
+			Contrassegno c = controller.getContrassegno(spedizione.getId());
+			if (c != null)
+				contrassegno = Decorator.getEuroValue(c.getValore());
+			else
+				contrassegno = "???";
+		} else {
+			contrassegno = "-";
+		}
+		return contrassegno;
+	}
+
+}

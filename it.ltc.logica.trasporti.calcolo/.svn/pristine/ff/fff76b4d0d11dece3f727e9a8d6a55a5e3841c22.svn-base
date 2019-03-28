@@ -1,0 +1,137 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.List;
+
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbito;
+
+public class VoceModel {
+	
+	private final Integer id;
+	private final String codiceAmbito;
+	private final String nome;
+	private IAmbito ambito;
+	private double valore;
+	private Double minimo;
+	private Double massimo;
+	private Double intervallo;
+	private List<Scaglione> scaglioni;
+	
+	private String tipoAlgoritmo;
+	private String strategiaAlgoritmo;
+	
+	public VoceModel(Integer id, String c, String n, IAmbito a, double v) {
+		this.id = id;
+		codiceAmbito = c;
+		nome = n;
+		ambito = a;
+		valore = v;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public String getCodiceAmbito() {
+		return codiceAmbito;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public IAmbito getAmbito() {
+		return ambito;
+	}
+	
+	public void setAmbito(IAmbito ambito) {
+		this.ambito = ambito;
+	}
+	
+	public Double getValore() {
+		return valore;
+	}
+	
+	public void setValore(double valore) {
+		this.valore = valore;
+	}
+	
+	public Double getMinimo() {
+		return minimo;
+	}
+	
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+	
+	public Double getMassimo() {
+		return massimo;
+	}
+	
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+	
+	public Double getIntervallo() {
+		return intervallo;
+	}
+	
+	public void setIntervallo(Double intervallo) {
+		this.intervallo = intervallo;
+	}
+
+	public List<Scaglione> getScaglioni() {
+		return scaglioni;
+	}
+
+	public void setScaglioni(List<Scaglione> scaglioni) {
+		this.scaglioni = scaglioni;
+	}
+
+	public String getTipoAlgoritmo() {
+		return tipoAlgoritmo;
+	}
+
+	public void setTipoAlgoritmo(String tipoAlgoritmo) {
+		this.tipoAlgoritmo = tipoAlgoritmo;
+	}
+
+	public String getStrategiaAlgoritmo() {
+		return strategiaAlgoritmo;
+	}
+
+	public void setStrategiaAlgoritmo(String strategiaAlgoritmo) {
+		this.strategiaAlgoritmo = strategiaAlgoritmo;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VoceModel other = (VoceModel) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "VoceModel [id=" + id + ", codiceAmbito=" + codiceAmbito + ", nome=" + nome + ", ambito=" + ambito + ", valore=" + valore + ", tipoAlgoritmo=" + tipoAlgoritmo + ", strategiaAlgoritmo="
+				+ strategiaAlgoritmo + "]";
+	}
+
+}

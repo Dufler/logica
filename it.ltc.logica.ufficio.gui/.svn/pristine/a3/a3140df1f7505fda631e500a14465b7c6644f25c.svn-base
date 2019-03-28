@@ -1,0 +1,114 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import java.util.HashMap;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.prodotti.ProdottiPerModello;
+import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
+import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaProdottiPerModello extends Tabella<ProdottiPerModello> {
+	
+	private String filterString;
+	private ViewerFilter filter;
+	private final HashMap<Prodotto, Integer> mappaProdottiQuantita;
+
+	public TabellaProdottiPerModello(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreProdottiPerModello());
+		
+		aggiungiColonna("Brand", 100, new EtichettatoreProdottiPerModello(), 0);
+		aggiungiColonna("Categoria Merceologica", 100, new EtichettatoreProdottiPerModello(), 1);
+		aggiungiColonna("Modello", 100, new EtichettatoreProdottiPerModello(), 2);
+		aggiungiColonna("Taglie", 100, new EtichettatoreProdottiPerModello(), 3);
+		aggiungiColonna("Totale", 100, new EtichettatoreProdottiPerModello(), 4);
+		
+		
+		
+		mappaProdottiQuantita = new HashMap<Prodotto, Integer>();
+	}
+	
+	/**
+	 * Filtra il contenuto della tabella sul modello in base alla stringa passata come argomento.
+	 * il confronto è case insensitive.
+	 * @param searchString la stringa che deve essere contenuta nel codice modello affinchè un elemento venga mostrato.
+	 */
+	public void filtra(String searchString) {
+		filterString = searchString.toUpperCase();
+		refresh();
+	}
+	
+	/**
+	 * Restituisce la lista dei prodotti con le corrispettive quantita'.
+	 * Alcuni prodotti potrebbero avere quantita' a 0 e vanno scartati.
+	 * @return un oggetto HashMap che ha per chiave il prodotto e contiene la sua quantita' selezionata.
+	 */
+	public HashMap<Prodotto, Integer> getProdottiSelezionati() {
+		return mappaProdottiQuantita;
+	}
+
+	@Override
+	protected void setFiltro() {
+		filterString = "";
+		filter = new ViewerFilter() {
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				ProdottiPerModello ppm = (ProdottiPerModello) element;
+				String modello = ppm.getCodiceModello() != null ? ppm.getCodiceModello().toUpperCase() : "";
+				boolean select = modello.contains(filterString);
+				return select;
+			}
+		};
+		addFilter(filter);
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialog();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modifyItem = new MenuItem(menu, SWT.POP_UP);
+		modifyItem.setText("Modifica");
+		modifyItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriDialog();
+			}
+		});
+	}
+	
+	private void apriDialog() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem item = table.getItem(selectionIndex);
+			ProdottiPerModello ppm = (ProdottiPerModello) item.getData(); 
+			DialogProdottiPerModello dialog = new DialogProdottiPerModello(ppm);
+			dialog.apri();
+			//Importo la selezione.
+			for (ProdottoConQuantita pcq : ppm.getProdotti()) {
+				mappaProdottiQuantita.put(pcq.getProdotto(), pcq.getQuantita());
+			}
+			aggiustaLarghezzaColonne();
+			refresh();
+		}	
+	}
+
+}

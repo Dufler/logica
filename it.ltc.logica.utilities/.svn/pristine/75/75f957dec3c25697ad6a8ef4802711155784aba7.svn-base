@@ -1,0 +1,18 @@
+source.. = src/
+output.. = bin/
+bin.includes = META-INF/,\
+               .,\
+               lib/commons-net-3.5.jar,\
+               lib/javax.mail.jar,\
+               lib/jsch-0.1.53.jar,\
+               lib/jxl.jar,\
+               lib/log4j-1.2.17.jar,\
+               lib/javax.json-1.0.jar,\
+               lib/javax.json-api-1.0-javadoc.jar,\
+               lib/jcommon-1.0.23.jar,\
+               lib/jfreechart-1.0.19-swt.jar,\
+               lib/jfreechart-1.0.19.jar,\
+               lib/org.swtchart_0.10.0.v20160212.jar,\
+               lib/org.swtchart.ext_0.10.0.v20160212.jar,\
+               lib/poi-3.5-FINAL-20090928.jar,\
+               lib/ftp4j-1.7.2.jar

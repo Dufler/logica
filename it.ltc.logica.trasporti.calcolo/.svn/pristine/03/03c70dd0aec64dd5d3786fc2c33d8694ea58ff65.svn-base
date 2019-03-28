@@ -1,0 +1,36 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ConsegnaAiPrivati implements IAmbito {
+	
+	public static final String CODICE = "CONSEGNA_A_PRIVATI";
+	private static ConsegnaAiPrivati instance;
+	
+	private ConsegnaAiPrivati() {}
+	
+	public static ConsegnaAiPrivati getInstance() {
+		if (instance == null) {
+			instance = new ConsegnaAiPrivati();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = destinazione.getConsegnaPrivato();
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+
+}

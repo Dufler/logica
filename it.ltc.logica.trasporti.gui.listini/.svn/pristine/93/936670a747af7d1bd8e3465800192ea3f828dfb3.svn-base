@@ -1,0 +1,32 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione;
+
+import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
+import it.ltc.logica.database.model.locale.ListinoSimulazione;
+import it.ltc.logica.gui.wizard.WizardConFinale;
+
+public class NuovoListinoSimulazioneWizard extends WizardConFinale {
+	
+	private ListiniSimulazioneController controller;
+	
+	NuovoListinoSimulazioneProprietaWizardPage paginaProprieta;
+
+	public NuovoListinoSimulazioneWizard() {
+		setWindowTitle("Nuovo listino di simulazione");
+		controller = ListiniSimulazioneController.getInstance();
+		paginaProprieta = new NuovoListinoSimulazioneProprietaWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+	}
+
+	@Override
+	public boolean finisci() {
+		paginaProprieta.copyDataToModel();
+		ListinoSimulazione listino = paginaProprieta.getListino();
+		boolean insert = controller.creaNuovoListino(listino);
+		return insert;
+	}
+
+}

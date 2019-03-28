@@ -1,0 +1,41 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione;
+
+import org.eclipse.jface.wizard.Wizard;
+
+public class RincaraListinoWizard extends Wizard {
+	
+	//private ListiniClientiController controller;
+	
+	private RincaraProprietaWizardPage paginaProprieta;
+	private RincaraValoriWizardPage paginaValori;
+
+	public RincaraListinoWizard() {
+		setWindowTitle("Nuovo Listino di Simulazione");
+		//controller = ListiniClientiController.getInstance();
+		paginaProprieta = new RincaraProprietaWizardPage();
+		paginaValori = new RincaraValoriWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+		addPage(paginaValori);
+	}
+
+	@Override
+	public boolean performFinish() {
+//		ListinoCommessa listino = paginaProprieta.getListino();
+//		ListinoCorriere listinoCorriere = paginaValori.getListinoCorriere();
+//		Double[] rincari = paginaValori.getRincari();
+//		String inserimento = ""; //controller.creaNuovoListinoDaCorriere(listino, listinoCorriere, rincari);
+//		boolean insert = inserimento.isEmpty() ? true : false;
+//		if (!insert) {
+//			DialogMessaggio.openInformation("Attenzione", "Nella generazione del listino si sono verificati i seguenti problemi:\r\n" + inserimento);
+//			//Il seguente è un errore fatale, il resto sono solo warning.
+//			if (!inserimento.equals(ListiniClientiController.MESSAGGIO_ERRORE_CREAZIONE_LISTINO_DA_CORRIERE))
+//				insert = true;
+//		}
+		return true;
+	}
+
+}

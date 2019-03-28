@@ -1,0 +1,290 @@
+package it.ltc.logica.trasporti.gui.fatturazione.wizards;
+
+import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.gui.container.DialogCartella;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.container.DialogProgresso;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.controller.FatturazioneController;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+import it.ltc.logica.trasporti.gui.elements.spedizione.DettaglioCostoSpedizioneDialog;
+import org.eclipse.swt.widgets.Label;
+
+public class EsitoFatturazioneWizardPage extends PaginaWizard {
+
+	private static final String titolo = "Fatturazione";
+	private static final String descrizione = "Controlla il risultato, conferma la fatturazione ed esporta i dati.";
+	
+	private final UISynchronize sync;
+	
+	private final ControllerUtente controllerUtente;
+	private final FatturazioneController controllerFatturazione;
+	private final SpedizioniController controllerSpedizioni;
+	private final SimpleDateFormat sdf;
+	
+	private TableViewer tableViewerDettaglio;
+	private Table tableDettaglio;
+	private Button btnEsportaDati;
+	
+	private Composite compositeTotali;
+	private Label lblTotaleRicavi;
+	private Label lblTotaleSpedizioni;
+	private Label lblTotaleColli;
+	private Label lblTotalePezzi;
+	
+	public EsitoFatturazioneWizardPage() {
+		super(titolo, descrizione);
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+		controllerFatturazione = FatturazioneController.getInstance();
+		controllerUtente = ControllerUtente.getInstance();
+		sync = controllerUtente.getSync();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		tableViewerDettaglio = new TableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewerDettaglio.setContentProvider(ArrayContentProvider.getInstance());
+		
+		tableDettaglio = tableViewerDettaglio.getTable();
+		tableDettaglio.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int selectionIndex = tableDettaglio.getSelectionIndex();
+				if (selectionIndex != -1) {
+					TableItem selectedItem = tableDettaglio.getItem(selectionIndex);
+					SpedizioneModel spedizione = (SpedizioneModel) selectedItem.getData();
+					DettaglioCostoSpedizioneDialog dialog = new DettaglioCostoSpedizioneDialog(spedizione);
+					int esito = dialog.open();
+					if (esito == Dialog.OK) {
+						//Se serve fare qualcosa qui.
+					}
+				}
+			}
+		});
+		tableDettaglio.setLinesVisible(true);
+		tableDettaglio.setHeaderVisible(true);
+		tableDettaglio.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn colonnaData = new TableViewerColumn(tableViewerDettaglio, SWT.NONE);
+		colonnaData.setLabelProvider(new ColumnLabelProvider() {
+			
+			@Override
+			public Image getImage(Object element) {
+				Image iconToShow = null;
+				SpedizioneModel model = (SpedizioneModel) element;
+				Spedizione spedizione = model.getSpedizione();
+				if (!spedizione.getDatiCompleti()) {
+					iconToShow = Decorator.getImage(Decorator.RED_MARK_12X20);
+				}
+				return iconToShow;
+			}
+			
+			public String getText(Object element) {
+				SpedizioneModel model = (SpedizioneModel) element;
+				Spedizione spedizione = model.getSpedizione();
+				String data = sdf.format(spedizione.getData());
+				return data;
+			}
+		});
+		
+		TableColumn tblclmnData = colonnaData.getColumn();
+		tblclmnData.setWidth(100);
+		tblclmnData.setText("Data");
+		
+		TableViewerColumn colonnaDestinatario = new TableViewerColumn(tableViewerDettaglio, SWT.NONE);
+		colonnaDestinatario.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				SpedizioneModel model = (SpedizioneModel) element;
+				Spedizione spedizione =  model.getSpedizione();
+				Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+				Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+				String ragioneSociale = destinatario.getRagioneSociale();
+				return ragioneSociale;
+			}
+		});
+		
+		TableColumn tblclmnDestinatario = colonnaDestinatario.getColumn();
+		tblclmnDestinatario.setWidth(100);
+		tblclmnDestinatario.setText("Destinatario");
+		
+		TableViewerColumn colonnaRiferimento = new TableViewerColumn(tableViewerDettaglio, SWT.NONE);
+		colonnaRiferimento.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				SpedizioneModel model = (SpedizioneModel) element;
+				Spedizione spedizione =  model.getSpedizione();
+				String riferimento = spedizione.getRiferimentoCliente();
+				return riferimento;
+			}
+		});
+		
+		TableColumn tblclmnRiferimento = colonnaRiferimento.getColumn();
+		tblclmnRiferimento.setWidth(100);
+		tblclmnRiferimento.setText("Riferimento");
+		
+		TableViewerColumn colonnaRicavo = new TableViewerColumn(tableViewerDettaglio, SWT.NONE);
+		colonnaRicavo.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				SpedizioneModel model = (SpedizioneModel) element;
+				String valore = Decorator.getEuroValue(model.getPreventivoRicavo().getTotale());
+				return valore;
+			}
+		});
+		
+		TableColumn tblclmnRicavo = colonnaRicavo.getColumn();
+		tblclmnRicavo.setWidth(100);
+		tblclmnRicavo.setText("Ricavo");
+		
+		Composite compositeControlli = new Composite(container, SWT.NONE);
+		compositeControlli.setLayout(new GridLayout(2, false));
+		
+		Button btnCalcola = new Button(compositeControlli, SWT.NONE);
+		btnCalcola.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				controllerFatturazione.calcolaFatturazione();
+				caricaDati();
+				btnEsportaDati.setEnabled(true);
+			}
+		});
+		btnCalcola.setText("Calcola");
+		
+		btnEsportaDati = new Button(compositeControlli, SWT.NONE);
+		btnEsportaDati.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				esportaDati();
+			}
+		});
+		btnEsportaDati.setText("Esporta Dati");
+		btnEsportaDati.setEnabled(false);
+		
+		compositeTotali = new Composite(container, SWT.NONE);
+		compositeTotali.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, false, false, 1, 1));
+		compositeTotali.setLayout(new GridLayout(3, false));
+		
+		lblTotaleRicavi = new Label(compositeTotali, SWT.NONE);
+		lblTotaleRicavi.setText("Totale ricavi: ");
+		new Label(compositeTotali, SWT.NONE);
+		new Label(compositeTotali, SWT.NONE);
+		
+		lblTotaleSpedizioni = new Label(compositeTotali, SWT.NONE);
+		lblTotaleSpedizioni.setText("Totale spedizioni: ");
+		
+		lblTotaleColli = new Label(compositeTotali, SWT.NONE);
+		lblTotaleColli.setText("Totale colli:");
+		
+		lblTotalePezzi = new Label(compositeTotali, SWT.NONE);
+		lblTotalePezzi.setText("Totale pezzi: ");
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public IWizardPage getPreviousPage() {
+		tableViewerDettaglio.setInput(null);
+		lblTotaleRicavi.setText("Totale ricavi: ");
+		lblTotaleSpedizioni.setText("Totale spedizioni: ");
+		lblTotaleColli.setText("Totale colli:");
+		lblTotalePezzi.setText("Totale pezzi: ");
+		return super.getPreviousPage();
+	}
+
+	public void caricaDati() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dati", IProgressMonitor.UNKNOWN);
+				HashMap<String, List<SpedizioneModel>> listePerCodice = controllerFatturazione.getSpedizioniFatturate();
+				List<SpedizioneModel> lista = new ArrayList<SpedizioneModel>();
+				for (String codice : listePerCodice.keySet()) {
+					lista.addAll(listePerCodice.get(codice));
+				}
+				//Calcolo dei totali
+				double totRicavi = 0;
+				int totSpedizioni = 0;
+				int totColli = 0;
+				int totPezzi = 0;
+				for (SpedizioneModel model : lista) {
+					totRicavi += model.getPreventivoRicavo().getTotale();
+					totSpedizioni += 1;
+					totColli += model.getSpedizione().getColli();
+					totPezzi += model.getSpedizione().getPezzi();
+				}
+				final String totaleRicavi = "Totale ricavi: " + Decorator.getEuroValue(totRicavi);
+				final String totaleSpedizioni = "Totale spedizioni: " + totSpedizioni;
+				final String totaleColli = "Totale colli:" + totColli;
+				final String totalePezzi = "Totale pezzi: " + totPezzi;
+				//Aggiorno la UI
+				sync.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						lblTotaleRicavi.setText(totaleRicavi);
+						lblTotaleSpedizioni.setText(totaleSpedizioni);
+						lblTotaleColli.setText(totaleColli);
+						lblTotalePezzi.setText(totalePezzi);
+						tableViewerDettaglio.setInput(lista);
+					}
+				});
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+	private void esportaDati() {
+		boolean scelta = DialogMessaggio.openQuestion("Conferma Dati di Fatturazione", "Vuoi confermare i dati di fatturazione?");
+		if (scelta) {
+			DialogCartella dialog = new DialogCartella();
+			String path = dialog.open();
+			controllerFatturazione.esportaDati(path);
+			setPageComplete(true);
+		}
+	}
+	
+}

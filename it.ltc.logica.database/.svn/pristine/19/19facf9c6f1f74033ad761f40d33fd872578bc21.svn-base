@@ -1,0 +1,601 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Compare;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.Type;
+
+public class TestaCorr extends Entity {
+	
+	private Integer id;
+	private Integer annoSpedizione;
+	private Integer dataSpedizione;
+	private Integer numeroSerie;
+	private Integer numeroSpedizione;
+	private String codiceBolla;
+	private String ragioneSocialeDestinatario;
+	private String estensioneRagioneSocialeDestinatario;
+	private String indirizzo;
+	private String cap;
+	private String località;
+	private String provincia;
+	private String nazione;
+	private String primoGiornoChiusura;
+	private String secondoGiornoChiusura;
+	private String tipoServizioBolle;
+	private Double importoDaAssicurare;
+	private String divisaImportoDaAssicurare;
+	private String naturaMerceMittente;
+	private Integer colli;
+	private Double pesoKgBollettato;
+	private Double volumeBollettato;
+	private Double quantitàDaFatturare;
+	private Double contrassegno;
+	private String tipoIncassoContrassegno;
+	private String divisaImportoAssegno;
+	private String gestioneParticolarità;
+	private Integer riferimentoMittenteNumerico;
+	private String riferimentoMittenteAlfabetico;
+	private Integer numeroSegnacolloDAL;
+	private Integer numeroSegnacolloAL;
+	private String descrizioneNote;
+	private String descrizioneNoteAggiuntive;
+	private Integer zonaConsegna;
+	private String codiceTrattamentoMerce;
+	private String fermoDeposito;
+	private Integer dataConsegnaRichiesta;
+	private String tipoConsegnaRichiesta;
+	private Integer oraConsegnaRichiesta;
+	private String flagTassazioneTariffaMittente;
+	private Double valoreMerceDichiarato;
+	private String divisaValoreMerceDichiarato;
+	private String gestioneParticolaritàConsegna;
+	private String gestioneParticolaritàGiacenze;
+	private String gestioneParticolaritàVarie;
+	private String primaConsegnaParticolare;
+	private String secondaConsegnaParticolare;
+	private Integer bancali;
+	private Integer corriere;
+	private String stato;
+	private String MittenteAlfaLike;
+	private String NrLista;
+	private String ragioneSocialeLike;
+	private String servizio;
+	private Integer pezzi;
+	private Date dataGenerazione;
+	private Integer trasmesso;
+	
+	@Override
+	public String getNomeTabella() {
+		return "dbo.TestaCorr";
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getAnnoSpedizione() {
+		return annoSpedizione;
+	}
+
+	public void setAnnoSpedizione(Integer annoSpedizione) {
+		this.annoSpedizione = annoSpedizione;
+	}
+
+	public Integer getDataSpedizione() {
+		return dataSpedizione;
+	}
+
+	public void setDataSpedizione(Integer dataSpedizione) {
+		this.dataSpedizione = dataSpedizione;
+	}
+
+	public Integer getNumeroSerie() {
+		return numeroSerie;
+	}
+
+	public void setNumeroSerie(Integer numeroSerie) {
+		this.numeroSerie = numeroSerie;
+	}
+
+	public Integer getNumeroSpedizione() {
+		return numeroSpedizione;
+	}
+
+	public void setNumeroSpedizione(Integer numeroSpedizione) {
+		this.numeroSpedizione = numeroSpedizione;
+	}
+
+	public String getCodiceBolla() {
+		return codiceBolla;
+	}
+
+	public void setCodiceBolla(String codiceBolla) {
+		this.codiceBolla = codiceBolla;
+	}
+
+	public String getRagioneSocialeDestinatario() {
+		return ragioneSocialeDestinatario;
+	}
+
+	public void setRagioneSocialeDestinatario(String ragioneSocialeDestinatario) {
+		this.ragioneSocialeDestinatario = ragioneSocialeDestinatario;
+	}
+	
+	public String getEstensioneRagioneSocialeDestinatario() {
+		return estensioneRagioneSocialeDestinatario;
+	}
+
+	public void setEstensioneRagioneSocialeDestinatario(String estensioneRagioneSocialeDestinatario) {
+		this.estensioneRagioneSocialeDestinatario = estensioneRagioneSocialeDestinatario;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getLocalità() {
+		return località;
+	}
+
+	public void setLocalità(String località) {
+		this.località = località;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getNazione() {
+		return nazione;
+	}
+
+	public void setNazione(String nazione) {
+		this.nazione = nazione;
+	}
+
+	public String getPrimoGiornoChiusura() {
+		return primoGiornoChiusura;
+	}
+
+	public void setPrimoGiornoChiusura(String primoGiornoChiusura) {
+		this.primoGiornoChiusura = primoGiornoChiusura;
+	}
+
+	public String getSecondoGiornoChiusura() {
+		return secondoGiornoChiusura;
+	}
+
+	public void setSecondoGiornoChiusura(String secondoGiornoChiusura) {
+		this.secondoGiornoChiusura = secondoGiornoChiusura;
+	}
+
+	public Integer getColli() {
+		return colli;
+	}
+
+	public void setColli(Integer colli) {
+		this.colli = colli;
+	}
+
+	public String getTipoServizioBolle() {
+		return tipoServizioBolle;
+	}
+
+	public void setTipoServizioBolle(String tipoServizioBolle) {
+		this.tipoServizioBolle = tipoServizioBolle;
+	}
+
+	public Double getImportoDaAssicurare() {
+		return importoDaAssicurare;
+	}
+
+	public void setImportoDaAssicurare(Double importoDaAssicurare) {
+		this.importoDaAssicurare = importoDaAssicurare;
+	}
+
+	public String getDivisaImportoDaAssicurare() {
+		return divisaImportoDaAssicurare;
+	}
+
+	public void setDivisaImportoDaAssicurare(String divisaImportoDaAssicurare) {
+		this.divisaImportoDaAssicurare = divisaImportoDaAssicurare;
+	}
+
+	public String getNaturaMerceMittente() {
+		return naturaMerceMittente;
+	}
+
+	public void setNaturaMerceMittente(String naturaMerceMittente) {
+		this.naturaMerceMittente = naturaMerceMittente;
+	}
+
+	public Double getPesoKgBollettato() {
+		return pesoKgBollettato;
+	}
+
+	public void setPesoKgBollettato(Double pesoKgBollettato) {
+		this.pesoKgBollettato = pesoKgBollettato;
+	}
+
+	public Double getVolumeBollettato() {
+		return volumeBollettato;
+	}
+
+	public void setVolumeBollettato(Double volumeBollettato) {
+		this.volumeBollettato = volumeBollettato;
+	}
+
+	public Double getQuantitàDaFatturare() {
+		return quantitàDaFatturare;
+	}
+
+	public void setQuantitàDaFatturare(Double quantitàFatturata) {
+		this.quantitàDaFatturare = quantitàFatturata;
+	}
+
+	public Double getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Double contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public String getTipoIncassoContrassegno() {
+		return tipoIncassoContrassegno;
+	}
+
+	public void setTipoIncassoContrassegno(String tipoIncassoContrassegno) {
+		this.tipoIncassoContrassegno = tipoIncassoContrassegno;
+	}
+
+	public String getDivisaImportoAssegno() {
+		return divisaImportoAssegno;
+	}
+
+	public void setDivisaImportoAssegno(String divisaImportoAssegno) {
+		this.divisaImportoAssegno = divisaImportoAssegno;
+	}
+
+	public String getGestioneParticolarità() {
+		return gestioneParticolarità;
+	}
+
+	public void setGestioneParticolarità(String gestioneParticolarità) {
+		this.gestioneParticolarità = gestioneParticolarità;
+	}
+
+	public Integer getRiferimentoMittenteNumerico() {
+		return riferimentoMittenteNumerico;
+	}
+
+	public void setRiferimentoMittenteNumerico(Integer riferimentoMittenteNumerico) {
+		this.riferimentoMittenteNumerico = riferimentoMittenteNumerico;
+	}
+
+	public String getRiferimentoMittenteAlfabetico() {
+		return riferimentoMittenteAlfabetico;
+	}
+
+	public void setRiferimentoMittenteAlfabetico(String riferimentoMittenteAlfabetico) {
+		this.riferimentoMittenteAlfabetico = riferimentoMittenteAlfabetico;
+	}
+
+	public Integer getNumeroSegnacolloDAL() {
+		return numeroSegnacolloDAL;
+	}
+
+	public void setNumeroSegnacolloDAL(Integer numeroSegnacolloDAL) {
+		this.numeroSegnacolloDAL = numeroSegnacolloDAL;
+	}
+
+	public Integer getNumeroSegnacolloAL() {
+		return numeroSegnacolloAL;
+	}
+
+	public void setNumeroSegnacolloAL(Integer numeroSegnacolloAL) {
+		this.numeroSegnacolloAL = numeroSegnacolloAL;
+	}
+
+	public String getDescrizioneNote() {
+		return descrizioneNote;
+	}
+
+	public void setDescrizioneNote(String descrizioneNote) {
+		this.descrizioneNote = descrizioneNote;
+	}
+
+	public String getDescrizioneNoteAggiuntive() {
+		return descrizioneNoteAggiuntive;
+	}
+
+	public void setDescrizioneNoteAggiuntive(String descrizioneNoteAggiuntive) {
+		this.descrizioneNoteAggiuntive = descrizioneNoteAggiuntive;
+	}
+
+	public Integer getZonaConsegna() {
+		return zonaConsegna;
+	}
+
+	public void setZonaConsegna(Integer zonaConsegna) {
+		this.zonaConsegna = zonaConsegna;
+	}
+
+	public String getCodiceTrattamentoMerce() {
+		return codiceTrattamentoMerce;
+	}
+
+	public void setCodiceTrattamentoMerce(String codiceTrattamentoMerce) {
+		this.codiceTrattamentoMerce = codiceTrattamentoMerce;
+	}
+
+	public String getFermoDeposito() {
+		return fermoDeposito;
+	}
+
+	public void setFermoDeposito(String fermoDeposito) {
+		this.fermoDeposito = fermoDeposito;
+	}
+
+	public Integer getDataConsegnaRichiesta() {
+		return dataConsegnaRichiesta;
+	}
+
+	public void setDataConsegnaRichiesta(Integer dataConsegnaRichiesta) {
+		//Controllo per i sistemi legacy che utilizzano il 1° Gennaio 1900 come data di default
+		if (dataConsegnaRichiesta == 19000101)
+			dataConsegnaRichiesta = 0;
+		this.dataConsegnaRichiesta = dataConsegnaRichiesta;
+	}
+
+	public String getTipoConsegnaRichiesta() {
+		return tipoConsegnaRichiesta;
+	}
+
+	public void setTipoConsegnaRichiesta(String tipoConsegnaRichiesta) {
+		this.tipoConsegnaRichiesta = tipoConsegnaRichiesta;
+	}
+
+	public Integer getOraConsegnaRichiesta() {
+		return oraConsegnaRichiesta;
+	}
+
+	public void setOraConsegnaRichiesta(Integer oraConsegnaRichiesta) {
+		this.oraConsegnaRichiesta = oraConsegnaRichiesta;
+	}
+
+	public String getFlagTassazioneTariffaMittente() {
+		return flagTassazioneTariffaMittente;
+	}
+
+	public void setFlagTassazioneTariffaMittente(String flagTassazioneTariffaMittente) {
+		this.flagTassazioneTariffaMittente = flagTassazioneTariffaMittente;
+	}
+
+	public Double getValoreMerceDichiarato() {
+		return valoreMerceDichiarato;
+	}
+
+	public void setValoreMerceDichiarato(Double valoreMerceDichiarato) {
+		this.valoreMerceDichiarato = valoreMerceDichiarato;
+	}
+
+	public String getDivisaValoreMerceDichiarato() {
+		return divisaValoreMerceDichiarato;
+	}
+
+	public void setDivisaValoreMerceDichiarato(String divisaValoreMerceDichiarato) {
+		this.divisaValoreMerceDichiarato = divisaValoreMerceDichiarato;
+	}
+
+	public String getGestioneParticolaritàConsegna() {
+		return gestioneParticolaritàConsegna;
+	}
+
+	public void setGestioneParticolaritàConsegna(String gestioneParticolaritàConsegna) {
+		this.gestioneParticolaritàConsegna = gestioneParticolaritàConsegna;
+	}
+
+	public String getGestioneParticolaritàGiacenze() {
+		return gestioneParticolaritàGiacenze;
+	}
+
+	public void setGestioneParticolaritàGiacenze(String gestioneParticolaritàGiacenze) {
+		this.gestioneParticolaritàGiacenze = gestioneParticolaritàGiacenze;
+	}
+
+	public String getGestioneParticolaritàVarie() {
+		return gestioneParticolaritàVarie;
+	}
+
+	public void setGestioneParticolaritàVarie(String gestioneParticolaritàVarie) {
+		this.gestioneParticolaritàVarie = gestioneParticolaritàVarie;
+	}
+
+	public String getPrimaConsegnaParticolare() {
+		return primaConsegnaParticolare;
+	}
+
+	public void setPrimaConsegnaParticolare(String primaConsegnaParticolare) {
+		this.primaConsegnaParticolare = primaConsegnaParticolare;
+	}
+
+	public String getSecondaConsegnaParticolare() {
+		return secondaConsegnaParticolare;
+	}
+
+	public void setSecondaConsegnaParticolare(String secondaConsegnaParticolare) {
+		this.secondaConsegnaParticolare = secondaConsegnaParticolare;
+	}
+
+	public Integer getBancali() {
+		return bancali;
+	}
+
+	public void setBancali(Integer bancali) {
+		this.bancali = bancali;
+	}
+
+	public Integer getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Integer corriere) {
+		this.corriere = corriere;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+	
+	private static final ColumnList variabili = new ColumnList();
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdTestaCor", "id");
+			variabili.addInt("AnnoSpe", "annoSpedizione");
+			variabili.addInt("DataSpe", "dataSpedizione");
+			variabili.addInt("NrSerie", "numeroSerie");
+			variabili.addInt("NrSpedi", "numeroSpedizione");
+			variabili.addString("CodBolla", "codiceBolla");
+			variabili.addString("RagSocDest", "ragioneSocialeDestinatario");
+			variabili.addString("RagSocEst", "estensioneRagioneSocialeDestinatario");
+			variabili.addString("indirizzo", "Indirizzo");
+			variabili.addString("cap", "Cap");
+			variabili.addString("Localita", "località");
+			variabili.addString("provincia", "Provincia");
+			variabili.addString("Nazione", "nazione");
+			variabili.addString("Chiusura1", "primoGiornoChiusura");
+			variabili.addString("Chiusura2", "secondoGiornoChiusura");
+			variabili.addString("Servizio", "tipoServizioBolle");
+			variabili.addDouble("ImpoAss", "importoDaAssicurare");
+			variabili.addString("ValutaAss", "divisaImportoDaAssicurare");
+			variabili.addString("NatMer", "naturaMerceMittente");
+			variabili.addInt("NrColli", "colli");
+			variabili.addDouble("Peso", "pesoKgBollettato");
+			variabili.addDouble("Volume", "volumeBollettato");
+			variabili.addDouble("QtaFatt", "quantitàDaFatturare");
+			variabili.addDouble("Contrassegno", "contrassegno");
+			variabili.addString("TipoIncasso", "tipoIncassoContrassegno");
+			variabili.addString("ValutaIncasso", "divisaImportoAssegno");
+			variabili.addString("Particolarita", "gestioneParticolarità");
+			variabili.addInt("MittenteNum", "riferimentoMittenteNumerico");
+			variabili.addString("MittenteAlfa", "riferimentoMittenteAlfabetico");
+			variabili.addInt("NrSegnaIniz", "numeroSegnacolloDAL");
+			variabili.addInt("NrSegnaFin", "numeroSegnacolloAL");
+			variabili.addString("Descrizione1", "descrizioneNote");
+			variabili.addString("Descrizione2", "descrizioneNoteAggiuntive");
+			variabili.addInt("ZonaCons", "zonaConsegna");
+			variabili.addString("TraMerce", "codiceTrattamentoMerce");
+			variabili.addString("FermoDep", "fermoDeposito");
+			variabili.addInt("DataConsegna", "dataConsegnaRichiesta");
+			variabili.addString("TipoCons", "tipoConsegnaRichiesta");
+			variabili.addInt("OraCons", "oraConsegnaRichiesta");
+			variabili.addString("TassMitt", "flagTassazioneTariffaMittente");
+			variabili.addDouble("ValoreMerce", "valoreMerceDichiarato");
+			variabili.addString("ValutaMerce", "divisaValoreMerceDichiarato");
+			variabili.addString("PartCons", "gestioneParticolaritàConsegna");
+			variabili.addString("PartGia", "gestioneParticolaritàGiacenze");
+			variabili.addString("PartVarie", "gestioneParticolaritàVarie");
+			variabili.addString("Part1", "primaConsegnaParticolare");
+			variabili.addString("Part2", "secondaConsegnaParticolare");
+			variabili.addInt("Bancali", "bancali");
+			variabili.addInt("idCorriere", "corriere");
+			variabili.addString("Stato", "stato");
+			variabili.add(new Column("MittenteAlfa", Type.STRING, "MittenteAlfaLike", Compare.LIKE));
+			variabili.addString("NrLista", "NrLista");
+			variabili.addInt("Pezzi", "pezzi");
+			variabili.add(new Column("RagSocDest", Type.STRING, "ragioneSocialeLike", Compare.LIKE));
+			variabili.addString("Servizio", "servizio");
+			variabili.addDate("DataGenerazione", "dataGenerazione");
+			variabili.addInt("Trasmesso", "trasmesso");
+		}
+		return variabili;
+	}
+
+	public String getMittenteAlfaLike() {
+		return MittenteAlfaLike;
+	}
+
+	public void setMittenteAlfaLike(String mittenteAlfaLike) {
+		MittenteAlfaLike = mittenteAlfaLike;
+	}
+
+	public String getNrLista() {
+		return NrLista;
+	}
+
+	public void setNrLista(String nrLista) {
+		NrLista = nrLista;
+	}
+
+	public Integer getPezzi() {
+		return pezzi;
+	}
+
+	public void setPezzi(Integer pezzi) {
+		this.pezzi = pezzi;
+	}
+
+	public String getRagioneSocialeLike() {
+		return ragioneSocialeLike;
+	}
+
+	public void setRagioneSocialeLike(String ragioneSocialeLike) {
+		this.ragioneSocialeLike = ragioneSocialeLike;
+	}
+
+	public String getServizio() {
+		return servizio;
+	}
+
+	public void setServizio(String servizio) {
+		this.servizio = servizio;
+	}
+
+	public Date getDataGenerazione() {
+		return dataGenerazione;
+	}
+
+	public void setDataGenerazione(Date dataGenerazione) {
+		this.dataGenerazione = dataGenerazione;
+	}
+
+	public Integer getTrasmesso() {
+		return trasmesso;
+	}
+
+	public void setTrasmesso(Integer trasmesso) {
+		this.trasmesso = trasmesso;
+	}
+
+}

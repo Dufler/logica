@@ -1,0 +1,45 @@
+package it.ltc.logica.database.orm;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ValidationResult {
+	
+	public static final String GOOD_MESSAGE = "Ok";
+	public static final String ERROR_TITLE = "Errore nella validazione dei dati";
+	public static final String ERROR_MESSAGE = "Errori riscontrati nella validazione dei dati: \r\n";
+	
+	private boolean valid;
+	private List<String> messages;
+	
+	public ValidationResult() {
+		messages = new ArrayList<String>();
+	}
+	
+	public static ValidationResult getValidResult() {
+		ValidationResult good = new ValidationResult();
+		good.setValid(true);
+		return good;
+	}
+	
+	public boolean isValid() {
+		return valid;
+	}
+	
+	public void setValid(boolean value) {
+		if (valid && !value) {
+			messages.clear();
+		}
+		valid = value;
+	}
+	
+	public List<String> getMessages() {
+		return messages;
+	}
+
+	public void addMessage(String message) {
+		messages.add(message);
+	}
+
+
+}

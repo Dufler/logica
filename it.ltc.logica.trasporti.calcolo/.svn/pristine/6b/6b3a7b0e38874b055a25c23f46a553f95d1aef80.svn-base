@@ -1,0 +1,37 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ConsegnaOre12 implements IAmbito {
+
+	public static final String CODIFICA_SERVIZIO_ORE12 = "O12";
+	
+	public static final String CODICE = "CONSEGNA_ORE_12";
+	private static ConsegnaOre12 instance;
+	
+	private ConsegnaOre12() {}
+	
+	public static ConsegnaOre12 getInstance() {
+		if (instance == null) {
+			instance = new ConsegnaOre12();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		String servizio = spedizione.getSpedizione().getServizio();
+		boolean applicabile = CODIFICA_SERVIZIO_ORE12.equals(servizio);
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+	
+}

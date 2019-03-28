@@ -1,0 +1,46 @@
+package it.ltc.logica.database.model.composed;
+
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoColloDettaglio;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
+
+/**
+ * Classe che combina le informazioni totali su un carico di magazzino.
+ * @author Damiano
+ *
+ */
+public class Carico {
+	
+	private Ingresso ingresso;
+	private List<IngressoDettaglio> dettagli;
+	private List<IngressoColloDettaglio> dettagliPerCollo;
+	
+	public Carico() {}
+	
+	public Ingresso getIngresso() {
+		return ingresso;
+	}
+	
+	public void setIngresso(Ingresso ingresso) {
+		this.ingresso = ingresso;
+	}
+	
+	public List<IngressoDettaglio> getDettagli() {
+		return dettagli;
+	}
+	
+	public void setDettagli(List<IngressoDettaglio> dettagli) {
+		this.dettagli = dettagli;
+	}
+	
+	public List<IngressoColloDettaglio> getDettagliPerCollo() {
+		return dettagliPerCollo;
+	}
+	
+	public void setDettagliPerCollo(List<IngressoColloDettaglio> dettagliPerCollo) {
+		this.dettagliPerCollo = dettagliPerCollo;
+	}
+	
+}

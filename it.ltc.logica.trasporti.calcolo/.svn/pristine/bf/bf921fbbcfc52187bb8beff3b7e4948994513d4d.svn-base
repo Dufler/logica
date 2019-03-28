@@ -1,0 +1,51 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.simulazione;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.ambiti.FactoryAmbiti;
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbitoTrasporto;
+
+/**
+ * Classe che si occupa di istanziare gli ambiti di simulazione.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class FactoryAmbitiSimulazione extends FactoryAmbiti {
+	
+	private static FactoryAmbitiSimulazione instance;
+
+	private FactoryAmbitiSimulazione() {
+	}
+
+	public static FactoryAmbitiSimulazione getInstance() {
+		if (instance == null) {
+			instance = new FactoryAmbitiSimulazione();
+		}
+		return instance;
+	}
+	
+	public static boolean isAmbitoNoloBase(Integer id) {
+		boolean noloBase = false;
+		if (id != null) {
+			if (id == NoloSimulazione.ID || id == NoloSUDSimulazione.ID || id == NoloEsteroSimulazione.ID)
+				noloBase = true;
+		}
+		return noloBase;
+	}
+	
+	public IAmbitoTrasporto getAmbito(Integer id, String valore) {
+		SottoAmbitoFattura ambitoTrasporto = SottoAmbitoFattura.getSottoAmbito(id);
+		IAmbitoTrasporto ambito;
+		switch (id) {
+			case SpedizioneConMoltiColliSimulazione.ID : ambito = new SpedizioneConMoltiColliSimulazione(ambitoTrasporto, valore); break;
+			case FuelSimulazione.ID : ambito = FuelSimulazione.getInstance(ambitoTrasporto); break;
+			case IstatSimulazione.ID : ambito = IstatSimulazione.getInstance(ambitoTrasporto); break;
+			case ContrassegnoSimulazione.ID : ambito = ContrassegnoSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloSimulazione.ID : ambito = NoloSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloSUDSimulazione.ID : ambito = NoloSUDSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloEsteroSimulazione.ID : ambito = NoloEsteroSimulazione.getInstance(ambitoTrasporto); break;
+			default : ambito = null;
+		}
+		return ambito;
+	}
+
+}

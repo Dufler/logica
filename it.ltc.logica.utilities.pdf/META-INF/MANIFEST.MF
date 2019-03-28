@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Pdf
+Bundle-SymbolicName: it.ltc.logica.utilities.pdf
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ClassPath: .
+Export-Package: it.ltc.logica.utilities.pdf,
+ it.ltc.logica.utilities.pdf.elementi,
+ it.ltc.logica.utilities.pdf.parti,
+ it.ltc.logica.utilities.pdf.stili,
+ it.ltc.logica.utilities.pdf.tabelle
+Automatic-Module-Name: it.ltc.logica.utilities.pdf
+Require-Bundle: org.apache.commons;bundle-version="1.0.0",
+ org.apache.pdfbox;bundle-version="1.0.0"

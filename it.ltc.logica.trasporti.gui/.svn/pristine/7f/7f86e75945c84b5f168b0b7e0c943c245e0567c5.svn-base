@@ -1,0 +1,85 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class TabellaFatturazione extends Tabella<SpedizioneModel> {
+	
+	private final ListiniClientiController controller;
+	
+	private final boolean modifica;
+
+	public TabellaFatturazione(Composite parent, ListinoCommessa listino, boolean modify) {
+		super(parent, new OrdinatoreSpedizioniModel());
+		
+		controller = ListiniClientiController.getInstance();
+		
+		aggiungiColonna("Data", 100, new EtichettatoreSpedizioniModel(), 0);
+		aggiungiColonna("Destinatario", 100, new EtichettatoreSpedizioniModel(), 1);
+		aggiungiColonna("Localit\u00E0", 100, new EtichettatoreSpedizioniModel(), 2);
+		aggiungiColonna("Riferimento", 100, new EtichettatoreSpedizioniModel(), 3);
+		aggiungiColonna("Totale", 100, new EtichettatoreFatturazioneModel(), 4);
+		
+		if (listino != null)
+		for (VoceDiListino voce : controller.getVociDiListino(listino.getId())) {
+			aggiungiColonna(voce.getNome(), 100, new EtichettatoreFatturazioneModel(voce), 5);
+		}
+		
+		modifica = modify;
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });	
+	}
+	
+	private void apriDialogModifica() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			SpedizioneModel selezione = (SpedizioneModel) selectedItem.getData();
+			DialogSpedizioneModel dialog = new DialogSpedizioneModel(selezione, modifica);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

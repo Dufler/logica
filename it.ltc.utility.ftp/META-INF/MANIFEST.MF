@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ftp
+Bundle-SymbolicName: it.ltc.utility.ftp
+Bundle-Version: 1.0.0
+Bundle-ClassPath: ftp-1.0.jar,
+ jsch-0.1.54.jar
+Bundle-Vendor: LTC
+Export-Package: com.jcraft.jsch,
+ com.jcraft.jsch.jce,
+ com.jcraft.jsch.jcraft,
+ com.jcraft.jsch.jgss,
+ it.ltc.utility.ftp;version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: it.ltc.utility.ftp
+Require-Bundle: org.apache.commons;bundle-version="1.0.0",
+ org.apache.logging;bundle-version="1.0.0"

@@ -1,0 +1,93 @@
+package it.ltc.logica.database.model;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class Corriere extends Entity {
+	
+	public static final String NOME_TABELLA = "corriere";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static final LinkedList<Corriere> listaCorrieri = new LinkedList<Corriere>();
+	private static final EntityManager<Corriere> manager = new EntityManager<Corriere>(Corriere.class, ConfigurationManager.getDefault());
+
+	private Integer id;
+	private String codifica;
+	private String nome;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("codifica", "codifica");
+			variabili.addString("nome", "nome");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof Corriere) {
+			Corriere corriere = (Corriere) o;
+			uguali = id.equals(corriere.getId());
+		}
+		return uguali;
+	}
+	
+	public static Corriere getCorriere(Integer idCorriere) {
+		Corriere corriere = null;
+		for (Corriere c : getCorrieri()) {
+			if (c.getId().equals(idCorriere)) {
+				corriere = c;
+				break;
+			}
+		}
+		return corriere;
+	}
+	
+	public static List<Corriere> getCorrieri() {
+		if(listaCorrieri.isEmpty()) {
+			listaCorrieri.addAll(manager.getEntities());
+		}
+		return listaCorrieri;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getCodifica() {
+		return codifica;
+	}
+
+	public void setCodifica(String codifica) {
+		this.codifica = codifica;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+}

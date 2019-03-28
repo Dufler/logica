@@ -1,0 +1,71 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.common.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.calcolo.algoritmi.StrategiaScaglioniPerTrasporti;
+
+public class NoloItalia extends IAmbitoTrasporto {
+
+	public NoloItalia(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String ITALIA = "ITA";
+	
+	public static final String CODICE = "NOLO";
+
+	public static final int ID = 20;
+
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = ITALIA.equals(destinazione.getNazione());
+		return applicabile;
+	}
+
+//	@Override
+//	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+//		double valore = 0;
+//		IAlgoritmo algoritmo = voce.getAlgoritmo();
+//		TipoAlgoritmo tipoAlgoritmo = algoritmo.getTipoAlgoritmo();
+//		switch (tipoAlgoritmo) {
+//			case FISSO : valore = getValoreFisso(spedizione, voce); break;
+//			case PERCENTUALE : getValorePercentuale(spedizione, voce); break;
+//			case PROPORZIONALE : valore = getValoreProporzionale(spedizione, algoritmo); break;
+//			case SCAGLIONI : valore = getValoreScaglioni(spedizione, algoritmo); break;
+//			case SCAGLIONI_RIPETUTI : valore = getValoreScaglioniRipetuti(spedizione, algoritmo); break;
+//			default : valore = 0;
+//		}
+//		return valore;
+//	}
+	
+	@Override
+	public double getValoreScaglioni(SpedizioneModel model, MVoceDiListino<SpedizioneModel> voce) {
+		double valore = super.getValoreScaglioni(model, voce);
+		//Nel caso in cui sto calcolando il nolo sui colli moltiplicato il risultato ottenuto per il numero dei colli
+		AlgoritmoScaglioni as = (AlgoritmoScaglioni) voce.getAlgoritmo();
+		StrategiaScaglioniPerTrasporti tipoScaglioni = (StrategiaScaglioniPerTrasporti) as.getTipo();
+		if (tipoScaglioni == StrategiaScaglioniPerTrasporti.COLLI) {
+			Spedizione spedizione = model.getSpedizione();
+			int colli = spedizione.getColli();
+			valore = colli * valore;
+		}
+		return valore;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_BASE;
+	}
+
+}

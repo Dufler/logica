@@ -1,0 +1,41 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import it.ltc.logica.common.controller.prodotti.ProdottiPerModello;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreProdottiPerModello extends Ordinatore<ProdottiPerModello> {
+
+	@Override
+	protected int compare(ProdottiPerModello t1, ProdottiPerModello t2, int property) {
+		int compare;
+		switch (property) {
+			case 0 : compare = ordinaPerBrand(t1, t2); break;
+			case 1 : compare = ordinaPerCategoriaMerceologica(t1, t2); break;
+			case 2 : compare = ordinaPerModello(t1, t2); break;
+			default : compare = 0;
+		}
+		return compare;
+	}
+
+	private int ordinaPerModello(ProdottiPerModello t1, ProdottiPerModello t2) {
+		String m1 = t1.getCodiceModello() != null ? t1.getCodiceModello() : "";
+		String m2 = t2.getCodiceModello() != null ? t2.getCodiceModello() : "";
+		int compare = m1.compareTo(m2);
+		return compare;
+	}
+
+	private int ordinaPerCategoriaMerceologica(ProdottiPerModello t1, ProdottiPerModello t2) {
+		String cm1 = t1.getCategoriaMerceologica() != null ? t1.getCategoriaMerceologica() : "";
+		String cm2 = t2.getCategoriaMerceologica() != null ? t2.getCategoriaMerceologica() : "";
+		int compare = cm1.compareTo(cm2);
+		return compare;
+	}
+
+	private int ordinaPerBrand(ProdottiPerModello t1, ProdottiPerModello t2) {
+		String b1 = t1.getBrand() != null ? t1.getBrand() : "";
+		String b2 = t2.getBrand() != null ? t2.getBrand() : "";
+		int compare = b1.compareTo(b2);
+		return compare;
+	}
+
+}

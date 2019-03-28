@@ -1,0 +1,102 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.Nazione;
+import it.ltc.logica.database.model.centrale.Provincia;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeIndirizzo;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class DialogIndirizzo extends DialogModel<Indirizzo> {
+
+	private final static String title = "Inserisci Indirizzo";
+	
+	private CompositeIndirizzo compositeIndirizzo;
+	
+	private final SpedizioniController controller;
+	private final Indirizzo indirizzo;
+	private final boolean modifica;
+	
+	public DialogIndirizzo(Indirizzo i) {
+		super(title, i);
+		controller = SpedizioniController.getInstance();
+		indirizzo = getValore();
+		modifica = ControllerUtente.getInstance().isAllowed(Permessi.CAP_GESTIONE.getID());
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeIndirizzo = new CompositeIndirizzo(container, SWT.NONE, CompositeIndirizzo.TipoIndirizzo.DEFAULT);
+		compositeIndirizzo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeIndirizzo.enableInputElements(modifica);
+		addChild(compositeIndirizzo);
+	}
+
+	@Override
+	public void loadModel() {
+		compositeIndirizzo.setRagioneSociale(indirizzo.getRagioneSociale());
+		compositeIndirizzo.setIndirizzo(indirizzo.getIndirizzo());
+		compositeIndirizzo.setCap(indirizzo.getCap());
+		compositeIndirizzo.setLocalita(indirizzo.getLocalita());
+		compositeIndirizzo.setProvincia(Provincia.getProvincia(indirizzo.getProvincia()));
+		compositeIndirizzo.setNazione(Nazione.getNazione(indirizzo.getNazione()));
+		compositeIndirizzo.setPiano(indirizzo.getConsegnaPiano());
+		compositeIndirizzo.setPrivato(indirizzo.getConsegnaPrivato());
+		compositeIndirizzo.setGDO(indirizzo.getConsegnaGDO());
+		compositeIndirizzo.setAppuntamento(indirizzo.getConsegnaAppuntamento());
+	}
+
+	@Override
+	public boolean isDirty() {
+		return compositeIndirizzo.isDirty();
+	}
+
+	@Override
+	public void copyDataToModel() {
+		indirizzo.setRagioneSociale(compositeIndirizzo.getRagioneSociale());
+		indirizzo.setIndirizzo(compositeIndirizzo.getIndirizzo());
+		indirizzo.setCap(compositeIndirizzo.getCap());
+		indirizzo.setLocalita(compositeIndirizzo.getLocalita());
+		indirizzo.setProvincia(compositeIndirizzo.getProvincia().getSigla());
+		indirizzo.setNazione(compositeIndirizzo.getNazione().getCodiceISO3());
+		indirizzo.setConsegnaPiano(compositeIndirizzo.getPiano());
+		indirizzo.setConsegnaPrivato(compositeIndirizzo.getPrivato());
+		indirizzo.setConsegnaGDO(compositeIndirizzo.getGDO());
+		indirizzo.setConsegnaAppuntamento(compositeIndirizzo.getAppuntamento());
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controller.aggiornaIndirizzo(indirizzo);
+		return update;
+	}
+	
+	@Override
+	public boolean insertModel() {
+		int id = controller.inserisciIndirizzo(indirizzo);
+		boolean inserimento = (id != -1);
+		return inserimento;
+	}
+
+	@Override
+	public Indirizzo createNewModel() {
+		Indirizzo indirizzo = new Indirizzo();
+		return indirizzo;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ValidationResult esito = indirizzo.validate();
+		return esito.getMessages();
+	}
+
+}

@@ -1,0 +1,45 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.common;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import it.ltc.logica.common.controller.trasporti.ControllerCap;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public abstract class NoloRegioniSpecifiche extends NoloItalia {
+	
+	private final Set<String> regioni;
+
+	public NoloRegioniSpecifiche(SottoAmbitoFattura ambito, String valore) {
+		super(ambito);
+		regioni = getRegioni(valore);
+	}
+
+	private Set<String> getRegioni(String valore) {
+		Set<String> regioniSelezionate = new HashSet<String>();
+		String[] valori = valore.split("-");
+		for (String regione : valori) {
+			regioniSelezionate.add(regione);
+		}
+		return regioniSelezionate;
+	}
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel model) {
+		Indirizzo destinazione = model.getDestinazione();
+		String capDestinazione = destinazione.getCap();
+		Cap cap = ControllerCap.getInstance().getInfoGeneraliCap(capDestinazione);
+		String regione = (cap != null) ? cap.getRegione() : "";
+		boolean applicabile = regioni.contains(regione);
+		return applicabile;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_BASE;
+	}
+
+}

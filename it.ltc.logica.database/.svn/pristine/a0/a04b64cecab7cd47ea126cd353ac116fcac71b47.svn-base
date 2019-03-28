@@ -1,0 +1,45 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class SQLite extends DBMS {
+	
+	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	private final String dbms = "sqlite";
+
+	public SQLite(Database db) {
+		super(db);
+	}
+
+	public String getConnectionURL(Database db) {
+		String connectionURL = "jdbc:" + dbms + ":" + db.getIndirizzoDB() + db.getNomeDB();
+		return connectionURL;
+	}
+	
+	@Override
+	public Connection getConnection() {
+		Connection connection = null;
+
+		try {
+			connection = DriverManager.getConnection("jdbc:" + dbms + ":" + db.getIndirizzoDB() + db.getNomeDB());
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+		
+		return connection;
+	}
+
+	@Override
+	public Connection getTransactionConnection() {
+		Connection connection = getConnection();
+		return connection;
+	}
+
+	@Override
+	public String getDefaultDateFormat() {
+		return dateFormat;
+	}
+
+}

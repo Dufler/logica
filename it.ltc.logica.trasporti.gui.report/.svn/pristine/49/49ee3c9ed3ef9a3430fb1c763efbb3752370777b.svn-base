@@ -1,0 +1,112 @@
+package it.ltc.logica.trasporti.gui.report.wizards.semplice;
+
+import java.util.List;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.gui.container.DialogCartella;
+import it.ltc.logica.gui.container.PaginaWizardRisultati;
+import it.ltc.logica.trasporti.controller.ReportController;
+import it.ltc.logica.trasporti.controller.ReportElement;
+
+public class RisultatiWizardPage extends PaginaWizardRisultati {
+	
+	private static final String titolo = "Statistiche sulle spedizioni";
+	private static final String descrizione = "Qui puoi visionare ed esportare i dati elaborati.";
+	
+	private ReportController controller;
+	
+	private List<ReportElement> report;
+	
+	private TableViewer tableViewer;
+	private Table table;
+	private TableViewerColumn colonnaChiave;
+	private TableViewerColumn colonnaValore;
+
+	protected RisultatiWizardPage() {
+		super(titolo, descrizione);
+		controller = ReportController.getInstance();
+		setPageComplete(true);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblRisultato = new Label(container, SWT.NONE);
+		lblRisultato.setText("Risultato:");
+		
+		tableViewer = new TableViewer(container, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		
+		table = tableViewer.getTable();
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		colonnaChiave = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaChiave.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				ReportElement report = (ReportElement) element;
+				return report.getKey();
+			}
+		});
+		
+		TableColumn tblclmnElemento = colonnaChiave.getColumn();
+		tblclmnElemento.setWidth(100);
+		tblclmnElemento.setText("Elemento");
+		
+		colonnaValore = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaValore.setLabelProvider(new ColumnLabelProvider() {
+			@Override
+			public String getText(Object element) {
+				ReportElement report = (ReportElement) element;
+				return report.getValue();
+			}
+		});
+		
+		TableColumn tblclmnValore = colonnaValore.getColumn();
+		tblclmnValore.setWidth(100);
+		tblclmnValore.setText("Valore");
+		
+		Button btnEsportaDati = new Button(container, SWT.NONE);
+		btnEsportaDati.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				esportaDati();
+			}
+		});
+		btnEsportaDati.setText("Esporta Dati");
+
+	}
+	
+	private void esportaDati() {
+		DialogCartella dialog = new DialogCartella();
+		String path = dialog.open();
+		controller.esportaDati(path, report);		
+	}
+
+	@Override
+	public void mostraRisultato() {
+		report = controller.calcolaReportSemplice();
+		tableViewer.setInput(report);
+		for (TableColumn column : table.getColumns()) {
+			column.pack();
+		}
+	}
+
+}

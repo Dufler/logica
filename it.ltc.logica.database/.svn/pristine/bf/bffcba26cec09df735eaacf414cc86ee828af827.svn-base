@@ -1,0 +1,452 @@
+package it.ltc.logica.database.orm;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Savepoint;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.Database;
+
+/**
+ * Questa classe è la diretta estensione dell'Entity Manager e viene utilizzata per dare supporto per le transazioni.
+ * Il caso d'uso tipico è:
+ * - creo un save point
+ * - eseguo operazioni SQL
+ * - al termine eseguo un check su quanto fatto, se tutto va bene eseguo un commit altrimenti eseguo un rollback.
+ *
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ * @version 1.1
+ *
+ * @param <T>
+ */
+public class TransactionManager<T extends Entity> extends EntityManager<T> {
+
+	private Savepoint lastSavePoint;
+	private boolean autocommit;
+	private Connection connection;
+	
+	public TransactionManager(Class<T> c, Database db) {
+		super(c, db);
+		autocommit = false;
+	}
+	
+	/**
+	 * Restituisce il valore autocommit per la connessione.
+	 * @return un boolean
+	 */
+	public boolean isAutocommit() {
+		return autocommit;
+	}
+
+	/**
+	 * Setta il valore autocommit per la connessione.
+	 * E' importante che sia false se si vuole usufruire della possibilità di creare e utilizzare save points e rollback.
+	 * @param autocommit boolean per valorizzare autocommit
+	 */
+	public void setAutocommit(boolean autoCommit) {
+		autocommit = autoCommit;
+		Connection connection = getTransactionConnection();
+		try {
+			if (connection != null)
+				connection.setAutoCommit(autocommit);
+		} catch (SQLException e) {
+			out("Errore nella impostazione dell'autocommit: " + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Restituisce una connessione al DB con autocommit = false. Questo metodo viene usato solo internamente alla classe.
+	 * La connessione restituita viene riciclata fino al prossimo commit o rollback.
+	 * @return un oggetto Connection
+	 */
+	private Connection getTransactionConnection() {
+		try {
+			if (connection == null || !connection.isValid(1)) {
+				connection = dbManager.getTransactionConnection();
+			}
+		} catch (SQLException e) {
+			out("Errore nella acquisizione di una connessione al DB: " + e.getMessage(), e);
+		}
+		return connection;
+	}
+	
+	/**
+	 * Questo metodo crea un punto di salvataggio sul DB che può essere usato per effettuare un rollback.
+	 * @return un oggetto Savepoint utilizzabile con il metodo restore.
+	 */
+	public Savepoint createSavePoint() {
+		Savepoint savePoint = null;
+		Connection connection = getTransactionConnection();
+		if (connection != null)	try {
+			savePoint = connection.setSavepoint();
+			if (savePoint != null)
+				lastSavePoint = savePoint;
+		} catch(SQLException e) {
+           	out("Errore nella generazione del punto di ripristino sul DB: " + e.getMessage(), e);
+        }
+		return savePoint;
+	}
+	
+	/**
+	 * Ripristina lo stato del DB all'ultimo save point generato.
+	 * @return un boolean che descrive l'esito dell'operazione.
+	 */
+	public boolean restoreLastSavePoint() {
+		boolean restore = false;
+		Connection connection = getTransactionConnection();
+		if (connection != null && lastSavePoint != null) try {
+			connection.rollback(lastSavePoint);
+			restore = true;
+		} catch(SQLException e) {
+           	out("Errore nella generazione del punto di ripristino sul DB: " + e.getMessage(), e);
+		} finally {
+          	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return restore;
+	}
+	
+	/**
+	 * Ripristina lo stato del DB al save point specificato.
+	 * @param savePoint il save point da utilizzare per il ripristino.
+	 * @return un boolean che descrive l'esito dell'operazione.
+	 */
+	public boolean restore(Savepoint savePoint) {
+		boolean restore = false;
+		Connection connection = getTransactionConnection();
+		if (connection != null)	try {
+			connection.rollback(savePoint);
+			restore = true;
+		} catch(SQLException e) {
+           	out("Errore nella generazione del punto di ripristino sul DB: " + e.getMessage(), e);
+		} finally {
+          	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return restore;
+	}
+	
+	/**
+	 * Rende definitivi i cambiamenti sul DB.
+	 * @return un boolean che descrive l'esito dell'operazione.
+	 */
+	public boolean commit() {
+		boolean commit = false;
+		Connection connection = getTransactionConnection();
+		if (connection != null) try {
+			connection.commit();
+			commit = true;
+		} catch(SQLException e) {
+			out("Errore nel commit sul DB: " + e.getMessage(), e);
+		} finally {
+			try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+		}
+		
+		return commit;
+	}
+	
+	/**
+	 * Annulla la transaction
+	 */
+	public void rollback() {
+		Connection connection = getTransactionConnection();
+		if (connection != null) try {
+			connection.rollback();
+		} catch(SQLException e) {
+			out("Errore nel rollback sul DB: " + e.getMessage(), e);
+		} finally {
+			try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+		}
+	}
+	
+	/**
+	 * Inserisce nel DB l'oggetto. 
+	 * @param t l'oggetto da inserire.
+	 * @return l'esito dell'inserimento: true successo, false fallimento.
+	 */
+	public boolean insert(T t) {
+		boolean inserimento = false;
+		String query = "INSERT INTO " + istanza.getNomeTabella() + " " + getInsert(t);
+    	out(query);
+    	Connection connection = getTransactionConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+			statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	int righeAggiornate = statement.executeUpdate();
+        	if (righeAggiornate > 0)
+        		inserimento = true;
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return inserimento;
+	}
+	
+	/**
+	 * Inserisce nel DB l'oggetto. 
+	 * @param t l'oggetto da inserire.
+	 * @return l'esito dell'inserimento: true successo, false fallimento.
+	 */
+	public int insertAndReturnID(T t) {
+		int inserimento = -1;
+		String query = "INSERT INTO " + istanza.getNomeTabella() + " " + getInsert(t);
+    	out(query);
+    	Connection connection = getTransactionConnection();
+    	PreparedStatement statement = null;
+    	ResultSet resultSet = null;
+    	if (connection != null)	try {
+        	statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	statement.executeUpdate();
+        	resultSet = statement.getGeneratedKeys();
+        	if (resultSet.next()) {
+        		inserimento = resultSet.getInt(1);
+        	}
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return inserimento;
+	}
+	
+	/**
+	 * Aggiorna il DB con le informazioni contenute nell'oggetto passato al metodo
+	 * @param update l'oggetto che viene utilizzato per aggiornare il DB, le informazioni in esso contenute 
+	 * 			sono utilizzate per l'aggiornamento
+	 * @param condition  l'oggetto usato per determinare le condizioni di aggiornamento nel WHERE
+	 * @return il numero di righe aggiornate nel DB
+	 */
+	public int update(T update, T condition) {
+		int righeAggiornate = 0;
+		String query = "UPDATE " + istanza.getNomeTabella() + " " +  getUpdate(update) + " " + getCondition(condition);
+    	out(query);
+    	Connection connection = getTransactionConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+			statement = connection.prepareStatement(query);
+        	righeAggiornate = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return righeAggiornate;
+	}
+	
+	public boolean update(T t) {
+		boolean update = false;
+		String condition = getStrictCondition(t);
+		String query = "UPDATE " + istanza.getNomeTabella() + " " + getUpdateWithNull(t) + " " + condition;
+		out(query);
+		if (condition.isEmpty())
+			out("Attenzione, non sono presenti campi chiave! L'aggiornamento avrà esito negativo.");
+		Connection connection = getTransactionConnection();
+		PreparedStatement statement = null;
+		if (connection != null && !condition.isEmpty())	try {		
+        	statement = connection.prepareStatement(query);
+        	int righeAggiornate = statement.executeUpdate();
+        	if (righeAggiornate == 1)
+        		update = true;
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return update;
+	}
+	
+	/**
+	 * Cancella nel DB tutte le righe corrispondenti alle informazioni dell'oggetto passato al metodo
+	 * @param t l'oggetto che viene utilizzato per aggiornare il DB, le informazioni in esso contenute 
+	 * 			sono utilizzate per determinare le condizioni di cancellazione
+	 * @return il numero di righe cancellate nel DB
+	 */
+	public int delete(T t) {
+		int righeAggiornate = 0;
+		String query = "DELETE FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	Connection connection = getTransactionConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+        	statement = connection.prepareStatement(query);
+        	righeAggiornate = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return righeAggiornate;
+	}
+	
+	/**
+	 * Restituisce una lista di oggetti recuperati dal DB senza specificare condizioni
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public List<T> getEntities() {
+		String query = "SELECT * FROM " + istanza.getNomeTabella();
+		out(query);
+		Date now = new Date();
+    	if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		Connection connection = getTransactionConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}
+		return cachedEntities;
+	}
+	
+	/**
+	 * Restituisce una lista di oggetti recuperati dal DB specificando le condizioni
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public List<T> getEntities(T t) {
+		String query = "SELECT * FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	Date now = new Date();
+    	if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		Connection connection = getTransactionConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntities;
+	}
+	
+	/**
+	 * Restituisce un oggetto recuperato dal DB specificando le condizioni.
+	 * Da usare solo quando le condizioni fornite permettono di identificare con chiarezza un solo oggetto.
+	 * Nel caso in cui vengano recuperati più oggetti restituisce il primo della lista.
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public T getEntity(T t) {
+		return getEntity(t, false);
+	}
+	
+	/**
+	 * Restituisce un oggetto recuperato dal DB specificando le condizioni.
+	 * Da usare solo quando le condizioni fornite permettono di identificare con chiarezza un solo oggetto.
+	 * Se viene passato true per match e vengono recuperati più oggetti allora viene restituito un null.
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public T getEntity(T t, boolean match) {
+		String query = "SELECT * FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	Date now = new Date();
+    	if (!query.equals(entityQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntity = null;
+    		entityQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		Connection connection = getTransactionConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	if (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntity = entity;
+            	}
+            	if (match && resultSet.next())
+            		cachedEntity = null;
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntity;
+	}
+	
+	/**
+	 * Metodo per eseguire codice SQL a scelta per aggiornare il DB.
+	 * @param updateQuery la query SQL da eseguire.
+	 * @return il numero di righe sul DB aggiornate.
+	 */
+	public int executeUpdate(String updateQuery) {
+		int rows = 0;
+		out(updateQuery);
+		Connection connection = getTransactionConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {       	
+        	statement = connection.prepareStatement(updateQuery);
+        	rows = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in lettura/scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return rows;
+	}
+	
+	/**
+	 * Metodo per eseguire codice SQL a scelta per recuperare informazioni dal DB.
+	 * @param query la query SQL da eseguire.
+	 * @return la lista di oggetti recuperati dal DB.
+	 */
+	public List<T> executeQuery(String query) {
+		out(query);
+		Date now = new Date();
+		if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		Connection connection = getTransactionConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntities;
+	}
+
+}

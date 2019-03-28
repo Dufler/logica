@@ -1,0 +1,57 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class Fuel implements IAmbito {
+	
+	public static final String CODICE = "FUEL";
+	public static final String CODICE_FISSO = "FUEL_FISSO";
+	public static final String CODICE_VARIABILE = "FUEL_VARIABILE";
+	
+	private static Fuel instance;
+	
+	private Fuel() {}
+	
+	public static Fuel getInstance() {
+		if (instance == null) {
+			instance = new Fuel();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		return true;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore;
+		String tipoAlgoritmo = algoritmo.getNome();
+		switch (tipoAlgoritmo) {
+			case AlgoritmoPercentuale.NOME : valore = getValorePercentuale(spedizione, algoritmo); break;
+			default : valore = 0; 
+		}
+		return valore;
+	}
+	
+	private double getValorePercentuale(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore;
+		AlgoritmoPercentuale ap = (AlgoritmoPercentuale) algoritmo;
+		String scopo = ap.getScopo();
+		switch (scopo) {
+			case AlgoritmoPercentuale.SCOPO_COSTO : valore = spedizione.getCostoNoloPerCosto(); break;
+			case AlgoritmoPercentuale.SCOPO_RICAVO : valore = spedizione.getCostoNoloPerRicavo(); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

@@ -1,0 +1,55 @@
+ 
+package it.ltc.logica.trasporti.gui.preventivi.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.swt.SWT;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+
+public class FunzionePreventiviPart {
+	
+	@Inject private EPartService partService;
+	
+	@Inject
+	public FunzionePreventiviPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Label lblPreventivi = new Label(parent, SWT.NONE);
+		lblPreventivi.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mostraPart();
+			}
+		});
+		lblPreventivi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		lblPreventivi.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		lblPreventivi.setText("Preventivi");
+		
+	}
+	
+	private void mostraPart() {
+		MPart part = partService.findPart(PreventiviPart.partID);
+		if (part != null) {
+			System.out.println("Mostro la part: " + PreventiviPart.partID);
+			part.setVisible(true);
+			partService.showPart(part, PartState.VISIBLE);
+		}
+	}
+	
+	
+}

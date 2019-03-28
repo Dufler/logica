@@ -1,0 +1,278 @@
+package it.ltc.logica.gui.common.tables.fatturazione;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MenuEvent;
+import org.eclipse.swt.events.MenuListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerDocumentiDiFatturazione;
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura.Stato;
+import it.ltc.logica.gui.common.dialogs.fatturazione.DialogPreferenzeDocumentoFatturazione;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.dialog.DialogSelezioneCartella;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
+import it.ltc.logica.gui.elements.Ordinatore;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
+import it.ltc.logica.utilities.variabili.Permessi;
+
+public class TabellaDocumentiFatturazione extends Tabella<DocumentoFattura> {
+	
+	protected static final String TITLE_CONFERMA_ELIMINA_DOCUMENTO = "Eliminazione documento di fatturazione";
+	protected static final String MESSAGE_CONFERMA_ELIMINA_DOCUMENTO = "Sei sicuro di voler eliminare il documento di fatturazione selezionato?";
+	
+	protected static final String TITLE_CONFERMA_APPROVA_DOCUMENTO = "Approvazione documento di fatturazione";
+	protected static final String MESSAGE_CONFERMA_APPROVA_DOCUMENTO = "Sei sicuro di voler approvare il documento di fatturazione selezionato?\r\nNon sar\u00E0 pi\u00F9 possibile apportare modifiche!";
+	
+	protected final ControllerDocumentiDiFatturazione controllerDocumenti;
+	
+	private MenuItem generaBozza;
+	private MenuItem modificaDatiFatturazione;
+	private MenuItem confermaDatiFatturazione;
+	private MenuItem confermaPreferenzeFatturazione;
+	private MenuItem modificaPreferenzeFatturazione;
+	private MenuItem generaDocumento;
+	
+	public TabellaDocumentiFatturazione(Composite parent) {
+		super(parent);
+		controllerDocumenti = ControllerDocumentiDiFatturazione.getInstance();
+	}
+	
+	@Override
+	protected void aggiungiColonne() {
+		aggiungiColonna("Commessa", 200, 0);
+		aggiungiColonna("Tipo", 200, 1);
+		aggiungiColonna("Stato", 200, 2);
+		aggiungiColonna("Periodo", 120, 3);
+		aggiungiColonna("Data Creazione", 200, 4);
+		aggiungiColonna("Creata da", 200, 5);
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING!
+	}
+	
+	private void disabilitaVociMenu() {
+		generaBozza.setEnabled(false);
+		modificaDatiFatturazione.setEnabled(false);
+		confermaDatiFatturazione.setEnabled(false);
+		confermaPreferenzeFatturazione.setEnabled(false);
+		modificaPreferenzeFatturazione.setEnabled(false);
+		generaDocumento.setEnabled(false);			
+	}
+	
+	private void abilitaVociFatturaGenerata() {
+		//Voci abilitate
+		generaBozza.setEnabled(true);
+		modificaDatiFatturazione.setEnabled(true);
+		confermaDatiFatturazione.setEnabled(true);
+		//Voci disabilitate
+		confermaPreferenzeFatturazione.setEnabled(false);
+		modificaPreferenzeFatturazione.setEnabled(false);
+		generaDocumento.setEnabled(false);			
+	}
+	
+	private void abilitaVociFatturaApprovata() {
+		//Voci abilitate
+		generaBozza.setEnabled(true);
+		confermaPreferenzeFatturazione.setEnabled(true);
+		//Voci disabilitate
+		modificaDatiFatturazione.setEnabled(false);
+		confermaDatiFatturazione.setEnabled(false);
+		modificaPreferenzeFatturazione.setEnabled(false);
+		generaDocumento.setEnabled(false);			
+	}
+	
+	private void abilitaVociFatturaArchiviata() {
+		//Voci abilitate
+		modificaPreferenzeFatturazione.setEnabled(true);
+		generaDocumento.setEnabled(true);
+		//Voci disabilitate
+		generaBozza.setEnabled(false);
+		modificaDatiFatturazione.setEnabled(false);
+		confermaDatiFatturazione.setEnabled(false);
+		confermaPreferenzeFatturazione.setEnabled(false);
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		
+		menuPopup.addMenuListener(new MenuListener() {
+
+			@Override
+			public void menuHidden(MenuEvent e) {
+				//DO NOTHING!
+			}
+
+			@Override
+			public void menuShown(MenuEvent e) {
+				DocumentoFattura documento = getRigaSelezionata();
+				if (documento != null) {
+					Stato statoDocumento = documento.getStato() != null ? documento.getStato() : Stato.GENERATA;
+					switch (statoDocumento) {
+						case GENERATA : abilitaVociFatturaGenerata(); break;
+						case APPROVATA : abilitaVociFatturaApprovata(); break;
+						case ARCHIVIATA : abilitaVociFatturaArchiviata(); break;
+						default : disabilitaVociMenu(); break;
+					}
+				}
+			}
+		});
+		
+		generaBozza = new MenuItem(menu, SWT.PUSH);
+		generaBozza.setText("Genera Bozza");
+		generaBozza.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriDialogGenerazioneDocumento(true);
+			}
+		});
+		
+		modificaDatiFatturazione = new MenuItem(menu, SWT.PUSH);
+		modificaDatiFatturazione.setText("Modifica Dati");
+		modificaDatiFatturazione.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModificaDatiFatturazione();
+	    	}
+	    });
+		
+		confermaDatiFatturazione = new MenuItem(menu, SWT.PUSH);
+		confermaDatiFatturazione.setText("Conferma dati");
+		confermaDatiFatturazione.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogApprovaDocumento();
+	    	}
+	    });
+		
+		confermaPreferenzeFatturazione = new MenuItem(menu, SWT.PUSH);
+		confermaPreferenzeFatturazione.setText("Conferma preferenze");
+		confermaPreferenzeFatturazione.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogArchiviaDocumento();
+	    	}
+	    });
+		
+		modificaPreferenzeFatturazione = new MenuItem(menu, SWT.PUSH);
+		modificaPreferenzeFatturazione.setText("Modifica preferenze");
+		modificaPreferenzeFatturazione.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogArchiviaDocumento();
+	    	}
+	    });
+		
+		generaDocumento = new MenuItem(menu, SWT.PUSH);
+		generaDocumento.setText("Genera Fattura");
+		generaDocumento.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogGenerazioneDocumento(false);
+	    	}
+	    });
+		
+		//Le disabilito tutte di default.
+		disabilitaVociMenu();
+		
+		boolean elimina = ControllerUtente.getInstance() != null ? ControllerVariabiliGlobali.getInstance().haPermesso(Permessi.FATTURAZIONE_ELIMINA_DOCUMENTO.getID()) : false;
+		if (elimina) {
+			MenuItem delete = new MenuItem(menu, SWT.PUSH);
+			delete.setText("Elimina Documento");
+			delete.addListener(SWT.Selection, new Listener() {
+		    	public void handleEvent(Event event) {
+		    		apriDialogEliminaDocumento();
+		    	}
+		    });
+		}
+	}
+	
+	/**
+	 * Genera il documento PDF relativo al documento selezionato.
+	 * @param bozza indica se il documento è una bozza oppure se è completo.
+	 */
+	private void apriDialogGenerazioneDocumento(boolean bozza) {		
+		DocumentoFattura documento = getRigaSelezionata();
+		if (documento != null) {
+			DialogSelezioneCartella dialog = new DialogSelezioneCartella();
+			String path = dialog.open();
+			if (path != null && !path.isEmpty())
+				controllerDocumenti.produciDocumentoPDF(path, documento.getId(), bozza);
+		}
+	}
+	
+	protected void apriDialogModificaDatiFatturazione() {
+		//da estendere!
+	}
+	
+	/**
+	 * Chiede conferma all'utente per eliminare il documento selezionato.
+	 */
+	private void apriDialogEliminaDocumento() {
+		DocumentoFattura documento = getRigaSelezionata();
+		if (documento != null) {
+			boolean delete = DialogMessaggio.openConfirm(TITLE_CONFERMA_ELIMINA_DOCUMENTO, MESSAGE_CONFERMA_ELIMINA_DOCUMENTO);
+			if (delete) {
+				boolean eliminate = controllerDocumenti.elimina(documento);
+				if (eliminate) aggiornaContenuto(); //refresh();
+			}
+		}
+	}
+	
+	/**
+	 * Chiede conferma all'utente per cambiare la stato del documento selezionato da "GENERATO" a "APPROVATO".
+	 */
+	private void apriDialogApprovaDocumento() {
+		DocumentoFattura documento = getRigaSelezionata();
+		if (documento != null) {
+			boolean confirm = DialogMessaggio.openConfirm(TITLE_CONFERMA_APPROVA_DOCUMENTO, MESSAGE_CONFERMA_APPROVA_DOCUMENTO);
+			if (confirm) {
+				documento.setStato(Stato.APPROVATA);
+				boolean update = controllerDocumenti.aggiorna(documento);
+				if (update)	refresh();
+			}
+		}
+	}
+	
+	/**
+	 * Apre dialog in cui confermare le preferenze. Una volta confermate lo stato diventa "ARCHIVIATO".
+	 */
+	private void apriDialogArchiviaDocumento() {
+		DocumentoFattura documento = getRigaSelezionata();
+		if (documento != null) {
+			DialogPreferenzeDocumentoFatturazione dialog = new DialogPreferenzeDocumentoFatturazione(documento);
+			if (dialog.open() == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+	@Override
+	protected Ordinatore<DocumentoFattura> creaOrdinatore() {
+		return new OrdinatoreDocumentiFatturazione();
+	}
+
+	@Override
+	public void aggiornaContenuto() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected Etichettatore<DocumentoFattura> creaEtichettatore() {
+		return new EtichettatoreDocumentiFatturazione();
+	}
+
+	@Override
+	protected ModificatoreValoriCelle<DocumentoFattura> creaModificatore() {
+		return null;
+	}
+
+}

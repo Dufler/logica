@@ -1,0 +1,79 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import java.util.Date;
+
+import it.ltc.logica.database.model.centrale.Giacenza;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class GiacenzaSosta extends IAmbitoTrasporto {
+	
+	public GiacenzaSosta(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODICE = "GIACENZA_SOSTA";
+	public static final int ID = 17;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		boolean applicabile = false;
+		Integer durata = getDurataInGiorniSostaGiacenza(spedizione.getGiacenza());
+		if (durata != null && durata > 1) {
+			applicabile = true;
+		} 
+		return applicabile;
+	}
+	
+//	@Override
+//	public double aggiustaCosto(SpedizioneModel model, IAlgoritmo algoritmo, double costo) {
+//		if (algoritmo.getTipoAlgoritmo() == TipoAlgoritmo.PROPORZIONALE) {
+//			AlgoritmoScaglioni as = (AlgoritmoScaglioni) algoritmo;
+//			if (as.getTipo() == AlgoritmoScaglioni.Tipo.COLLI)
+//				costo = costo * model.getSpedizione().getColli();
+//		}
+//		//Calcolo la durata della giacenza
+//		Integer durata = getDurataInGiorniSostaGiacenza(model.getGiacenza());
+//		int durataTassabile = durata != null ? durata - franchigia : 0;
+//		if (durataTassabile < 0)
+//			durataTassabile = 0;
+//		double valore = costo * durataTassabile;
+//		return valore;
+//	}
+
+//	@Override
+//	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+//		double valore = getValoreBase(spedizione, voce.getAlgoritmo());
+//		return valore;
+//	}
+//	
+//	public double getValoreBase(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+//		double valore = 0;
+//		TipoAlgoritmo tipoAlgoritmo = algoritmo.getTipoAlgoritmo();
+//		switch (tipoAlgoritmo) {
+//			case FISSO : valore = 1; break;
+//			//case PERCENTUALE : getValorePercentuale(spedizione, algoritmo); break;
+//			case PROPORZIONALE : valore = getValoreProporzionale(spedizione, algoritmo); break;
+//			case SCAGLIONI : valore = getValoreScaglioni(spedizione, algoritmo); break;
+//			case SCAGLIONI_RIPETUTI : valore = getValoreScaglioniRipetuti(spedizione, algoritmo); break;
+//			default : valore = 0;
+//		}
+//		return valore;
+//	}
+	
+	private Integer getDurataInGiorniSostaGiacenza(Giacenza giacenza) {
+		Integer durataInGiorni = null;
+		if (giacenza != null && giacenza.getChiusura() != null) {
+			Date inizio = giacenza.getApertura();
+			Date fine = giacenza.getChiusura();
+			durataInGiorni = (int) Math.ceil((fine.getTime() - inizio.getTime()) / 86400000);
+		}
+		return durataInGiorni;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.GIACENZA;
+	}
+
+}

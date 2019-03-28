@@ -1,0 +1,379 @@
+ 
+package it.ltc.logica.trasporti.gui.indirizzi.parts;
+
+import java.lang.reflect.InvocationTargetException;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.common.controller.trasporti.ControllerCap;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.trasporti.gui.elements.cap.CapTableViewer;
+import it.ltc.logica.trasporti.gui.elements.cap.DialogCap;
+import it.ltc.logica.trasporti.gui.elements.indirizzo.DialogIndirizzo;
+import it.ltc.logica.trasporti.gui.elements.indirizzo.IndirizziTableViewer;
+
+public class IndirizziPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.indirizzi.part.indirizzi";
+	
+	@Inject	private UISynchronize sync;
+	
+	private final ControllerIndirizzi controllerIndirizzi;
+	
+	private final boolean permessoGestione;
+	
+	private Text textFiltroRagioneSociale;
+	private Text textFiltroIndirizzo;
+	private IndirizziTableViewer tableViewerIndirizzi;
+	private Table tableIndirizzi;
+	
+	private Text textFiltroCAP;
+	private Text textFiltroLocalita;
+	private Table tableCAP;
+	private CapTableViewer tableViewerCAP;
+	
+	@Inject
+	public IndirizziPart() {
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		permessoGestione = ControllerUtente.getInstance().isAllowed(Permessi.CAP_GESTIONE.getID());
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		CTabFolder tabFolder = new CTabFolder(container, SWT.BORDER | SWT.FLAT);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		
+		CTabItem tbtmIndirizzi = new CTabItem(tabFolder, SWT.NONE);
+		tbtmIndirizzi.setText("Indirizzi");
+		
+		Composite compositeIndirizzi = new Composite(tabFolder, SWT.NONE);
+		tbtmIndirizzi.setControl(compositeIndirizzi);
+		compositeIndirizzi.setLayout(new GridLayout(1, false));
+		
+		Composite compositeFiltroIndirizzi = new Composite(compositeIndirizzi, SWT.NONE);
+		compositeFiltroIndirizzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeFiltroIndirizzi.setSize(438, 107);
+		compositeFiltroIndirizzi.setLayout(new GridLayout(1, false));
+		
+		Composite compositeCampiFiltroIndirizzi = new Composite(compositeFiltroIndirizzi, SWT.NONE);
+		compositeCampiFiltroIndirizzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeCampiFiltroIndirizzi.setLayout(new GridLayout(2, false));
+		
+		Label lblRagioneSociale = new Label(compositeCampiFiltroIndirizzi, SWT.NONE);
+		lblRagioneSociale.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRagioneSociale.setText("Ragione Sociale: ");
+		
+		textFiltroRagioneSociale = new Text(compositeCampiFiltroIndirizzi, SWT.BORDER);
+		textFiltroRagioneSociale.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtra();
+				}
+			}
+		});
+		textFiltroRagioneSociale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFiltroRagioneSociale.setSize(155, 21);
+		
+		Label lblIndirizzo = new Label(compositeCampiFiltroIndirizzi, SWT.NONE);
+		lblIndirizzo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblIndirizzo.setSize(50, 15);
+		lblIndirizzo.setText("Indirizzo, localit\u00E0,... : ");
+		
+		textFiltroIndirizzo = new Text(compositeCampiFiltroIndirizzi, SWT.BORDER);
+		textFiltroIndirizzo.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtra();
+				}
+			}
+		});
+		textFiltroIndirizzo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFiltroIndirizzo.setSize(160, 21);
+		
+		Composite compositeControlliIndirizzi = new Composite(compositeFiltroIndirizzi, SWT.NONE);
+		compositeControlliIndirizzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlliIndirizzi.setLayout(new GridLayout(3, false));
+		
+		Button btnFiltra = new Button(compositeControlliIndirizzi, SWT.NONE);
+		btnFiltra.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				filtra();
+			}
+		});
+		btnFiltra.setText("Filtra");
+		
+		Button btnAnnullaFiltro = new Button(compositeControlliIndirizzi, SWT.NONE);
+		btnAnnullaFiltro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				annullaFiltro();
+			}
+		});
+		btnAnnullaFiltro.setSize(81, 25);
+		btnAnnullaFiltro.setText("Annulla filtro");
+		
+		Button btnNuovoIndirizzo = new Button(compositeControlliIndirizzi, SWT.NONE);
+		btnNuovoIndirizzo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserisciNuovoIndirizzo();
+			}
+		});
+		btnNuovoIndirizzo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+		btnNuovoIndirizzo.setText("Nuovo Indirizzo");
+		btnNuovoIndirizzo.setEnabled(permessoGestione);
+		
+		tableViewerIndirizzi = new IndirizziTableViewer(compositeIndirizzi);
+		tableIndirizzi = tableViewerIndirizzi.getTable();
+		tableIndirizzi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		mostraIndirizzi();
+		
+		CTabItem tbtmCap = new CTabItem(tabFolder, SWT.NONE);
+		tbtmCap.setText("CAP");
+		
+		Composite compositeCAP = new Composite(tabFolder, SWT.NONE);
+		tbtmCap.setControl(compositeCAP);
+		compositeCAP.setLayout(new GridLayout(1, false));
+		
+		Composite compositeFiltroCap = new Composite(compositeCAP, SWT.NONE);
+		compositeFiltroCap.setLayout(new GridLayout(1, false));
+		compositeFiltroCap.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeFiltroCap.setBounds(0, 0, 64, 64);
+		
+		Composite compositeCampiFiltroCAP = new Composite(compositeFiltroCap, SWT.NONE);
+		compositeCampiFiltroCAP.setLayout(new GridLayout(2, false));
+		compositeCampiFiltroCAP.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblFiltroCAP = new Label(compositeCampiFiltroCAP, SWT.NONE);
+		lblFiltroCAP.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblFiltroCAP.setBounds(0, 0, 55, 15);
+		lblFiltroCAP.setText("CAP: ");
+		
+		textFiltroCAP = new Text(compositeCampiFiltroCAP, SWT.BORDER);
+		textFiltroCAP.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtraCAP();
+				}
+			}
+		});
+		textFiltroCAP.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblLocalita = new Label(compositeCampiFiltroCAP, SWT.NONE);
+		lblLocalita.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblLocalita.setText("Localit\u00E0: ");
+		
+		textFiltroLocalita = new Text(compositeCampiFiltroCAP, SWT.BORDER);
+		textFiltroLocalita.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtraCAP();
+				}
+			}
+		});
+		textFiltroLocalita.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Composite compositeControlliFiltroCAP = new Composite(compositeFiltroCap, SWT.NONE);
+		compositeControlliFiltroCAP.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlliFiltroCAP.setBounds(0, 0, 64, 64);
+		compositeControlliFiltroCAP.setLayout(new GridLayout(3, false));
+		
+		Button btnFiltraCAP = new Button(compositeControlliFiltroCAP, SWT.NONE);
+		btnFiltraCAP.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				filtraCAP();
+			}
+		});
+		btnFiltraCAP.setBounds(0, 0, 75, 25);
+		btnFiltraCAP.setText("Filtra");
+		
+		Button btnAnnullaFiltroCAP = new Button(compositeControlliFiltroCAP, SWT.NONE);
+		btnAnnullaFiltroCAP.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				annullaFiltroCAP();
+			}
+		});
+		btnAnnullaFiltroCAP.setText("Annulla Filtro");
+		
+		Button btnNuovoCap = new Button(compositeControlliFiltroCAP, SWT.NONE);
+		btnNuovoCap.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserisciNuovoCAP();
+			}
+		});
+		btnNuovoCap.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+		btnNuovoCap.setText("Nuovo CAP");
+		btnNuovoCap.setEnabled(permessoGestione);
+		
+		tableViewerCAP = new CapTableViewer(compositeCAP);
+		tableCAP = tableViewerCAP.getTable();
+		tableCAP.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		mostraCap();
+		
+		tabFolder.setSelection(0);
+	}
+	
+	private void mostraIndirizzi() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Caricamento Indirizzi", IProgressMonitor.UNKNOWN);
+				sync.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewerIndirizzi.mostraIndirizzi(controllerIndirizzi.getIndirizzi());
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void mostraCap() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Caricamento CAP", IProgressMonitor.UNKNOWN);
+				sync.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewerCAP.mostraCap(ControllerCap.getInstance().getListaCap());
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void filtra() {
+		String ragioneSociale = textFiltroRagioneSociale.getText();
+		String indirizzo = textFiltroIndirizzo.getText();
+		impostaFiltro(ragioneSociale, indirizzo);
+	}
+	
+	private void impostaFiltro(final String ragioneSociale, final String indirizzo) {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Filtraggio Spedizioni", IProgressMonitor.UNKNOWN);
+				sync.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewerIndirizzi.filtra(ragioneSociale, indirizzo);
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void annullaFiltro() {
+		textFiltroRagioneSociale.setText("");
+		textFiltroIndirizzo.setText("");
+		impostaFiltro(null, null);
+	}
+	
+	private void inserisciNuovoIndirizzo() {
+		DialogIndirizzo dialog = new DialogIndirizzo(null);
+		Indirizzo indirizzoSelezionato = dialog.apri();
+		if (indirizzoSelezionato != null)
+			tableViewerIndirizzi.refresh();
+	}
+	
+	private void filtraCAP() {
+		String cap = textFiltroCAP.getText();
+		String localita = textFiltroLocalita.getText();
+		impostaFiltroCAP(cap, localita);
+	}
+	
+	private void impostaFiltroCAP(final String cap, final String localita) {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+				monitor.beginTask("Filtraggio CAP", IProgressMonitor.UNKNOWN);
+				sync.asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						tableViewerCAP.filtra(cap, localita);
+					}
+				});
+				monitor.done();
+			}
+		};
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void annullaFiltroCAP() {
+		textFiltroCAP.setText("");
+		textFiltroLocalita.setText("");
+		impostaFiltroCAP(null, null);
+	}
+	
+	private void inserisciNuovoCAP() {
+		DialogCap dialog = new DialogCap(null);
+		Cap nuovoCap = dialog.apri();
+		if (nuovoCap != null)
+			tableViewerCAP.refresh();
+	}
+}

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Mail
+Bundle-SymbolicName: it.ltc.utility.mail
+Bundle-Version: 1.0.0
+Bundle-ClassPath: mail-1.0.jar,
+ activation-1.1.jar,
+ javax.mail-1.5.1.jar
+Bundle-Vendor: LTC
+Export-Package: it.ltc.utility.mail;version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: it.ltc.utility.mail
+Require-Bundle: org.apache.logging;bundle-version="1.0.0"

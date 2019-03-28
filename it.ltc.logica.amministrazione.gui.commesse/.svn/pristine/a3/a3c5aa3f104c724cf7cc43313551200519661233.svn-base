@@ -1,0 +1,61 @@
+package it.ltc.logica.amministrazione.gui.commesse.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.amministrazione.gui.commesse.dialogs.DialogCommessa;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaCommesse extends Tabella<Commessa> {
+
+	public TabellaCommesse(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreCommesse());
+		
+		aggiungiColonna("Commessa", 120, new EtichettatoreCommesse(), 0);
+		aggiungiColonna("Sede", 80, new EtichettatoreCommesse(), 1);
+		aggiungiColonna("Descrizione", 200, new EtichettatoreCommesse(), 2);	
+	}
+
+	@Override
+	protected void setFiltro() {}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    }); 
+	}
+	
+	private void apriDialogModifica() {
+		Commessa commessa = getRigaSelezionata();
+		if (commessa != null) {
+			DialogCommessa dialog = new DialogCommessa(commessa);
+			if (dialog.open() == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

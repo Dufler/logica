@@ -1,0 +1,78 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia;
+
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+
+import it.ltc.logica.gui.container.DialogWizard;
+
+public class PreventivoSpedizioneFittiziaWizard extends Wizard {
+	
+	private boolean aggiunto;
+	
+	private PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage selezioneCorrieriPage;
+	private PreventivoSpedizioneFittiziaSelezioneClientiWizardPage selezioneClientiPage;
+	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
+	private PreventivoSpedizioneFittiziaRisultatoWizardPage risultatoPage;
+
+	public PreventivoSpedizioneFittiziaWizard() {
+		setWindowTitle("Preventivo di costo per una spedizione fittizia");
+		selezioneCorrieriPage = new PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage();
+		selezioneClientiPage = new PreventivoSpedizioneFittiziaSelezioneClientiWizardPage();
+		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
+		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
+		aggiunto = false;
+	}
+
+	@Override
+	public void addPages() {
+		addPage(datiPage);
+		addPage(selezioneCorrieriPage);
+		addPage(selezioneClientiPage);
+		addPage(risultatoPage);
+	}
+
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		aggiungiListener();
+		IWizardPage nextPage = null;
+		if (currentPage.equals(datiPage)) {
+			nextPage = selezioneCorrieriPage;
+		} else if (currentPage.equals(selezioneCorrieriPage)) {
+			nextPage = selezioneClientiPage;
+		} else if (currentPage.equals(selezioneClientiPage)) {
+			nextPage = risultatoPage;
+		}
+		return nextPage;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = (getContainer().getCurrentPage() == risultatoPage);
+		return finish;
+	}
+	
+	private void aggiungiListener() {
+		if (!aggiunto) {
+			DialogWizard dialog = (DialogWizard) getContainer();
+			Button nextButton = dialog.getNextButton();
+			nextButton.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					if (dialog.getCurrentPage().equals(risultatoPage)) {
+						risultatoPage.mostraRisultato();
+					}
+				}
+			});
+			aggiunto = true;
+		}
+	}
+
+}

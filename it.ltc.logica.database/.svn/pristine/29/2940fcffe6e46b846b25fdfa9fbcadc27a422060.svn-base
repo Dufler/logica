@@ -1,0 +1,117 @@
+package it.ltc.logica.database.model.locale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.LocalEntity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class ListinoSimulazioneVoceProporzionale extends Entity implements LocalEntity, ValidEntity {
+	
+	public static final String NOME_TABELLA = "listino_simulazione_voce_proporzionale";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private Double valore;
+	private Double minimo;
+	private Double massimo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_voce", "id", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addDouble("valore_minimo", "minimo");
+			variabili.addDouble("valore_massimo", "massimo");
+		}
+		return variabili;
+	}
+	
+	@Override
+	public String getTableDefinition() {
+		String tableDefinition = "CREATE TABLE IF NOT EXISTS listino_simulazione_voce_proporzionale ("
+                + "	id_voce INTEGER NOT NULL REFERENCES listino_simulazione_voce(id) ON UPDATE CASCADE ON DELETE CASCADE, "
+                + " valore REAL NOT NULL, "
+                + " valore_minimo REAL, "
+                + " valore_massimo REAL );";
+        return tableDefinition;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+	
+	@Override
+	public String toString() {
+		return "valore=" + valore + ", minimo=" + minimo + ", massimo=" + massimo;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ListinoSimulazioneVoceProporzionale other = (ListinoSimulazioneVoceProporzionale) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+	
+	public Double getMinimo() {
+		return minimo;
+	}
+
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+
+	public Double getMassimo() {
+		return massimo;
+	}
+
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+
+}

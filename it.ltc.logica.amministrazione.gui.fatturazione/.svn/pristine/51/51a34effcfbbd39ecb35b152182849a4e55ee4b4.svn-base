@@ -1,0 +1,72 @@
+package it.ltc.logica.amministrazione.gui.fatturazione.elements.coordinate;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.amministrazione.gui.fatturazione.dialogs.DialogCoordinateBancarie;
+import it.ltc.logica.database.model.centrale.fatturazione.CoordinateBancarie;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaCoordinate extends Tabella<CoordinateBancarie> {
+
+	public TabellaCoordinate(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreCoordinate());
+		
+		aggiungiColonna("Nome", 150, new EtichettatoreCoordinate(), 0);
+		aggiungiColonna("Ente", 150, new EtichettatoreCoordinate(), 1);
+		aggiungiColonna("Coordinate", 150, new EtichettatoreCoordinate(), 2);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//DO NOTHING!
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				CoordinateBancarie coordinate = getRigaSelezionata();
+				apriDialog(coordinate);
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem insert = new MenuItem(menu, SWT.PUSH);
+		insert.setText("Inserisci");
+		insert.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialog(null);
+	    	}
+	    }); 
+		
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		CoordinateBancarie coordinate = getRigaSelezionata();
+	    		apriDialog(coordinate);
+	    	}
+	    }); 
+		
+	}
+	
+	private void apriDialog(CoordinateBancarie coordinate) {
+		DialogCoordinateBancarie dialog = new DialogCoordinateBancarie(coordinate);
+		int returnCode = dialog.open();
+		if (returnCode == Dialog.OK) {
+			refresh();
+		}
+	}
+
+}

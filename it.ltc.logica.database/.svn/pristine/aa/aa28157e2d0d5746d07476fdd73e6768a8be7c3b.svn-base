@@ -1,0 +1,375 @@
+package it.ltc.logica.database.model.sqlserver.ltc;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class WebCliDep extends Entity{
+
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idCliDep;
+	private String descrizione;
+	private Integer idSede;
+	private String nomeDB;
+	private String codColloCliUscita;
+	private String codColloCliIngresso;
+	private String altroDB;
+	private String tabellaVerBarCarico;
+	private String campoVerBarCarico;
+	private String campoIdUniArtCarico;
+	private String tipoGestione;
+	private Integer lungBarra;
+	private String filtroStati;
+	private String campoQtaImballataRighiOrdine;
+	private String campoQtaOrdinataRighiOrdine;
+	private String campoQtaAssegnataRighiOrdine;
+	private String campoModelloArticoli;
+	private Integer idUnicoMittente;
+	private String sQLAggiornamentoSeriale;
+	private String attivaGestionePalmare;
+	private String etiImballo;
+	private Integer idClidepMit;
+	private String etiPackImballo;
+	private String stampaPackListImballo;
+	private String sQLAggiornamentoSeriale1;
+	private String sQLAggiornamentoSeriale2;
+	private String tipoCampoCodCli;
+	private String progIntOpeCollo;
+	private String pezziCassa;
+	private String rilevaBarcodeCorriere;
+	private String etiPackiCaricoSmall;
+	private String etiPackiCaricoLarge;
+	private String etiPackiCaricoSmallP4T;
+	private String campoVerBarCarico2;
+	private Integer abilitaRicercaArticolo;
+	
+	
+	
+	@Override
+	public String getNomeTabella() {
+		return "dbo.WebCliDep";
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()){
+			variabili.addAutoincrement("IdCliDep", "idCliDep");
+			variabili.addString("Descrizione", "descrizione");
+			variabili.addInt("IdSede", "idSede");
+			variabili.addString("NomeDB", "nomeDB");
+			variabili.addString("CodColloCliUscita", "codColloCliUscita");
+			variabili.addString("CodColloCliIngresso", "codColloCliIngresso");
+			variabili.addString("AltroDB", "altroDB");
+			variabili.addString("TabellaVerBarCarico", "tabellaVerBarCarico");
+			variabili.addString("CampoVerBarCarico", "campoVerBarCarico");
+			variabili.addString("CampoIdUniArtCarico", "campoIdUniArtCarico");
+			variabili.addString("TipoGestione", "tipoGestione");
+			variabili.addInt("LungBarra", "lungBarra");
+			variabili.addString("FiltroStati", "filtroStati");
+			variabili.addString("CampoQtaImballataRighiOrdine", "campoQtaImballataRighiOrdine");
+			variabili.addString("CampoQtaOrdinataRighiOrdine", "campoQtaOrdinataRighiOrdine");
+			variabili.addString("CampoQtaAssegnataRighiOrdine", "campoQtaAssegnataRighiOrdine");
+			variabili.addString("CampoModelloArticoli", "campoModelloArticoli");
+			variabili.addInt("IdUnicoMittente", "idUnicoMittente");
+			variabili.addString("SQLAggiornamentoSeriale", "sQLAggiornamentoSeriale");
+			variabili.addString("AttivaGestionePalmare", "attivaGestionePalmare");
+			variabili.addString("EtiImballo", "etiImballo");
+			variabili.addInt("IdClidepMit", "idClidepMit");
+			variabili.addString("EtiPackImballo", "etiPackImballo");
+			variabili.addString("StampaPackListImballo", "stampaPackListImballo");
+			variabili.addString("SQLAggiornamentoSeriale1", "sQLAggiornamentoSeriale1");
+			variabili.addString("SQLAggiornamentoSeriale2", "sQLAggiornamentoSeriale2");
+			variabili.addString("TipoCampoCodCli", "tipoCampoCodCli");
+			variabili.addString("ProgIntOpeCollo", "progIntOpeCollo");
+			variabili.addString("PezziCassa", "pezziCassa");
+			variabili.addString("RilevaBarcodeCorriere", "rilevaBarcodeCorriere");
+			variabili.addString("EtiPackiCaricoSmall", "etiPackiCaricoSmall");
+			variabili.addString("EtiPackiCaricoLarge", "etiPackiCaricoLarge");
+			variabili.addString("EtiPackiCaricoSmallP4T", "etiPackiCaricoSmallP4T");
+			variabili.addString("CampoVerBarCarico2", "campoVerBarCarico2");
+			variabili.addInt("AbilitaRicercaArticolo", "abilitaRicercaArticolo");
+		}
+		return variabili;
+	}
+
+	public String getSQLAggiornamentoSeriale1() {
+		return sQLAggiornamentoSeriale1;
+	}
+
+	public void setSQLAggiornamentoSeriale1(String sQLAggiornamentoSeriale1) {
+		this.sQLAggiornamentoSeriale1 = sQLAggiornamentoSeriale1;
+	}
+
+	public String getSQLAggiornamentoSeriale2() {
+		return sQLAggiornamentoSeriale2;
+	}
+
+	public void setSQLAggiornamentoSeriale2(String sQLAggiornamentoSeriale2) {
+		this.sQLAggiornamentoSeriale2 = sQLAggiornamentoSeriale2;
+	}
+	
+	public Integer getIdCliDep() {
+		return idCliDep;
+	}
+
+	public void setIdCliDep(Integer idCliDep) {
+		this.idCliDep = idCliDep;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public Integer getIdSede() {
+		return idSede;
+	}
+
+	public void setIdSede(Integer idSede) {
+		this.idSede = idSede;
+	}
+
+	public String getNomeDB() {
+		return nomeDB;
+	}
+
+	public void setNomeDB(String nomeDB) {
+		this.nomeDB = nomeDB;
+	}
+
+	public String getCodColloCliUscita() {
+		return codColloCliUscita;
+	}
+
+	public void setCodColloCliUscita(String codColloCliUscita) {
+		this.codColloCliUscita = codColloCliUscita;
+	}
+
+	public String getCodColloCliIngresso() {
+		return codColloCliIngresso;
+	}
+
+	public void setCodColloCliIngresso(String codColloCliIngresso) {
+		this.codColloCliIngresso = codColloCliIngresso;
+	}
+
+	public String getAltroDB() {
+		return altroDB;
+	}
+
+	public void setAltroDB(String altroDB) {
+		this.altroDB = altroDB;
+	}
+
+	public String getTabellaVerBarCarico() {
+		return tabellaVerBarCarico;
+	}
+
+	public void setTabellaVerBarCarico(String tabellaVerBarCarico) {
+		this.tabellaVerBarCarico = tabellaVerBarCarico;
+	}
+
+	public String getCampoVerBarCarico() {
+		return campoVerBarCarico;
+	}
+
+	public void setCampoVerBarCarico(String campoVerBarCarico) {
+		this.campoVerBarCarico = campoVerBarCarico;
+	}
+
+	public String getCampoIdUniArtCarico() {
+		return campoIdUniArtCarico;
+	}
+
+	public void setCampoIdUniArtCarico(String campoIdUniArtCarico) {
+		this.campoIdUniArtCarico = campoIdUniArtCarico;
+	}
+
+	public String getTipoGestione() {
+		return tipoGestione;
+	}
+
+	public void setTipoGestione(String tipoGestione) {
+		this.tipoGestione = tipoGestione;
+	}
+
+	public Integer getLungBarra() {
+		return lungBarra;
+	}
+
+	public void setLungBarra(Integer lungBarra) {
+		this.lungBarra = lungBarra;
+	}
+
+	public String getFiltroStati() {
+		return filtroStati;
+	}
+
+	public void setFiltroStati(String filtroStati) {
+		this.filtroStati = filtroStati;
+	}
+
+	public String getCampoQtaImballataRighiOrdine() {
+		return campoQtaImballataRighiOrdine;
+	}
+
+	public void setCampoQtaImballataRighiOrdine(String campoQtaImballataRighiOrdine) {
+		this.campoQtaImballataRighiOrdine = campoQtaImballataRighiOrdine;
+	}
+
+	public String getCampoQtaOrdinataRighiOrdine() {
+		return campoQtaOrdinataRighiOrdine;
+	}
+
+	public void setCampoQtaOrdinataRighiOrdine(String campoQtaOrdinataRighiOrdine) {
+		this.campoQtaOrdinataRighiOrdine = campoQtaOrdinataRighiOrdine;
+	}
+
+	public String getCampoQtaAssegnataRighiOrdine() {
+		return campoQtaAssegnataRighiOrdine;
+	}
+
+	public void setCampoQtaAssegnataRighiOrdine(String campoQtaAssegnataRighiOrdine) {
+		this.campoQtaAssegnataRighiOrdine = campoQtaAssegnataRighiOrdine;
+	}
+
+	public String getCampoModelloArticoli() {
+		return campoModelloArticoli;
+	}
+
+	public void setCampoModelloArticoli(String campoModelloArticoli) {
+		this.campoModelloArticoli = campoModelloArticoli;
+	}
+
+	public Integer getIdUnicoMittente() {
+		return idUnicoMittente;
+	}
+
+	public void setIdUnicoMittente(Integer idUnicoMittente) {
+		this.idUnicoMittente = idUnicoMittente;
+	}
+
+	public String getSQLAggiornamentoSeriale() {
+		return sQLAggiornamentoSeriale;
+	}
+
+	public void setSQLAggiornamentoSeriale(String sQLAggiornamentoSeriale) {
+		this.sQLAggiornamentoSeriale = sQLAggiornamentoSeriale;
+	}
+
+	public String getAttivaGestionePalmare() {
+		return attivaGestionePalmare;
+	}
+
+	public void setAttivaGestionePalmare(String attivaGestionePalmare) {
+		this.attivaGestionePalmare = attivaGestionePalmare;
+	}
+
+	public String getEtiImballo() {
+		return etiImballo;
+	}
+
+	public void setEtiImballo(String etiImballo) {
+		this.etiImballo = etiImballo;
+	}
+
+	public Integer getIdClidepMit() {
+		return idClidepMit;
+	}
+
+	public void setIdClidepMit(Integer idClidepMit) {
+		this.idClidepMit = idClidepMit;
+	}
+
+	public String getEtiPackImballo() {
+		return etiPackImballo;
+	}
+
+	public void setEtiPackImballo(String etiPackImballo) {
+		this.etiPackImballo = etiPackImballo;
+	}
+
+	public String getStampaPackListImballo() {
+		return stampaPackListImballo;
+	}
+
+	public void setStampaPackListImballo(String stampaPackListImballo) {
+		this.stampaPackListImballo = stampaPackListImballo;
+	}
+
+	public String getTipoCampoCodCli() {
+		return tipoCampoCodCli;
+	}
+
+	public void setTipoCampoCodCli(String tipoCampoCodCli) {
+		this.tipoCampoCodCli = tipoCampoCodCli;
+	}
+
+	public String getProgIntOpeCollo() {
+		return progIntOpeCollo;
+	}
+
+	public void setProgIntOpeCollo(String progIntOpeCollo) {
+		this.progIntOpeCollo = progIntOpeCollo;
+	}
+
+	public String getPezziCassa() {
+		return pezziCassa;
+	}
+
+	public void setPezziCassa(String pezziCassa) {
+		this.pezziCassa = pezziCassa;
+	}
+
+	public String getRilevaBarcodeCorriere() {
+		return rilevaBarcodeCorriere;
+	}
+
+	public void setRilevaBarcodeCorriere(String rilevaBarcodeCorriere) {
+		this.rilevaBarcodeCorriere = rilevaBarcodeCorriere;
+	}
+
+	public String getEtiPackiCaricoSmall() {
+		return etiPackiCaricoSmall;
+	}
+
+	public void setEtiPackiCaricoSmall(String etiPackiCaricoSmall) {
+		this.etiPackiCaricoSmall = etiPackiCaricoSmall;
+	}
+
+	public String getEtiPackiCaricoLarge() {
+		return etiPackiCaricoLarge;
+	}
+
+	public void setEtiPackiCaricoLarge(String etiPackiCaricoLarge) {
+		this.etiPackiCaricoLarge = etiPackiCaricoLarge;
+	}
+
+	public String getEtiPackiCaricoSmallP4T() {
+		return etiPackiCaricoSmallP4T;
+	}
+
+	public void setEtiPackiCaricoSmallP4T(String etiPackiCaricoSmallP4T) {
+		this.etiPackiCaricoSmallP4T = etiPackiCaricoSmallP4T;
+	}
+
+	public String getCampoVerBarCarico2() {
+		return campoVerBarCarico2;
+	}
+
+	public void setCampoVerBarCarico2(String campoVerBarCarico2) {
+		this.campoVerBarCarico2 = campoVerBarCarico2;
+	}
+
+	public Integer getAbilitaRicercaArticolo() {
+		return abilitaRicercaArticolo;
+	}
+
+	public void setAbilitaRicercaArticolo(Integer abilitaRicercaArticolo) {
+		this.abilitaRicercaArticolo = abilitaRicercaArticolo;
+	}
+
+}

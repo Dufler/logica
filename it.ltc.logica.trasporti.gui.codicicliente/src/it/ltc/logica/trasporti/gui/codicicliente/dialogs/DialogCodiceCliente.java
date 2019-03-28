@@ -1,0 +1,105 @@
+package it.ltc.logica.trasporti.gui.codicicliente.dialogs;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.sistema.ControllerCommesse;
+import it.ltc.logica.common.controller.trasporti.ControllerCodiciClienteCorriere;
+import it.ltc.logica.common.controller.trasporti.ControllerCorrieri;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeCodiceCliente;
+import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
+import it.ltc.logica.utilities.variabili.Permessi;
+
+public class DialogCodiceCliente extends DialogModel<CodiceClienteCorriere> {
+	
+	public static final String DEFAULT_TITLE = "Codice Cliente per Corriere";
+	
+	private final boolean permessoGestione;
+	
+	private final ControllerCodiciClienteCorriere controller;
+	private final CodiceClienteCorriere codice;
+	private final boolean modify;
+	
+	private CompositeCodiceCliente compositeCodice;
+
+	public DialogCodiceCliente(CodiceClienteCorriere c) {
+		super(DEFAULT_TITLE, c);
+		permessoGestione = ControllerVariabiliGlobali.getInstance().haPermesso(Permessi.TRASPORTI_CODICI_CLIENTE_GESTIONE.getID());
+		codice = c;
+		modify = (c != null);
+		controller = ControllerCodiciClienteCorriere.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeCodice = new CompositeCodiceCliente(this, container);
+		compositeCodice.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeCodice.enableElement(permessoGestione);
+		if (modify)
+			compositeCodice.enableElement(true);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modificato = compositeCodice.isDirty();
+		return modificato;
+	}
+
+	@Override
+	public void loadModel() {
+		compositeCodice.setCodiceCliente(codice.getCodiceCliente());
+		compositeCodice.setDescrizione(codice.getDescrizione());
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(codice.getCommessa());
+		compositeCodice.setCommessa(commessa);
+		Corriere corriere = ControllerCorrieri.getInstance().getCorriere(codice.getCorriere());
+		compositeCodice.setCorriere(corriere);
+		String stato = codice.getStato();
+		compositeCodice.setStato(stato);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		codice.setCodiceCliente(compositeCodice.getCodiceCliente());
+		codice.setDescrizione(compositeCodice.getDescrizione());
+		codice.setCommessa(compositeCodice.getCommessa().getId());
+		codice.setCorriere(compositeCodice.getCorriere().getId());
+		codice.setStato(compositeCodice.getStato());
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean modifica = controller.aggiorna(codice);
+		return modifica;
+	}
+	
+	@Override
+	public boolean insertModel() {
+		boolean inserimento = controller.inserisci(codice);
+		return inserimento;
+	}
+
+	@Override
+	public CodiceClienteCorriere createNewModel() {
+		CodiceClienteCorriere codice = new CodiceClienteCorriere();
+		return codice;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		// TODO Not yet a validEntity
+		return null;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!
+	}
+
+}

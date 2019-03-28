@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Microsoft
+Bundle-SymbolicName: it.ltc.utility.microsoft
+Bundle-Version: 1.0.0
+Bundle-ClassPath: microsoft-1.0.jar
+Bundle-Vendor: LTC
+Export-Package: it.ltc.utility.microsoft.converter;version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: it.ltc.utility.microsoft
+Require-Bundle: org.apache.logging;bundle-version="1.0.0",
+ org.apache.commons;bundle-version="1.0.0",
+ it.ltc.utility.csv;bundle-version="1.0.0"

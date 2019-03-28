@@ -1,0 +1,126 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import it.ltc.logica.database.model.centrale.SpedizioneStorica;
+import it.ltc.logica.gui.container.Processo;
+
+public class ProcessoCalcoloReportSemplice extends Processo {
+	
+	private final List<ReportElement> report;
+	private final List<SpedizioneStorica> spedizioni;
+
+	public ProcessoCalcoloReportSemplice(String titolo, int operazioni, List<ReportElement> report, List<SpedizioneStorica> spedizioni) {
+		super(titolo, operazioni);
+		this.report = report;
+		this.spedizioni = spedizioni;
+	}
+
+	@Override
+	public void eseguiOperazioni(IProgressMonitor monitor) {
+		// Preparo le variabili necessarie
+		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
+		HashMap<String, Integer> spedizioniPerGiorno = new HashMap<String, Integer>();
+		int totaleSpedizioni = spedizioni.size();
+		int totaleColli = 0;
+		int totalePezzi = 0;
+		int totaleContrassegni = 0;
+		// Contro i valori null che potrebbero falsare le medie
+		int spedizioniSenzaColli = 0;
+		int spedizioniSenzaPezzi = 0;
+		//int spedizioniSenzaData = 0;
+		double totaleValoreContrassegni = 0;
+		double totalePeso = 0;
+		double totaleVolume = 0;
+		for (SpedizioneStorica spedizione : spedizioni) {
+			//Data
+			if (spedizione.getData() != null) {
+				Integer numeroSpedizioni = 1;
+				String data = sdf.format(spedizione.getData());
+				Integer i = spedizioniPerGiorno.get(data);
+				if (i != null)
+					numeroSpedizioni += i;
+				spedizioniPerGiorno.put(data, numeroSpedizioni);
+			} else {
+				//spedizioniSenzaData += 1;
+			}
+			// Colli
+			if (spedizione.getColli() != null)
+				totaleColli += spedizione.getColli();
+			else
+				spedizioniSenzaColli += 1;
+			// Pezzi
+			if (spedizione.getPezzi() != null)
+				totalePezzi += spedizione.getPezzi();
+			else
+				spedizioniSenzaPezzi += 1;
+			// Peso
+			if (spedizione.getPeso() != null)
+				totalePeso += spedizione.getPeso();
+			// Volume
+			if (spedizione.getVolume() != null)
+				totaleVolume += spedizione.getVolume();
+			// Contrassegno
+			if (spedizione.getContrassegno() != null) {
+				totaleContrassegni += 1;
+				totaleValoreContrassegni += spedizione.getContrassegno();
+			}
+			monitor.worked(1);
+		}
+		// calcolo
+		double mediaColliSpedizione = (totaleColli * 1.0 / (totaleSpedizioni - spedizioniSenzaColli));
+		double mediaPezziSpedizione = (totalePezzi * 1.0 / (totaleSpedizioni - spedizioniSenzaPezzi));
+		double mediaPezziCollo = (totalePezzi * 1.0 / totaleColli);
+		double mediaPesoCollo = totalePeso / totaleColli;
+		double mediaVolumeCollo = totaleVolume / totaleColli;
+		double percentualeContrassegno = (totaleContrassegni * 1.0) / (totaleSpedizioni * 1.0);
+		double mediaContrassegno = (totaleContrassegni > 0) ? (totaleValoreContrassegni / totaleContrassegni) : 0.0;
+		double giorniLavorati = spedizioniPerGiorno.size();
+		double mediaColliAlGiorno = (totaleColli * 1.0) / giorniLavorati;
+		double mediaPezziAlGiorno = (totalePezzi * 1.0) / giorniLavorati;
+		monitor.worked(1);
+		// Genero gli elementi del report
+		ReportElement reportTotaleSpedizioni = new ReportElement("Totale delle spedizioni", totaleSpedizioni, ReportElement.UM.INTERI);
+		ReportElement reportTotaleColli = new ReportElement("Totale dei colli", totaleColli, ReportElement.UM.INTERI);
+		ReportElement reportTotalePezzi = new ReportElement("Totale dei pezzi", totalePezzi, ReportElement.UM.INTERI);
+		ReportElement reportTotalePeso = new ReportElement("Peso totale", totalePeso, ReportElement.UM.KG);
+		ReportElement reportTotaleVolume = new ReportElement("Volume totale", totaleVolume, ReportElement.UM.MC);
+		ReportElement reportTotaleSpedizioniContrassegno = new ReportElement("Totale delle spedizioni in contrassegno", totaleContrassegni, ReportElement.UM.INTERI);
+		ReportElement reportPercentualeSpedizioniContrassegno = new ReportElement("Percentuale delle spedizioni in contrassegno", percentualeContrassegno, ReportElement.UM.PERCENTUALE);
+		ReportElement reportTotaleValoreContrassegni = new ReportElement("Totale del valore dei contrassegni", totaleValoreContrassegni, ReportElement.UM.EURO);
+		ReportElement reportMediaValoreContrassegni = new ReportElement("Valore medio del contrassegno", mediaContrassegno, ReportElement.UM.EURO);
+		ReportElement reportMediaColliSpedizione = new ReportElement("Media dei colli per spedizione", mediaColliSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziSpedizione = new ReportElement("Media dei pezzi per spedizione", mediaPezziSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziCollo = new ReportElement("Media dei pezzi per collo", mediaPezziCollo, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPesoCollo = new ReportElement("Peso medio di un collo", mediaPesoCollo, ReportElement.UM.KG);
+		ReportElement reportMediaVolumeCollo = new ReportElement("Volume medio di un collo", mediaVolumeCollo, ReportElement.UM.MC);
+		ReportElement reportTotaleGiorniLavorati = new ReportElement("Totale dei giorni in cui si \u00E8 lavorato", giorniLavorati, ReportElement.UM.INTERI);
+		ReportElement reportMediaColliAlGiorno = new ReportElement("Media dei colli spediti al giorno", mediaColliAlGiorno, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziAlGiorno = new ReportElement("Media dei pezzi spediti al giorno", mediaPezziAlGiorno, ReportElement.UM.DECIMALI);
+		monitor.worked(1);
+		// Aggiungo gli elementi al report
+		report.add(reportTotaleSpedizioni);
+		report.add(reportTotaleColli);
+		report.add(reportTotalePezzi);
+		report.add(reportTotalePeso);
+		report.add(reportTotaleVolume);
+		report.add(reportTotaleSpedizioniContrassegno);
+		report.add(reportPercentualeSpedizioniContrassegno);
+		report.add(reportTotaleValoreContrassegni);
+		report.add(reportMediaValoreContrassegni);
+		report.add(reportMediaColliSpedizione);
+		report.add(reportMediaPezziSpedizione);
+		report.add(reportMediaPezziCollo);
+		report.add(reportMediaPesoCollo);
+		report.add(reportMediaVolumeCollo);
+		report.add(reportTotaleGiorniLavorati);
+		report.add(reportMediaColliAlGiorno);
+		report.add(reportMediaPezziAlGiorno);
+		monitor.worked(1);
+	}
+
+}

@@ -1,0 +1,11 @@
+package it.ltc.logica.gui.validation;
+
+public interface ParentValidationHandler extends ValidationHandler {
+	
+	/**
+	 * Aggiunge un componente figlio
+	 * @param children
+	 */
+	public void addChild(ValidationHandler child);
+
+}

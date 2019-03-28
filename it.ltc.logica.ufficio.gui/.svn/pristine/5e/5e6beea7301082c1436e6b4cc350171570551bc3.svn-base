@@ -1,0 +1,33 @@
+package it.ltc.logica.ufficio.gui.elements.fornitore;
+
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreFornitori extends Ordinatore<Fornitore> {
+
+	@Override
+	protected int compare(Fornitore t1, Fornitore t2, int property) {
+		int compare;
+		switch (property) {
+		case 0 : compare = ordinaPerRagioneSociale(t1, t2); break;
+		case 1 : compare = ordinaPerNote(t1, t2); break;
+		default : compare = 0;
+		}
+		return compare;
+	}
+
+	private int ordinaPerNote(Fornitore t1, Fornitore t2) {
+		String n1 = t1.getNote() != null ? t1.getNote() : "";
+		String n2 = t2.getNote() != null ? t2.getNote() : "";
+		int compare = n1.compareTo(n2);
+		return compare;
+	}
+
+	private int ordinaPerRagioneSociale(Fornitore t1, Fornitore t2) {
+		String n1 = t1.getNome() != null ? t1.getNome() : "";
+		String n2 = t2.getNome() != null ? t2.getNome() : "";
+		int compare = n1.compareTo(n2);
+		return compare;
+	}
+
+}

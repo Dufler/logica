@@ -1,0 +1,135 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.Nazione;
+import it.ltc.logica.database.model.centrale.ServizioCorriere;
+import it.ltc.logica.database.model.centrale.storico.SpedizioneStorica;
+
+public class PreventivoEsistentiController {
+
+	private static PreventivoEsistentiController instance;
+	
+	private Date da;
+	private Date a;
+	private Commessa commessa;
+	private Corriere corriere;
+	private ServizioCorriere servizio;
+	private Nazione nazione;
+	private Boolean contrassegno;
+	private List<ListinoCorriere> listiniCorriere;
+	private List<ListinoCommessa> listiniCliente;
+	private final List<SpedizioneStorica> listaSpedizioniSelezionate;
+	
+	private PreventivoEsistentiController() {
+		listiniCorriere = new ArrayList<ListinoCorriere>();
+		listiniCliente = new ArrayList<ListinoCommessa>();
+		listaSpedizioniSelezionate = new ArrayList<SpedizioneStorica>();
+	}
+	
+	public static PreventivoEsistentiController getInstance() {
+		if (instance == null) {
+			instance = new PreventivoEsistentiController();
+		}
+		return instance;
+	}
+	
+	public List<SpedizioneStorica> getListaSpedizioniSelezionate() {
+		return listaSpedizioniSelezionate;
+	}
+
+	public void setSpedizioniSelezionate(Object[] spedizioniSelezionate) {
+		listaSpedizioniSelezionate.clear();
+		for (Object o : spedizioniSelezionate) {
+			SpedizioneStorica spedizione = (SpedizioneStorica) o;
+			listaSpedizioniSelezionate.add(spedizione);
+		}
+	}
+	
+	public void setCommessa(Commessa commessaSelezionata) {
+		commessa = commessaSelezionata;		
+	}
+	
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setListiniCorriere(Object[] listiniCorriereSelezionati) {
+		listiniCorriere.clear();
+		for (Object o : listiniCorriereSelezionati) {
+			ListinoCorriere listino = (ListinoCorriere) o;
+			listiniCorriere.add(listino);
+		}
+	}
+	
+	public void setListiniCliente(Object[] listiniClienteSelezionati) {
+		listiniCliente.clear();
+		for (Object o : listiniClienteSelezionati) {
+			ListinoCommessa listino = (ListinoCommessa) o;
+			listiniCliente.add(listino);
+		}
+	}
+	
+	public List<ListinoCorriere> getListiniCorriere() {
+		return listiniCorriere;
+	}
+
+	public List<ListinoCommessa> getListiniCommessa() {
+		return listiniCliente;
+	}
+
+	public void setDataDa(Date da) {
+		this.da = da;		
+	}
+	
+	public void setDataA(Date a) {
+		this.a = a;		
+	}
+
+	public Date getDataDa() {
+		return da;
+	}
+	
+	public Date getDataA() {
+		return a;
+	}
+
+	public Corriere getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Corriere corriere) {
+		this.corriere = corriere;
+	}
+
+	public ServizioCorriere getServizio() {
+		return servizio;
+	}
+
+	public void setServizio(ServizioCorriere servizio) {
+		this.servizio = servizio;
+	}
+
+	public Nazione getNazione() {
+		return nazione;
+	}
+
+	public void setNazione(Nazione nazione) {
+		this.nazione = nazione;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+}

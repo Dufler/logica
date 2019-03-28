@@ -1,0 +1,123 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForInteger;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeDatiOrdineDaSpedizione extends Gruppo {
+
+	private static final String titolo = "Dati Ordine";
+	private TextForString textRiferimentoCliente;
+	private TextForString textRiferimentoInterno;
+	private TextForInteger textPezzi;
+	private TextForString textNote;
+	private Label lblCommessa;
+	private ComboBox<Commessa> comboCommessa;
+	
+	public CompositeDatiOrdineDaSpedizione(Composite parent, int style) {
+		super(parent, style, titolo);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		lblCommessa = new Label(this, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(ControllerCommesse.getInstance().getCommesse());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblRiferimentoCliente = new Label(this, SWT.NONE);
+		lblRiferimentoCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimentoCliente.setText("Riferimento Cliente: ");
+		
+		textRiferimentoCliente = new TextForString(this, SWT.BORDER);
+		textRiferimentoCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblRiferimentoInterno = new Label(this, SWT.NONE);
+		lblRiferimentoInterno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimentoInterno.setText("Riferimento Interno: ");
+		
+		textRiferimentoInterno = new TextForString(this, SWT.BORDER);
+		textRiferimentoInterno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblPezzi = new Label(this, SWT.NONE);
+		lblPezzi.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPezzi.setText("Pezzi: ");
+		
+		textPezzi = new TextForInteger(this, SWT.BORDER);
+		textPezzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblNote = new Label(this, SWT.NONE);
+		lblNote.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblNote.setText("Note: ");
+		
+		textNote = new TextForString(this, SWT.BORDER | SWT.MULTI);
+		textNote.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		textNote.setRequired(false);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	public Commessa getCommessa() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public void setCommessa(Commessa value) {
+		comboCommessa.setSelectedValue(value);
+	}
+	
+	public String getRiferimentoCliente() {
+		return textRiferimentoCliente.getText();
+	}
+	
+	public void setRiferimentoCliente(String value) {
+		textRiferimentoCliente.setText(value);
+	}
+	
+	public String getRiferimentoInterno() {
+		return textRiferimentoInterno.getText();
+	}
+	
+	public void setRiferimentoInterno(String value) {
+		textRiferimentoInterno.setText(value);
+	}
+	
+	public Integer getPezzi() {
+		return textPezzi.getValue();
+	}
+	
+	public void setPezzi(Integer value) {
+		textPezzi.setValue(value);
+	}
+	
+	public String getNote() {
+		return textNote.getText();
+	}
+	
+	public void setNote(String value) {
+		textNote.setText(value);
+	}
+
+}

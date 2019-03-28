@@ -1,0 +1,96 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.ListinoCommessa;
+import it.ltc.logica.database.model.ListinoCorriere;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class PreventivoEsistentiController {
+
+	private static PreventivoEsistentiController instance;
+	
+	private EntityManager<ListinoCommessa> managerListini;
+	
+	private Date da;
+	private Date a;
+	private Commessa commessa;
+	private List<ListinoCorriere> listiniCorriere;
+	private final List<Spedizione> listaSpedizioniSelezionate;
+	
+	private PreventivoEsistentiController() {
+		listiniCorriere = new ArrayList<ListinoCorriere>();
+		listaSpedizioniSelezionate = new ArrayList<Spedizione>();
+		managerListini = new EntityManager<ListinoCommessa>(ListinoCommessa.class, ConfigurationManager.getDefault());
+	}
+	
+	public static PreventivoEsistentiController getInstance() {
+		if (instance == null) {
+			instance = new PreventivoEsistentiController();
+		}
+		return instance;
+	}
+	
+	public List<Spedizione> getListaSpedizioniSelezionate() {
+		return listaSpedizioniSelezionate;
+	}
+
+	public void setSpedizioniSelezionate(Object[] spedizioniSelezionate) {
+		listaSpedizioniSelezionate.clear();
+		for (Object o : spedizioniSelezionate) {
+			Spedizione spedizione = (Spedizione) o;
+			listaSpedizioniSelezionate.add(spedizione);
+		}
+	}
+	
+	public void setCommessa(Commessa commessaSelezionata) {
+		commessa = commessaSelezionata;		
+	}
+	
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setListiniCorriere(Object[] listiniSelezionati) {
+		listiniCorriere.clear();
+		for (Object o : listiniSelezionati) {
+			ListinoCorriere listino = (ListinoCorriere) o;
+			listiniCorriere.add(listino);
+		}
+	}
+	
+	public List<ListinoCorriere> getListiniCorriere() {
+		return listiniCorriere;
+	}
+
+	public ListinoCommessa getListinoCommessa() {
+		ListinoCommessa listino = null;
+		if (commessa != null) {
+			ListinoCommessa filtro = new ListinoCommessa();
+			filtro.setIdCommessa(commessa.getId());
+			listino = managerListini.getEntity(filtro);
+		}
+		return listino;
+	}
+
+	public void setDataDa(Date da) {
+		this.da = da;		
+	}
+	
+	public void setDataA(Date a) {
+		this.a = a;		
+	}
+
+	public Date getDataDa() {
+		return da;
+	}
+	
+	public Date getDataA() {
+		return a;
+	}
+}

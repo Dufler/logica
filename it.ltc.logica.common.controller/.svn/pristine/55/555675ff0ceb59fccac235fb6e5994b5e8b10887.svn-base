@@ -1,0 +1,160 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerCodiciClienteCorriere {
+	
+	private static final String title = "Codici Cliente";
+	private static final String resource = "codiceclientecorriere";
+	
+	private static ControllerCodiciClienteCorriere instance;
+	
+	private final HashMap<String, CodiceClienteCorriere> codici;
+
+	private ControllerCodiciClienteCorriere() {
+		codici = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerCodiciClienteCorriere getInstance() {
+		if (instance == null) {
+			instance = new ControllerCodiciClienteCorriere();
+		}
+		return instance;
+	}
+	
+//	public synchronized void caricaDati() {
+//		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+//		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+//		dialog.esegui(pcd);
+//	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoCodici processo = new ProcessoCaricamentoCodici();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		if (processo.getEsito()) {
+			codici.clear();
+			for (CodiceClienteCorriere codice : processo.getLista()) {
+				codici.put(codice.getCodiceCliente(), codice);
+			}
+		}
+	}
+	
+	public Collection<CodiceClienteCorriere> getCodiciCliente() {
+		return codici.values();
+	}
+	
+	public CodiceClienteCorriere getCodiceCliente(String codice) {
+		return codici.get(codice);
+	}
+	
+	public boolean inserisci(CodiceClienteCorriere codice) {
+		ProcessoInserimentoCodice processo = new ProcessoInserimentoCodice(codice);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			codici.put(codice.getCodiceCliente(), codice);
+		}
+		return esito;
+	}
+	
+	public boolean modifica(CodiceClienteCorriere codice) {
+		ProcessoAggiornamentoCodice processo = new ProcessoAggiornamentoCodice(codice);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (!esito) {
+			//TODO - ricarica le info
+		}
+		return esito;
+	}
+	
+	public boolean elimina(CodiceClienteCorriere codice) {
+		ProcessoEliminazioneCodice processo = new ProcessoEliminazioneCodice(codice);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			codici.remove(codice.getCodiceCliente());
+		}
+		return esito;
+	}
+	
+	public List<CodiceClienteCorriere> getCodiciPerClienteECorriere(Integer idCommessa, Integer idCorriere) {
+		return null;
+	}
+	
+	private class ProcessoCaricamentoCodici extends ProcessoCaricamentoDati<CodiceClienteCorriere> {
+
+		public ProcessoCaricamentoCodici() {
+			super(title, resource, CodiceClienteCorriere.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoCodice extends ProcessoInserimentoDati<CodiceClienteCorriere> {
+
+		public ProcessoInserimentoCodice(CodiceClienteCorriere object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoCodice extends ProcessoAggiornamentoDati<CodiceClienteCorriere> {
+
+		public ProcessoAggiornamentoCodice(CodiceClienteCorriere object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazioneCodice extends ProcessoCancellazioneDati<CodiceClienteCorriere> {
+
+		public ProcessoEliminazioneCodice(CodiceClienteCorriere object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+//	private class ProcessoCaricamentoDati extends Processo {
+//		
+//		private static final String title = "Caricamento dei codici cliente per i corrieri";
+//		
+//		public ProcessoCaricamentoDati() {
+//			super(title, -1);
+//		}
+//	
+//		@Override
+//		public void eseguiOperazioni() throws Exception {
+//			
+//			WSConsumer c = WSConsumer.getInstance();
+//			WSAnswer wsAnswer = c.get("codiceclientecorriere");
+//			String answer = wsAnswer.getMessage();
+//			if (wsAnswer.getStatus() != 200)
+//				throw new RuntimeException("Errore durante lo scaricamento dei codici: '" + wsAnswer.getMessage() + "'");
+//			
+//			ObjectMapper mapper = new ObjectMapper();
+//			List<CodiceClienteCorriere> lista = mapper.readValue(answer, new TypeReference<List<CodiceClienteCorriere>>(){});
+//			
+//			codici.clear();
+//			for (CodiceClienteCorriere codice : lista) {
+//				codici.put(codice.getCodiceCliente(), codice);
+//			}
+//			
+//		}
+//	}
+	
+	
+
+}

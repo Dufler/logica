@@ -1,0 +1,231 @@
+package it.ltc.logica.container.controller;
+
+import java.io.File;
+import java.util.Base64;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.ui.di.UISynchronize;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.configuration.Database;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.database.model.centrale.utenti.LogUtente;
+import it.ltc.logica.database.model.centrale.utenti.TipoEventoUtente;
+import it.ltc.logica.database.model.locale.User;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.update.UpdateController;
+import it.ltc.logica.utilities.json.JSON;
+
+public class ControllerUtente {
+	
+	//public static final String URL_AUTH_WS = "http://ws.services.ltc-logistics.it/account/ws/login";
+	//public static final String URL_AUTH_WS_SECURE = "https://192.168.0.12:8443/account/ws/login";
+	
+	public static final int STATUS_SUCCESSO = 0;
+	public static final int STATUS_UTENTE_NON_TROVATO = 1;
+	public static final int STATUS_PASSWORD_ERRATA = 2;
+	public static final int STATUS_PROBLEMI_DI_RETE = 3;
+	public static final int STATUS_PROBLEMI_GENERICI = 4;
+	
+	private static ControllerUtente instance;
+	private final UISynchronize sync;
+	private final IEclipseContext context;
+	
+	private final EntityManager<User> managerUtenti;
+	private EntityManager<LogUtente> managerEventi;
+	
+	private Utenza utente;
+	
+	private final LinkedHashSet<String> featureNames;
+	
+	private ControllerUtente(UISynchronize uisync, IEclipseContext e4context) {
+		sync = uisync;
+		context = e4context;
+		managerUtenti = new EntityManager<User>(User.class, Database.SQLITE);
+		featureNames = new LinkedHashSet<String>();
+	}
+	
+	public static void createInstance(UISynchronize uisync, IEclipseContext e4context) {
+		instance = new ControllerUtente(uisync, e4context);
+	}
+	
+	public static ControllerUtente getInstance() {
+		return instance;
+	}
+	
+	public int login(String username, String password, boolean memorizzaPassword) {
+		int returnCode;
+		String authString = getAuthenticationString(username, password);
+		utente = new Utenza();
+		utente.setUsername(username);
+		utente.setPassword(password);
+		utente.setAuthString(authString);
+		WSConsumer c = WSConsumer.getInstance();
+		WSAnswer a = c.login(authString);
+		if (a.getStatus() == 200) {
+		    JSON info = new JSON();
+		    info.parse(a.getMessage());
+		    String nome = info.getString("nome");
+		    String cognome = info.getString("cognome");
+		    String email = info.getString("email");
+		    String[] features = info.getStringArray("features");
+		    int[] permessi = info.getIntArray("permessi");
+		    int[] sedi = info.getIntArray("sedi");
+		    int[] commesse = info.getIntArray("commesse");
+		    int commessaDefault = commesse.length > 0 ? commesse[0] : 32;
+		    setupDB(permessi);
+		    //Imposto il sistema con le informazioni recuperate.
+		    utente.setNome(nome);
+		    utente.setCognome(cognome);
+		    utente.setEmail(email);
+		    LinkedList<Sede> listaSedi = new LinkedList<Sede>();
+		    for (int id : sedi) {
+		    	Sede sede = Sede.getSede(id);
+		    	listaSedi.add(sede);
+		    }
+		    utente.setSedi(listaSedi);
+		    boolean[] permessiUtente = utente.getPermessi();
+		    for (int id : permessi) {
+		    	permessiUtente[id] = true;
+		    }
+		    setupElementiVisibili(permessiUtente);
+		    LinkedList<Commessa> listaCommesse = new LinkedList<Commessa>();
+		    for (int id : commesse) {
+		    	Commessa commessa = Commessa.getCommessa(id);
+		    	listaCommesse.add(commessa);
+		    }
+		    utente.setCommesse(listaCommesse);
+		    utente.setCommessaDefault(Commessa.getCommessa(commessaDefault));
+		    memorizzaUtente(utente, memorizzaPassword);
+		    checkForUpdates(features);
+			returnCode = STATUS_SUCCESSO;
+		} else if (a.getStatus() == 401) {
+			returnCode = STATUS_PASSWORD_ERRATA;
+		} else {
+			returnCode = STATUS_PROBLEMI_DI_RETE;
+		}
+		return returnCode;
+	}
+
+	private void setupElementiVisibili(boolean[] permessiUtente) {
+		Boolean adminPerspectiveVisible = permessiUtente[Permessi.ADMIN.getID()];
+		context.set("it.ltc.logica.admin.perspective.isVisibile", adminPerspectiveVisible.toString());
+	}
+	
+	public LinkedHashSet<String> getFeaturesNames() {
+		return featureNames;
+	}
+
+	private void checkForUpdates(String[] features) {
+		//LinkedList<String> featureNames = new LinkedList<String>();
+		for (String name : features) {
+			featureNames.add(name);
+		}
+		//UpdateController.getInstance().setFeatureNames(featureNames);
+		//UpdateController.getInstance().updateFeatures();
+		//UpdateController.getInstance().scheduleUpdateCheck(sync);
+		
+		UpdateController controller = new UpdateController(featureNames);
+		controller.updateFeatures();
+		controller.scheduleUpdateCheck(sync);
+	}
+
+	private void setupDB(int[] permessi) {
+		for (int permesso : permessi) {
+			if (permesso == Permessi.TEST.getID()) {
+				ConfigurationManager.setDefault(Database.TEST);
+				WSConsumer.getInstance().setDomain(WSConsumer.TEST_DOMAIN);
+				break;
+			}
+		}
+		managerEventi = new EntityManager<LogUtente>(LogUtente.class, ConfigurationManager.getDefault());
+	}
+	
+	public Utenza getUtente() {
+		return utente;
+	}
+	
+	public boolean isAllowed(int idPermesso) {
+		boolean allowed = false;
+		boolean[] permessi = utente.getPermessi();
+		if (permessi[1]) {
+			allowed = true;
+		} else if (permessi.length > idPermesso) {
+			allowed = utente.getPermessi()[idPermesso];
+		}
+		return allowed;
+	}
+	
+	public boolean inserisciEvento(TipoEventoUtente tipoEvento, String note) {
+		boolean inserimento = false;
+		if (utente != null && tipoEvento != null) {
+			LogUtente evento = new LogUtente();
+			evento.setData(new Date());
+			evento.setEvento(tipoEvento.getCodice());
+			evento.setNote(note);
+			evento.setUtente(utente.getUsername());
+			inserimento = managerEventi.insert(evento);
+		}
+		return inserimento;
+	}
+	
+	public List<LogUtente> getEventi() {
+		List<LogUtente> eventi = null;
+		if (utente != null) {
+			LogUtente filtro = new LogUtente();
+			filtro.setUtente(utente.getUsername());
+			eventi = managerEventi.getEntities(filtro);
+		}
+		return eventi;
+	}
+
+	public UISynchronize getSync() {
+		return sync;
+	}
+	
+	public File getWorkSpaceFolder() {
+		File workspaceDirectory = new File(Platform.getInstanceLocation().getURL().getFile());
+		return workspaceDirectory;
+	}
+	
+	public List<User> getUtentiSuggeriti() {
+		List<User> utenti = managerUtenti.getEntities();
+		utenti.sort(null);
+		return utenti;
+	}
+	
+	private void memorizzaUtente(Utenza u, boolean memorizzaPassword) {
+		User user = new User();
+		user.setUsername(u.getUsername());
+		if (memorizzaPassword)
+			user.setPassword(u.getPassword());
+		else
+			user.setPassword("");
+		user.setUltimoLogin(new Date());
+		if (getUtentiSuggeriti().contains(user)) {
+			managerUtenti.update(user);
+		} else {
+			managerUtenti.insert(user);
+		}
+	}
+	
+	public String getUserAuthenticationString() {
+		String auth = utente != null ? utente.getAuthString() : "";
+		return auth;
+	}
+	
+	private String getAuthenticationString(String username, String password) {
+		String basicAuth = username + ":" + password;
+		String encodedAuth = Base64.getEncoder().encodeToString(basicAuth.getBytes());
+		return encodedAuth;
+	}
+
+}

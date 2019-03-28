@@ -1,0 +1,33 @@
+package it.ltc.logica.database.wsconsumer;
+
+public class PostRequest {
+	
+	private final String username;
+	private final String password;
+	private final String url;
+	
+	public PostRequest(String username, String password, String url) {
+		super();
+		this.username = username;
+		this.password = password;
+		this.url = url;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+	
+	@Override
+	public String toString() {
+		return "{\"username\":\"" + username + "\" ,\"password\":\"" + password + "\"}";
+	}
+
+}

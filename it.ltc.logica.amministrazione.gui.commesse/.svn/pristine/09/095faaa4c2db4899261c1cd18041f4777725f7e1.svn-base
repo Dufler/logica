@@ -1,0 +1,14 @@
+package it.ltc.logica.amministrazione.gui.commesse.elements;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreCommesse extends Ordinatore<Commessa> {
+
+	@Override
+	protected int compare(Commessa t1, Commessa t2, int property) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

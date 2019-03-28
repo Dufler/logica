@@ -1,0 +1,343 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.Contrassegno;
+import it.ltc.logica.database.model.Corriere;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class ReportController {
+	
+	private static ReportController instance;
+	
+	private SpedizioniController controllerSpedizioni;
+	
+	private Date dataDa;
+	private Date dataA;
+	private Commessa commessa;
+	private Corriere corriere;
+	private Boolean contrassegno;
+	private Integer minimoColli;
+	private Integer massimoColli;
+	private Integer minimoPezzi;
+	private Integer massimoPezzi;
+	private Double minimoPeso;
+	private Double massimoPeso;
+	private Double minimoVolume;
+	private Double massimoVolume;
+	
+	public Date getDataDa() {
+		return dataDa;
+	}
+
+	public void setDataDa(Date dataDa) {
+		this.dataDa = dataDa;
+	}
+
+	public Date getDataA() {
+		return dataA;
+	}
+
+	public void setDataA(Date dataA) {
+		this.dataA = dataA;
+	}
+
+	public Commessa getCommessa() {
+		return commessa;
+	}
+
+	public void setCommessa(Commessa commessa) {
+		this.commessa = commessa;
+	}
+
+	public Corriere getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Corriere corriere) {
+		this.corriere = corriere;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public Integer getMinimoColli() {
+		return minimoColli;
+	}
+
+	public void setMinimoColli(Integer minimoColli) {
+		this.minimoColli = minimoColli;
+	}
+
+	public Integer getMassimoColli() {
+		return massimoColli;
+	}
+
+	public void setMassimoColli(Integer massimoColli) {
+		this.massimoColli = massimoColli;
+	}
+
+	public Integer getMinimoPezzi() {
+		return minimoPezzi;
+	}
+
+	public void setMinimoPezzi(Integer minimoPezzi) {
+		this.minimoPezzi = minimoPezzi;
+	}
+
+	public Integer getMassimoPezzi() {
+		return massimoPezzi;
+	}
+
+	public void setMassimoPezzi(Integer massimoPezzi) {
+		this.massimoPezzi = massimoPezzi;
+	}
+
+	public Double getMinimoPeso() {
+		return minimoPeso;
+	}
+
+	public void setMinimoPeso(Double minimoPeso) {
+		this.minimoPeso = minimoPeso;
+	}
+
+	public Double getMassimoPeso() {
+		return massimoPeso;
+	}
+
+	public void setMassimoPeso(Double massimoPeso) {
+		this.massimoPeso = massimoPeso;
+	}
+
+	public Double getMinimoVolume() {
+		return minimoVolume;
+	}
+
+	public void setMinimoVolume(Double minimoVolume) {
+		this.minimoVolume = minimoVolume;
+	}
+
+	public Double getMassimoVolume() {
+		return massimoVolume;
+	}
+
+	public void setMassimoVolume(Double massimoVolume) {
+		this.massimoVolume = massimoVolume;
+	}
+
+	private ReportController() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public static ReportController getInstance() {
+		if (instance == null) {
+			instance = new ReportController();
+		}
+		return instance;
+	}
+	
+	public List<ReportElement> calcola() {
+		//Preparo le variabili necessarie
+		int totaleSpedizioni = 0;
+		int totaleColli = 0;
+		int totalePezzi = 0;
+		int totaleContrassegni = 0;
+		double totaleValoreContrassegni = 0;
+		double totalePeso = 0;
+		double totaleVolume = 0;
+		List<ReportElement> report = new ArrayList<ReportElement>();
+		//Recupero le spedizioni che corrispondono ai criteri selezionati
+		LinkedList<Spedizione> spedizioni = new LinkedList<Spedizione>();
+		for (Spedizione spedizione : controllerSpedizioni.getListaSpedizioni()) {
+			boolean aggiungi = checkCommessa(spedizione);
+			if (aggiungi)
+				aggiungi = checkCorriere(spedizione);
+			if (aggiungi)
+				aggiungi = checkData(spedizione);
+			if (aggiungi)
+				aggiungi = checkContrassegno(spedizione);
+			if (aggiungi)
+				aggiungi = checkColli(spedizione);
+			if (aggiungi)
+				aggiungi = checkPezzi(spedizione);
+			if (aggiungi)
+				aggiungi = checkPeso(spedizione);
+			if (aggiungi)
+				aggiungi = checkVolume(spedizione);
+			//Se ha superato i test la aggiungo
+			if (aggiungi) {
+				spedizioni.add(spedizione);
+				totaleSpedizioni += 1;
+				if (spedizione.getColli() != null)
+					totaleColli += spedizione.getColli();
+				if (spedizione.getPezzi() != null)
+					totalePezzi += spedizione.getPezzi();
+				if (spedizione.getPeso() != null)
+					totalePeso += spedizione.getPeso();
+				if (spedizione.getVolume() != null)
+					totaleVolume += spedizione.getVolume();
+				if (spedizione.getContrassegno()) {
+					totaleContrassegni += 1;
+					Contrassegno c = controllerSpedizioni.getContrassegno(spedizione.getId());
+					totaleValoreContrassegni += c.getValore();
+				}
+			}	
+		}	
+		//calcolo
+		double mediaColliSpedizione = (totaleColli * 1.0 / totaleSpedizioni);
+		double mediaPezziSpedizione = (totalePezzi * 1.0 / totaleSpedizioni);
+		double mediaPezziCollo = (totalePezzi * 1.0 / totaleColli);
+		double mediaPesoCollo = totalePeso / totaleColli;
+		double mediaVolumeCollo = totaleVolume / totaleColli;
+		double mediaContrassegno = (totaleContrassegni > 0) ? (totaleValoreContrassegni / totaleContrassegni) : 0.0;
+		//Genero gli elementi del report
+		ReportElement reportTotaleSpedizioni = new ReportElement("Totale delle spedizioni", totaleSpedizioni, ReportElement.UM.INTERI);
+		ReportElement reportTotaleColli = new ReportElement("Totale dei colli", totaleColli, ReportElement.UM.INTERI);
+		ReportElement reportTotalePezzi = new ReportElement("Totale dei pezzi", totalePezzi, ReportElement.UM.INTERI);
+		ReportElement reportTotalePeso = new ReportElement("Peso totale", totalePeso, ReportElement.UM.KG);
+		ReportElement reportTotaleVolume = new ReportElement("Volume totale", totaleVolume, ReportElement.UM.MC);
+		ReportElement reportTotaleSpedizioniContrassegno = new ReportElement("Totale delle spedizioni in contrassegno", totaleContrassegni, ReportElement.UM.INTERI);
+		ReportElement reportTotaleValoreContrassegni = new ReportElement("Totale del valore dei contrassegni", totaleValoreContrassegni, ReportElement.UM.EURO);
+		ReportElement reportMediaValoreContrassegni = new ReportElement("Valore medio del contrassegno", mediaContrassegno, ReportElement.UM.EURO);
+		ReportElement reportMediaColliSpedizione = new ReportElement("Media dei colli per spedizione", mediaColliSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziSpedizione = new ReportElement("Media dei pezzi per spedizione", mediaPezziSpedizione, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPezziCollo = new ReportElement("Media dei pezzi per collo", mediaPezziCollo, ReportElement.UM.DECIMALI);
+		ReportElement reportMediaPesoCollo = new ReportElement("Peso medio di un collo", mediaPesoCollo, ReportElement.UM.KG);
+		ReportElement reportMediaVolumeCollo = new ReportElement("Volume medio di un collo", mediaVolumeCollo, ReportElement.UM.MC);
+		//Aggiungo gli elementi al report
+		report.add(reportTotaleSpedizioni);
+		report.add(reportTotaleColli);
+		report.add(reportTotalePezzi);
+		report.add(reportTotalePeso);
+		report.add(reportTotaleVolume);
+		report.add(reportTotaleSpedizioniContrassegno);
+		report.add(reportTotaleValoreContrassegni);
+		report.add(reportMediaValoreContrassegni);
+		report.add(reportMediaColliSpedizione);
+		report.add(reportMediaPezziSpedizione);
+		report.add(reportMediaPezziCollo);
+		report.add(reportMediaPesoCollo);
+		report.add(reportMediaVolumeCollo);
+		return report;
+	}
+
+	private boolean checkVolume(Spedizione spedizione) {
+		boolean check = true;
+		Double volume = spedizione.getVolume();
+		if (volume != null) {
+			if (minimoVolume != null)
+				check = (minimoVolume < volume);
+			if (check && massimoVolume != null)
+				check = (massimoVolume > volume);
+		}
+		return check;
+	}
+
+	private boolean checkPeso(Spedizione spedizione) {
+		boolean check = true;
+		Double peso = spedizione.getPeso();
+		if (peso != null) {
+			if (minimoPeso != null)
+				check = (minimoPeso < peso);
+			if (check && massimoPeso != null)
+				check = (massimoPeso > peso);
+		}
+		return check;
+	}
+
+	private boolean checkPezzi(Spedizione spedizione) {
+		boolean check = true;
+		Integer pezzi = spedizione.getPezzi();
+		if (pezzi != null) {
+			if (minimoPezzi != null)
+				check = (minimoPezzi < pezzi);
+			if (check && massimoPezzi != null)
+				check = (massimoPezzi > pezzi);
+		}
+		return check;
+	}
+
+	private boolean checkColli(Spedizione spedizione) {
+		boolean check = true;
+		Integer colli = spedizione.getColli();
+		if (colli != null) {
+			if (minimoColli != null)
+				check = (minimoColli < colli);
+			if (check && massimoColli != null)
+				check = (massimoColli > colli);
+		}
+		return check;
+	}
+
+	private boolean checkContrassegno(Spedizione spedizione) {
+		boolean check = true;
+		if (contrassegno != null) {
+			check = (contrassegno == spedizione.getContrassegno());
+		}
+		return check;
+	}
+
+	private boolean checkData(Spedizione spedizione) {
+		boolean check = true;
+		if (dataDa != null && dataA != null) {
+			Date data = spedizione.getData();
+			if (data != null)
+				check = dataDa.before(data) && dataA.after(data);
+			else
+				check = false;
+		}
+		return check;
+	}
+
+	private boolean checkCorriere(Spedizione spedizione) {
+		boolean check = true;
+		if (corriere != null) {
+			check = corriere.getId().equals(spedizione.getIdCorriere());
+		}
+		return check;
+	}
+
+	private boolean checkCommessa(Spedizione spedizione) {
+		boolean check = true;
+		if (commessa != null) {
+			check = commessa.getId().equals(spedizione.getIdCommessa());
+		}
+		return check;
+	}
+
+	public void esportaDati(String path, List<ReportElement> report) {
+		String nomeFile = path + "/report.xls";
+		String titoloReport = "Report";
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		boolean successo = false;
+		if (workbook != null) {
+			String nomeFoglio = "Report";
+			workbook.creaFoglio(nomeFoglio);
+			workbook.aggiungiTitolo(nomeFoglio, 0, 0, titoloReport);
+			int riga = 2;
+			for (ReportElement element : report) {
+				workbook.aggiungiTesto(nomeFoglio, 0, riga, element.getKey());
+				workbook.aggiungiTesto(nomeFoglio, 1, riga, element.getValue());
+				riga += 1;
+			}
+			successo = workbook.salvaEChiudi();
+		}
+		if (successo) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file:\r\n" + nomeFile);
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+
+}

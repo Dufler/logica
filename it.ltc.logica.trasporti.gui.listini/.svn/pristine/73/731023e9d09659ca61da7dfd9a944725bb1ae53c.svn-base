@@ -1,0 +1,142 @@
+package it.ltc.logica.trasporti.gui.listini.elements.simulazione;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.database.model.locale.ListinoSimulazioneVoce;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.listini.dialogs.simulazione.ProprietaVoceListinoSimulazioneFissa;
+import it.ltc.logica.trasporti.gui.listini.dialogs.simulazione.ProprietaVoceListinoSimulazionePercentuale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.simulazione.ProprietaVoceListinoSimulazioneProporzionale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.simulazione.ProprietaVoceListinoSimulazioneScaglioni;
+import it.ltc.logica.trasporti.gui.listini.dialogs.simulazione.ProprietaVoceListinoSimulazioneScaglioniRipetuti;
+
+public class TabellaVociListinoSimulazione extends Tabella<ListinoSimulazioneVoce> {
+	
+	private String filtroVociDiListino;
+	
+	private MenuItem modify;
+	private boolean permessoModifica;
+
+	public TabellaVociListinoSimulazione(Composite parent) {
+		super(parent, new OrdinatoreVociListiniSimulazione());
+		
+		aggiungiColonna("Voce", 100, new EtichettatoreVociListiniSimulazione(), 0);
+		aggiungiColonna("Ambito", 100, new EtichettatoreVociListiniSimulazione(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreVociListiniSimulazione(), 2);
+	}
+	
+	public void setFiltro(String filtro) {
+		filtroVociDiListino = filtro;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				ListinoSimulazioneVoce listino = (ListinoSimulazioneVoce) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroVociDiListino != null)
+					toShow = nome.contains(filtroVociDiListino);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	public void setPermessoModifica(boolean permesso) {
+		modify.setEnabled(permesso);
+		permessoModifica = permesso;
+	}
+	
+	private void apriDialogModifica() {
+		ListinoSimulazioneVoce voceSelezionata = getVoceDiListinoSelezionata();
+		if (voceSelezionata != null) {
+			apriModificaVoce(voceSelezionata);
+		}
+	}
+	
+	private ListinoSimulazioneVoce getVoceDiListinoSelezionata() {
+		ListinoSimulazioneVoce voceSelezionata = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			voceSelezionata = (ListinoSimulazioneVoce) selectedItem.getData();
+		}
+		return voceSelezionata;
+	}
+	
+	private void apriModificaVoce(ListinoSimulazioneVoce voce) {
+		TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.getTipo(voce.getTipo());
+		int esito;
+		switch (tipoAlgoritmo) {
+			case FISSO : 
+			{
+				ProprietaVoceListinoSimulazioneFissa proprieta = new ProprietaVoceListinoSimulazioneFissa(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case PERCENTUALE :
+			{
+				ProprietaVoceListinoSimulazionePercentuale proprieta = new ProprietaVoceListinoSimulazionePercentuale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case PROPORZIONALE :
+			{
+				ProprietaVoceListinoSimulazioneProporzionale proprieta = new ProprietaVoceListinoSimulazioneProporzionale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case SCAGLIONI :
+			{
+				ProprietaVoceListinoSimulazioneScaglioni proprieta = new ProprietaVoceListinoSimulazioneScaglioni(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case SCAGLIONI_RIPETUTI :
+			{
+				ProprietaVoceListinoSimulazioneScaglioniRipetuti proprieta = new ProprietaVoceListinoSimulazioneScaglioniRipetuti(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			default : esito = Dialog.CANCEL;
+		}
+		if (esito == Dialog.OK) {
+			refresh();
+		}
+	}
+
+}

@@ -1,0 +1,66 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+import it.ltc.logica.gui.wizard.WizardConRisultati;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia.PreventivoSpedizioneFittiziaSelezioneSimulazioniWizardPage;
+
+public class PreventivoSpedizioneFittiziaSuColliWizard extends WizardConRisultati {
+	
+	private final LinkedList<PaginaWizardRisultati> fine;
+	
+	private PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage selezioneCorrieriPage;
+	private PreventivoSpedizioneFittiziaSelezioneClientiWizardPage selezioneClientiPage;
+	private PreventivoSpedizioneFittiziaSelezioneSimulazioniWizardPage selezioneSimulazionePage;
+	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
+	private PreventivoSpedizioneFittiziaRisultatoWizardPage risultatoPage;
+
+	public PreventivoSpedizioneFittiziaSuColliWizard() {
+		setWindowTitle("Preventivo di costo per una spedizione fittizia");
+		selezioneCorrieriPage = new PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage();
+		selezioneClientiPage = new PreventivoSpedizioneFittiziaSelezioneClientiWizardPage();
+		selezioneSimulazionePage = new PreventivoSpedizioneFittiziaSelezioneSimulazioniWizardPage();
+		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
+		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
+		fine = new LinkedList<PaginaWizardRisultati>();
+		fine.add(risultatoPage);
+	}
+
+	@Override
+	public void addPages() {
+		addPage(datiPage);
+		addPage(selezioneCorrieriPage);
+		addPage(selezioneClientiPage);
+		addPage(selezioneSimulazionePage);
+		addPage(risultatoPage);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(datiPage)) {
+			nextPage = selezioneCorrieriPage;
+		} else if (currentPage.equals(selezioneCorrieriPage)) {
+			nextPage = selezioneClientiPage;
+		} else if (currentPage.equals(selezioneClientiPage)) {
+			nextPage = selezioneSimulazionePage;
+		} else if (currentPage.equals(selezioneSimulazionePage)) {
+			nextPage = risultatoPage;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		return fine;
+	}
+	
+	@Override
+	public boolean finisci() {
+		return true;
+	}
+
+}

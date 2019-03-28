@@ -1,0 +1,251 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.database.model.centrale.storico.ContrassegnoStorico;
+import it.ltc.logica.database.model.centrale.storico.SpedizioneStorica;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class TrasportiExcel implements RealizzatoreDocumentoDiFatturazione {
+	
+	private String filePath;
+	private DocumentoFattura documento;
+	private List<VoceFattura> voci;
+	
+	private final HashMap<Integer, VoceDiListino> mappaVoci;
+	
+	private final SimpleDateFormat semplice;
+	
+	private final EntityManager<SpedizioneStorica> managerSpedizioni;
+	private final EntityManager<Indirizzo> managerIndirizzi;
+	private final EntityManager<ContrassegnoStorico> managerContrassegni;
+	private final EntityManager<VoceDiListino> managerVociDiListino;
+	
+	public TrasportiExcel() {
+		mappaVoci = new HashMap<Integer, VoceDiListino>();
+		semplice = new SimpleDateFormat("dd/MM/yyyy");
+		managerSpedizioni = new EntityManager<SpedizioneStorica>(SpedizioneStorica.class, ConfigurationManager.getDefault());
+		managerContrassegni = new EntityManager<ContrassegnoStorico>(ContrassegnoStorico.class, ConfigurationManager.getDefault());
+		managerIndirizzi = new EntityManager<Indirizzo>(Indirizzo.class, ConfigurationManager.getDefault());
+		managerVociDiListino = new EntityManager<VoceDiListino>(VoceDiListino.class, ConfigurationManager.getDefault());
+	}
+
+	@Override
+	public void setFile(String filePath) {
+		this.filePath = filePath;		
+	}
+	
+	@Override
+	public void setDocumento(DocumentoFattura documento) {
+		this.documento = documento;
+	}
+
+	@Override
+	public void setVoci(List<VoceFattura> voci) {
+		this.voci = voci;
+	}
+
+	@Override
+	public void elaboraDocumento() {
+		String nomeFile = getNomeFile(filePath);
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		String codice = Commessa.getCommessa(documento.getIdCommessa()).getNome();
+		boolean successo = false;
+		if (workbook != null && !voci.isEmpty()) {
+			workbook.creaFoglio(codice);
+			//Titolo - riga 1
+			workbook.aggiungiTitolo(codice, 0, 0, codice);
+			//Creo una mappa per i totali di colonna
+			HashMap<Integer, Double> totaliColonna = new HashMap<Integer, Double>();
+			//Sotto titoli - riga 2
+			int colonnaSottoTitoli = 0;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Data");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Riferimento");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Destinatario");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Localita'");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Provincia");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Colli");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Pezzi");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Peso");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Volume");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Contrassegno");
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Totale");
+			totaliColonna.put(colonnaSottoTitoli, 0.0);
+			colonnaSottoTitoli += 1;
+			workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Nolo");
+			totaliColonna.put(colonnaSottoTitoli, 0.0);
+			//Recupero le Spedizioni - righe successive
+			//Creo una mappa di voci raggruppate per spedizione
+			HashMap<Integer, List<VoceFattura>> mappaVoci = new HashMap<Integer, List<VoceFattura>>();
+			HashMap<Integer, Integer> colonneVoci = new HashMap<Integer, Integer>();
+			for (VoceFattura voce : voci) {
+				//Raggruppamento per spedizione
+				Integer idSpedizione = voce.getIdRiferimento();
+				if (!mappaVoci.containsKey(idSpedizione)) {
+					LinkedList<VoceFattura> nuovaLista = new LinkedList<VoceFattura>();
+					mappaVoci.put(idSpedizione, nuovaLista);
+				}
+				List<VoceFattura> listaVoci = mappaVoci.get(idSpedizione);
+				listaVoci.add(voce);
+				//Raggruppamento per voce di listino
+				if (!colonneVoci.containsKey(voce.getIdVoce()) && !isNoloBase(voce)) {
+					colonnaSottoTitoli += 1;
+					workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, getVoceDiListino(voce.getIdVoce()).getNome());
+					colonneVoci.put(voce.getIdVoce(), colonnaSottoTitoli);
+					totaliColonna.put(colonnaSottoTitoli, 0.0);
+				}
+			}
+			int riga = 1;
+			for (Integer idSpedizione : mappaVoci.keySet()) {
+				SpedizioneStorica spedizione = getSpedizione(idSpedizione);
+				Indirizzo destinazione = getDestinazione(spedizione.getIdIndirizzoDestinazione());
+				riga += 1;
+				workbook.aggiungiTesto(codice, 0, riga, semplice.format(spedizione.getData()));
+				workbook.aggiungiTesto(codice, 1, riga, spedizione.getRiferimentoCliente());
+				workbook.aggiungiTesto(codice, 2, riga, destinazione.getRagioneSociale());
+				workbook.aggiungiTesto(codice, 3, riga, destinazione.getLocalita());
+				workbook.aggiungiTesto(codice, 4, riga, destinazione.getProvincia());
+				workbook.aggiungiInteger(codice, 5, riga, spedizione.getColli());
+				workbook.aggiungiInteger(codice, 6, riga, spedizione.getPezzi());
+				workbook.aggiungiDouble(codice, 7, riga, spedizione.getPeso());
+				workbook.aggiungiDouble(codice, 8, riga, spedizione.getVolume());
+				if (spedizione.getContrassegno()) {
+					ContrassegnoStorico contrassegno = getContrassegno(idSpedizione);
+					workbook.aggiungiValutaDueCifre(codice, 9, riga, contrassegno.getValore());
+				}
+				List<VoceFattura> voci = mappaVoci.get(idSpedizione);
+				//Aggiusto il totale di colonna per i totali
+				Double totaleSpedizione = getTotale(voci);
+				Double totaleTotali = totaliColonna.get(10);
+				totaleTotali += totaleSpedizione;
+				totaliColonna.put(10, totaleTotali);
+				workbook.aggiungiValutaTreCifre(codice, 10, riga, totaleSpedizione);
+				//Aggiusto il totale di colonna per il nolo
+				Double totaleNoloSpedizione = getCostoNoloBase(voci);
+				Double totaleNolo = totaliColonna.get(11);
+				totaleNolo += totaleNoloSpedizione;
+				totaliColonna.put(11, totaleNolo);
+				workbook.aggiungiValutaTreCifre(codice, 11, riga, totaleNoloSpedizione);
+				//Aggiusto i totali per tutte le voci
+				for (VoceFattura voce : voci) {
+					Integer colonna = colonneVoci.get(voce.getIdVoce());
+					if (colonna != null) {
+						workbook.aggiungiValutaTreCifre(codice, colonna, riga, voce.getImporto());
+						Double totale = totaliColonna.get(colonna);
+						totale += voce.getImporto();
+						totaliColonna.put(colonna, totale);
+					}
+				}
+			}
+			//Per ogni elemento in totaliColonna controllo il valore: se è 0 elimino la colonna, altrimenti scrivo il totale in fondo.
+			riga += 1;
+			for (Integer colonna : totaliColonna.keySet()) {
+				double totale = totaliColonna.get(colonna);
+				if (totale > 0) {
+					workbook.aggiungiValutaTreCifre(codice, colonna, riga, totale);
+				} else {
+					//In teoria questa feature non serve perchè se una voce è a 0 euro non viene salvata.
+					//workbook.eliminaColonna(codice, colonna);
+				}
+			}
+			successo = workbook.salvaEChiudi();
+		}
+		if (successo) {
+			System.out.println("Esportazione completata: è stato generato il file: " + nomeFile);
+		} else {
+			System.out.println("Errore nella esportazione non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+	
+	private boolean isNoloBase(VoceFattura v) {
+		VoceDiListino voce = getVoceDiListino(v.getIdVoce());
+		int id = voce.getIdsottoAmbito();
+		// Se l'ID è quello di:
+		// 20 - Nolo Italia
+		// 24 - Nolo Estero
+		// 28 - Nolo priority ore 10
+		// 29 - Nolo priority ore 12
+		// 30 - Nolo SUD
+		boolean base = (id == 20 || id == 24 || id == 28 || id == 29 || id == 30);
+		return base;
+	}
+
+	private Double getCostoNoloBase(List<VoceFattura> voci) {
+		double totale = 0;
+		for (VoceFattura voce : voci) {
+			if (isNoloBase(voce)) {
+				totale += voce.getImporto();
+			}
+		}
+		return totale;
+	}
+
+	private Double getTotale(List<VoceFattura> voci) {
+		double totale = 0;
+		for (VoceFattura voce : voci) {
+			totale += voce.getImporto();
+		}
+		return totale;
+	}
+
+	private VoceDiListino getVoceDiListino(Integer idVoce) {
+		if (!mappaVoci.containsKey(idVoce)) {
+			VoceDiListino filtro = new VoceDiListino();
+			filtro.setId(idVoce);
+			VoceDiListino voce = managerVociDiListino.getEntity(filtro, true);
+			mappaVoci.put(idVoce, voce);
+		}
+		return mappaVoci.get(idVoce);
+	}
+
+	private ContrassegnoStorico getContrassegno(Integer idSpedizione) {
+		ContrassegnoStorico filtro = new ContrassegnoStorico();
+		filtro.setIdSpedizione(idSpedizione);
+		ContrassegnoStorico contrassegno = managerContrassegni.getEntity(filtro, true);
+		return contrassegno;
+	}
+
+	private Indirizzo getDestinazione(Integer idIndirizzoDestinazione) {
+		Indirizzo filtro = new Indirizzo();
+		filtro.setId(idIndirizzoDestinazione);
+		Indirizzo destinazione = managerIndirizzi.getEntity(filtro, true);
+		return destinazione;
+	}
+
+	private SpedizioneStorica getSpedizione(Integer idSpedizione) {
+		SpedizioneStorica filtro = new SpedizioneStorica();
+		filtro.setId(idSpedizione);
+		SpedizioneStorica spedizione = managerSpedizioni.getEntity(filtro, true);
+		return spedizione;
+	}
+
+	private String getNomeFile(String path) {
+		String tipoFile = "Fatturazione";
+		String nomeCommessa = Commessa.getCommessa(documento.getIdCommessa()).getNome();
+		String periodo = documento.getMeseAnno();
+		String estensione = ".xls";
+		String nomeFile = path  + "\\"  + tipoFile + " " + nomeCommessa + " " + periodo + estensione;
+		return nomeFile;
+	}
+
+}

@@ -1,0 +1,103 @@
+package it.ltc.logica.database.model;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class ListinoCorriere extends Entity implements ValidEntity {
+
+	public static final String NOME_TABELLA = "listino_corriere";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer idCorriere;
+	private String tipo;
+	private String nome;
+	private String descrizione;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_corriere", "idCorriere");
+			variabili.addString("tipo", "tipo");
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	} 
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof ListinoCorriere) {
+			ListinoCorriere listino = (ListinoCorriere) o;
+			uguali = id.equals(listino.getId());
+		}
+		return uguali;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (nome == null || nome.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il nome del listino non può essere vuoto.");
+		}
+		if (idCorriere == null || idCorriere < 1) {
+			esito.setValid(false);
+			esito.addMessage("Bisogna selezionare un corriere.");
+		}
+		return esito;
+	}
+
+}

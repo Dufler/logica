@@ -1,0 +1,33 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class NoloPriorityOre12 extends NoloItalia implements IAmbito {
+
+	public static final String CODIFICA_SERVIZIO_ORE12 = "O12";
+	public static final String CODICE = "NOLO_PRIORITY_12";
+	
+	private static NoloPriorityOre12 instance;
+	
+	private NoloPriorityOre12() {}
+	
+	public static NoloPriorityOre12 getInstance() {
+		if (instance == null) {
+			instance = new NoloPriorityOre12();
+		}
+		return instance;
+	}
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel model) {
+		String servizio = model.getSpedizione().getServizio();
+		boolean applicabile = CODIFICA_SERVIZIO_ORE12.equals(servizio);
+		return applicabile;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+	
+}

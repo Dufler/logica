@@ -1,0 +1,50 @@
+package it.ltc.logica.trasporti.gui.fatturazione.wizards.giacenze;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.gui.container.PaginaWizardRisultati;
+import it.ltc.logica.gui.container.WizardConRisultati;
+
+public class FatturazioneGiacenzeWizard extends WizardConRisultati {
+
+	private final SelezioneDatiFatturazioneWizardPage selezionePage;
+	private final EsitoFatturazioneWizardPage esitoPage;
+	
+	private final LinkedList<PaginaWizardRisultati> risultati;
+	
+	public FatturazioneGiacenzeWizard() {
+		setWindowTitle("Fatturazione Giacenze");
+		selezionePage = new SelezioneDatiFatturazioneWizardPage();
+		esitoPage = new EsitoFatturazioneWizardPage();
+		risultati = new LinkedList<PaginaWizardRisultati>();
+		risultati.add(esitoPage);
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(esitoPage);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = null;
+		if (selezionePage.equals(page)) {
+			nextPage = esitoPage;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		return risultati;
+	}
+
+}

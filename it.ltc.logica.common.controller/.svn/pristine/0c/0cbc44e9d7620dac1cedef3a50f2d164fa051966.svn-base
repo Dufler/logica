@@ -1,0 +1,67 @@
+package it.ltc.logica.common.controller;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+/**
+ * Controller adibito alla gestione delle commesse.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerCommesse {
+	
+	private static ControllerCommesse instance;
+	
+	private final HashMap<Integer, Commessa> commesse;
+
+	private ControllerCommesse() {
+		commesse = new HashMap<Integer, Commessa>();
+		caricaDati();
+	}
+
+	public static ControllerCommesse getInstance() {
+		if (instance == null) {
+			instance = new ControllerCommesse();
+		}
+		return instance;
+	}
+	
+	public Commessa getCommessa(int idCommessa) {
+		return commesse.get(idCommessa);
+	}
+	
+	public Collection<Commessa> getCommesse() {
+		return commesse.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle commesse.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoCommesse pcc = new ProcessoCaricamentoCommesse();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			commesse.clear();
+			for (Commessa commessa : pcc.getLista()) {
+				commesse.put(commessa.getId(), commessa);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoCommesse extends ProcessoCaricamentoDati<Commessa> {
+
+		private static final String title = "commesse";
+		private static final String resource = "commessa";
+		
+		public ProcessoCaricamentoCommesse() {
+			super(title, resource, Commessa.class);
+		}
+		
+	}
+
+}

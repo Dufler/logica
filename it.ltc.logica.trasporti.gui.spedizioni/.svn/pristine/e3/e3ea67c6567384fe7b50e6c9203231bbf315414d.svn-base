@@ -1,0 +1,218 @@
+package it.ltc.logica.trasporti.gui.spedizioni.wizard;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.CodiceClienteCorriere;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.Corriere;
+import it.ltc.logica.database.model.ServizioCorriere;
+import it.ltc.logica.database.model.TipoOrdine;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+import it.ltc.logica.trasporti.controller.CodiciClienteController;
+
+public class SelezioneClienteCorriereWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Inserisci una nuova spedizione";
+	private static final String descrizione = "Seleziona la commessa del cliente e il corriere";
+	
+	private final CodiciClienteController controller;
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<Corriere> comboCorriere;
+	private ComboBox<CodiceClienteCorriere> comboCodice;
+	private Label lblRiferimento;
+	private TextForString textRiferimento;
+	private Label lblServizio;
+	private ComboBox<ServizioCorriere> comboServizio;
+	private Label lblNote;
+	private TextForString textNote;
+	private Label lblLetteraDiVettura;
+	private TextForString textLetteraDiVettura;
+	private Label lblTipoOrdine;
+	private ComboBox<TipoOrdine> comboTipoOrdine;
+
+	public SelezioneClienteCorriereWizardPage() {
+		super(titolo, descrizione);
+		controller = CodiciClienteController.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblCliente = new Label(container, SWT.NONE);
+		lblCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCliente.setText("Cliente: ");
+		
+		comboCommessa = new ComboBox<Commessa>(container);
+		comboCommessa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				setCodici();
+			}
+		});
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(Commessa.getCommesse());
+		addChild(comboCommessa);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblTipoOrdine = new Label(container, SWT.NONE);
+		lblTipoOrdine.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblTipoOrdine.setText("Tipo Ordine: ");
+		
+		comboTipoOrdine = new ComboBox<TipoOrdine>(container);
+		comboTipoOrdine.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboTipoOrdine.setItems(TipoOrdine.getTipiOrdine());
+		addChild(comboTipoOrdine);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblCorriere = new Label(container, SWT.NONE);
+		lblCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCorriere.setText("Corriere: ");
+		
+		comboCorriere = new ComboBox<Corriere>(container);
+		comboCorriere.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				setCodici();
+				setServizi();
+			}
+		});
+		comboCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCorriere.setItems(Corriere.getCorrieri());
+		addChild(comboCorriere);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblCodiceCliente = new Label(container, SWT.NONE);
+		lblCodiceCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCodiceCliente.setText("Codice Cliente: ");
+		
+		comboCodice = new ComboBox<CodiceClienteCorriere>(container);
+		comboCodice.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCodice.setEnabled(false);
+		addChild(comboCodice);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblServizio = new Label(container, SWT.NONE);
+		lblServizio.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblServizio.setText("Servizio Spedizione: ");
+		
+		comboServizio = new ComboBox<ServizioCorriere>(container);
+		comboServizio.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboServizio.setEnabled(false);
+		addChild(comboServizio);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblRiferimento = new Label(container, SWT.NONE);
+		lblRiferimento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimento.setText("Riferimento: ");
+		
+		textRiferimento = new TextForString(container, SWT.BORDER);
+		textRiferimento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textRiferimento.setMessage("Obbligatorio, es. DDT 1234. Compilare con precisione.");
+		addChild(textRiferimento);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblLetteraDiVettura = new Label(container, SWT.NONE);
+		lblLetteraDiVettura.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblLetteraDiVettura.setText("Lettera di vettura: ");
+		
+		textLetteraDiVettura = new TextForString(container, SWT.BORDER);
+		textLetteraDiVettura.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textLetteraDiVettura.setMessage("Opzionale ma importante, da inserire se si ha.");
+		textLetteraDiVettura.setRequired(false);
+		addChild(textLetteraDiVettura);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblNote = new Label(container, SWT.NONE);
+		lblNote.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblNote.setText("Note: ");
+		
+		textNote = new TextForString(container, SWT.BORDER);
+		textNote.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		textNote.setRequired(false);
+		addChild(textNote);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	private void setCodici() {
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		Corriere corriereSelezionato = comboCorriere.getSelectedValue();
+		if (commessaSelezionata != null && corriereSelezionato != null) {
+			List<CodiceClienteCorriere> codici = controller.getCodiciPerClienteECorriere(commessaSelezionata.getId(), corriereSelezionato.getId());
+			comboCodice.setItems(codici);
+			comboCodice.setEnabled(true);
+		} else {
+			comboCodice.setEnabled(false);
+		}
+	}
+	
+	private void setServizi() {
+		Corriere corriereSelezionato = comboCorriere.getSelectedValue();
+		if (corriereSelezionato != null) {
+			List<ServizioCorriere> servizi = ServizioCorriere.getServiziPerCorriere(corriereSelezionato.getId());
+			comboServizio.setItems(servizi);
+			comboServizio.setEnabled(true);
+		} else {
+			comboServizio.setEnabled(false);
+		}
+		
+	}
+	
+	public Commessa getCommessaSelezionata() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public TipoOrdine getTipoOrdineSelezionato() {
+		return comboTipoOrdine.getSelectedValue();
+	}
+	
+	public Corriere getCorriereSelezionato() {
+		return comboCorriere.getSelectedValue();
+	}
+	
+	public CodiceClienteCorriere getCodiceSelezionato() {
+		return comboCodice.getSelectedValue();
+	}
+	
+	public ServizioCorriere getServizioSelezionato() {
+		return comboServizio.getSelectedValue();
+	}
+	
+	public String getRiferimento() {
+		return textRiferimento.getText();
+	}
+	
+	public String getNote() {
+		return textNote.getText();
+	}
+	
+	public String getLetteraDiVettura() {
+		return textLetteraDiVettura.getText();
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// TODO Auto-generated method stub
+		
+	}
+}

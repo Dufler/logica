@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Calcolo
+Bundle-SymbolicName: it.ltc.logica.amministrazione.calcolo
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: it.ltc.logica.common.calcolo,
+ it.ltc.logica.database,
+ it.ltc.logica.common.controller
+Export-Package: it.ltc.logica.amministrazione.calcolo.algoritmi
+Automatic-Module-Name: it.ltc.logica.amministrazione.calcolo

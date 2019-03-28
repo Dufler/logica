@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Calcolo
+Bundle-SymbolicName: it.ltc.logica.common.calcolo
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: it.ltc.logica.common.calcolo.algoritmi

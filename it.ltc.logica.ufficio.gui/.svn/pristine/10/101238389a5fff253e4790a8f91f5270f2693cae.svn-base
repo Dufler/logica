@@ -1,0 +1,39 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+
+import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaProdottiConQuantita extends Tabella<ProdottoConQuantita> {
+
+	public TabellaProdottiConQuantita(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreProdottiConQuantita());
+		
+		aggiungiColonna("Articolo", 100, new EtichettatoreProdottiConQuantita(), 0);
+		aggiungiColonna("Taglia", 100, new EtichettatoreProdottiConQuantita(), 1);
+		aggiungiColonna("Quantit\u00E0", 100, new EtichettatoreProdottiConQuantita(), 2);
+		
+		mappaColonne.get(2).setEditingSupport(new ProdottiConQuantitaEditingSupport(this));
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

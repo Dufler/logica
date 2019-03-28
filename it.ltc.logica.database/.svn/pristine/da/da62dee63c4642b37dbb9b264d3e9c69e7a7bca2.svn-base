@@ -1,0 +1,124 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class ClientiDep extends Entity {
+	
+	private static final String nomeTabella = "dbo.ClientiDep";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private String ragioneSociale;
+	private String ragioneSocialeEstesa;
+	private String indirizzo;
+	private String cap;
+	private String città;
+	private String provincia;
+	private String telefono;
+	private String fax;
+	private String email;
+	
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("Idwebclidep", "id", true, false);
+			variabili.addString("Ragsoc1", "ragioneSociale");
+			variabili.addString("Ragsoc2", "ragioneSocialeEstesa");
+			variabili.addString("Indirizzo", "indirizzo");
+			variabili.addString("Cap", "cap");
+			variabili.addString("Citta", "città");
+			variabili.addString("Prov", "provincia");
+			variabili.addString("Telefono", "telefono");
+			variabili.addString("Fax", "fax");
+			variabili.addString("EMail", "email");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRagioneSociale() {
+		return ragioneSociale;
+	}
+
+	public void setRagioneSociale(String ragioneSociale) {
+		this.ragioneSociale = ragioneSociale;
+	}
+
+	public String getRagioneSocialeEstesa() {
+		return ragioneSocialeEstesa;
+	}
+
+	public void setRagioneSocialeEstesa(String ragioneSocialeEstesa) {
+		this.ragioneSocialeEstesa = ragioneSocialeEstesa;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getCittà() {
+		return città;
+	}
+
+	public void setCittà(String città) {
+		this.città = città;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public String getFax() {
+		return fax;
+	}
+
+	public void setFax(String fax) {
+		this.fax = fax;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+}

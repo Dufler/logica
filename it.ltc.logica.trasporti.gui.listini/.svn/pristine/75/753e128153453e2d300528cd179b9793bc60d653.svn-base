@@ -1,0 +1,65 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.cliente;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.VoceDiListino;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeListino;
+
+public class NuovaVoceListinoCommessaProprietaWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino cliente - propriet\u00E0";
+	private static final String descrizione = "Specifica nome, descrizione, ambito e tipologia di calcolo.";
+	
+	private ListiniClientiController controller;
+	
+	private ListinoCommessa listino;
+	private VoceDiListino voce;
+	
+	private CompositeListino compositeListino;
+
+	public NuovaVoceListinoCommessaProprietaWizardPage(ListinoCommessa listinoSelezionato) {
+		super(titolo, descrizione);
+		listino = listinoSelezionato;
+		voce = new VoceDiListino();
+		controller = ListiniClientiController.getInstance();
+	}
+	
+	public VoceDiListino getVoceDiListino() {
+		return voce;
+	}
+	
+	public TipoAlgoritmo getTipoAlgoritmoSelezionato() {
+		return compositeListino.getAlgoritmo();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeListino = new CompositeListino(container, SWT.NONE, CompositeListino.Tipo.CLIENTE);
+		compositeListino.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeListino);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		voce.setNome(compositeListino.getNome());
+		voce.setDescrizione(compositeListino.getDescrizione());
+		voce.setIdListino(listino.getId());
+		voce.setTipo(compositeListino.getAlgoritmo().getCodifica());
+		voce.setIdsottoAmbito(compositeListino.getAmbito().getId());
+		String valoreSottoAmbito = compositeListino.getValoreAmbito();
+		if (!valoreSottoAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreSottoAmbito);
+		controller.setNuovaVoceDiListino(voce);
+		controller.setTipoAlgoritmoSelezionato(compositeListino.getAlgoritmo());
+	}
+
+}

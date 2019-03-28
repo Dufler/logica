@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_HqVbAFsaEeeO2ep1lYbkaA" featurename="children" parentElementId="org.eclipse.ui.main.toolbar">
+    <elements xsi:type="menu:DirectToolItem" xmi:id="_KN_DgFsaEeeO2ep1lYbkaA" elementId="it.ltc.logica.ufficio.gui.directtoolitem.cdg" label="Controllo di Gestione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/salvadanaio_16x16.png" tooltip="Apre la perspective Controllo di Gestione" contributionURI="bundleclass://it.ltc.logica.cdg.gui/it.ltc.logica.cdg.gui.handler.CDGToolbarHandler"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_JrEcUFsdEeeO2ep1lYbkaA" featurename="children" parentElementId="org.eclipse.ui.ide.perspectivestack">
+    <elements xsi:type="advanced:Perspective" xmi:id="_La6CQFsdEeeO2ep1lYbkaA" elementId="it.ltc.logica.cdg.gui.perspective.cdg" selectedElement="_WBLdYFsdEeeO2ep1lYbkaA" label="Ufficio" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/salvadanaio_16x16.png" tooltip="Qui puoi gestire il rapporto con i clienti">
+      <children xsi:type="basic:PartSashContainer" xmi:id="_WBLdYFsdEeeO2ep1lYbkaA" elementId="it.ltc.logica.cdg.gui.partsashcontainer.cdg" containerData="10000" selectedElement="_iRn7UFsdEeeO2ep1lYbkaA" horizontal="true">
+        <children xsi:type="basic:PartStack" xmi:id="_iRn7UFsdEeeO2ep1lYbkaA" elementId="it.ltc.logica.cdg.gui.partstack.funzioni" containerData="8000"/>
+      </children>
+    </elements>
+  </fragments>
+</fragment:ModelFragments>

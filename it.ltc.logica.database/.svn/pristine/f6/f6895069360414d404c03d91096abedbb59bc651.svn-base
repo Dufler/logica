@@ -1,0 +1,57 @@
+package it.ltc.logica.database.model;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Assicurazione extends Entity {
+	
+	public static final String NOME_TABELLA = "spedizione_assicurazione";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idSpedizione;
+	private Double valore;
+	private String valuta;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addColumnInt("id_spedizione", "idSpedizione");
+			variabili.addColumnDouble("valore", "valore");
+			variabili.addColumnString("valuta", "valuta");
+		}
+		return variabili;
+	}
+
+	public Integer getIdSpedizione() {
+		return idSpedizione;
+	}
+
+	public void setIdSpedizione(Integer idSpedizione) {
+		this.idSpedizione = idSpedizione;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	public String getValuta() {
+		return valuta;
+	}
+
+	public void setValuta(String valuta) {
+		this.valuta = valuta;
+	}
+
+}

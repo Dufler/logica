@@ -1,0 +1,15 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+public interface IAlgoritmo {
+	
+	public TipoAlgoritmo getTipoAlgoritmo();
+	
+	public String getVersione();
+	
+	public String getNome();
+	
+	public String toString();
+	
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce);
+
+}

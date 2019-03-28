@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_ObWGsFsYEeeO2ep1lYbkaA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Q8LEsFsYEeeO2ep1lYbkaA" elementId="it.ltc.logica.amministrazione.uscite.part.funzioneuscite" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.uscite/it.ltc.logica.ufficio.gui.uscite.parts.FunzioneUscitePart" label="Funzione - Uscite" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaGiallaGiu_16x16.png" tooltip="Qui puoi gestire gli ordini dei clienti"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_GZxb8FsjEeeO2ep1lYbkaA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Jdo1kFsjEeeO2ep1lYbkaA" elementId="it.ltc.logica.ufficio.gui.ordini.part.ordini" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.uscite/it.ltc.logica.ufficio.gui.uscite.parts.UscitePart" label="Uscite" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaGiallaGiu_16x16.png" tooltip="Qui puoi gestire gli ordini dei clienti"/>
+  </fragments>
+</fragment:ModelFragments>

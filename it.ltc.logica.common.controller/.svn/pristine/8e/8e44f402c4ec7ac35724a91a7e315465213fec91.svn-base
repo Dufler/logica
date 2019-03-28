@@ -1,0 +1,96 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerCodiciClienteCorriere {
+	
+	private static ControllerCodiciClienteCorriere instance;
+	
+	private final HashMap<String, CodiceClienteCorriere> codici;
+
+	private ControllerCodiciClienteCorriere() {
+		codici = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerCodiciClienteCorriere getInstance() {
+		if (instance == null) {
+			instance = new ControllerCodiciClienteCorriere();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		//String title = "Caricamento dei codici cliente per i corrieri";
+		//String resource = "codiceclientecorriere";
+		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+	}
+	
+	public Collection<CodiceClienteCorriere> getCodiciCliente() {
+		return codici.values();
+	}
+	
+	public CodiceClienteCorriere getCodiceCliente(String codice) {
+		return codici.get(codice);
+	}
+	
+	public boolean inserisci(CodiceClienteCorriere codice) {
+		return false;
+	}
+	
+	public boolean modifica(CodiceClienteCorriere codice) {
+		return false;
+	}
+	
+	public boolean elimina(CodiceClienteCorriere codice) {
+		return false;
+	}
+	
+	public List<CodiceClienteCorriere> getCodiciPerClienteECorriere(Integer idCommessa, Integer idCorriere) {
+		return null;
+	}
+	
+	private class ProcessoCaricamentoDati extends Processo {
+		
+		private static final String title = "Caricamento dei codici cliente per i corrieri";
+		
+		public ProcessoCaricamentoDati() {
+			super(title, -1);
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("codiceclientecorriere");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento dei codici: '" + wsAnswer.getMessage() + "'");
+			
+			ObjectMapper mapper = new ObjectMapper();
+			List<CodiceClienteCorriere> lista = mapper.readValue(answer, new TypeReference<List<CodiceClienteCorriere>>(){});
+			
+			codici.clear();
+			for (CodiceClienteCorriere codice : lista) {
+				codici.put(codice.getCodiceCliente(), codice);
+			}
+			
+		}
+	}
+	
+	
+
+}

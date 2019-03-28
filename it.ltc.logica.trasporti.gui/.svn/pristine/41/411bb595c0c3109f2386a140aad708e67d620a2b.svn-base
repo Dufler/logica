@@ -1,0 +1,15 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.centrale.Indirizzo;
+
+public class RagioneSocialeLabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Indirizzo indirizzo = (Indirizzo) element;
+		String text = indirizzo.getRagioneSociale();
+		return text;
+	}
+
+}

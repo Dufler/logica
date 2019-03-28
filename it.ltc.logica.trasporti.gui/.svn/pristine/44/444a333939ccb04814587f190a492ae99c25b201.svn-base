@@ -1,0 +1,145 @@
+package it.ltc.logica.trasporti.gui.dialog;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.database.model.centrale.indirizzi.Regione;
+import it.ltc.logica.gui.input.ComboBox;
+
+public class DialogSelezioneRegioni extends Dialog {
+	
+	private ComboBox<Regione> comboRegioni;
+	private List listaRegioni;
+	private final Set<Regione> regioniSelezionate;
+
+	/**
+	 * Create the dialog.
+	 * @param parentShell
+	 */
+	public DialogSelezioneRegioni() {
+		super(Display.getDefault().getActiveShell());
+		regioniSelezionate = new HashSet<Regione>();
+	}
+
+	/**
+	 * Create contents of the dialog.
+	 * @param parent
+	 */
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		Composite container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(1, false));
+		
+		Composite compositeControlli = new Composite(container, SWT.NONE);
+		compositeControlli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlli.setLayout(new GridLayout(3, false));
+		
+		Label lblRegioni = new Label(compositeControlli, SWT.NONE);
+		lblRegioni.setText("Regioni: ");
+		
+		comboRegioni = new ComboBox<Regione>(compositeControlli);
+		comboRegioni.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboRegioni.setItems(Regione.getRegioni());
+		
+		Button btnAggiungi = new Button(compositeControlli, SWT.NONE);
+		btnAggiungi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				aggiungiRegione();
+			}
+		});
+		btnAggiungi.setText("Aggiungi");
+		
+		
+		
+		listaRegioni = new List(container, SWT.BORDER);
+		listaRegioni.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		
+		
+		Menu menuPopup = new Menu(listaRegioni);
+		MenuItem delete = new MenuItem(menuPopup, SWT.PUSH);
+		delete.setText("Elimina");
+		delete.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		int selectionIndex = listaRegioni.getSelectionIndex();
+	    		if (selectionIndex != -1) {
+	    			eliminaRegione(selectionIndex);
+	    		}
+	    	}
+	    });	
+		listaRegioni.setMenu(menuPopup);
+
+		return container;
+	}
+
+	/**
+	 * Create contents of the button bar.
+	 * @param parent
+	 */
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		createButton(parent, IDialogConstants.OK_ID, "Ok", true);
+		createButton(parent, IDialogConstants.CANCEL_ID, "Annulla", false);
+	}
+
+	/**
+	 * Return the initial size of the dialog.
+	 */
+//	@Override
+//	protected Point getInitialSize() {
+//		return new Point(450, 300);
+//	}
+	
+	private void aggiungiRegione() {
+		Regione regioneSelezionata = comboRegioni.getSelectedValue();
+		if (regioneSelezionata != null) {
+			if (!regioniSelezionate.contains(regioneSelezionata)) {
+				regioniSelezionate.add(regioneSelezionata);
+				listaRegioni.add(regioneSelezionata.getNome());
+			}
+		}
+	}
+	
+	private void eliminaRegione(int selectionIndex) {
+		String regione = listaRegioni.getItem(selectionIndex);
+		for (Regione r : regioniSelezionate) {
+			if (r.getNome().equals(regione)) {
+				regioniSelezionate.remove(r);
+				listaRegioni.remove(selectionIndex);
+				break;
+			}
+		}
+	}
+	
+	public String apri() {
+		String regioni = "";
+		if (open() == Dialog.OK) {
+			for (Regione r :regioniSelezionate) {
+				regioni += r.getCodice() + "-";
+			}
+			int truncationIndex = regioni.lastIndexOf('-');
+			if (truncationIndex != -1);
+			regioni = regioni.substring(0, truncationIndex);
+		}
+		return regioni;
+	}
+
+}

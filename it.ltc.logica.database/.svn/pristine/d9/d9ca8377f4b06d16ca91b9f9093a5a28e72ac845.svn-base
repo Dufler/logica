@@ -1,0 +1,74 @@
+package it.ltc.logica.database.model.centrale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class OrdineDettaglio extends Entity {
+	
+	public static final String NOME_TABELLA = "ordine_dettaglio";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idOrdine;
+	private Integer idProdotto;
+	private Integer quantitaRichiesta;
+	private Integer quantitaImballata;
+	private String magazzino;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_ordine", "idOrdine", true, false);
+			variabili.addInt("id_prodotto", "idProdotto", true, false);
+			variabili.addInt("quantita_richiesta", "quantitaRichiesta");
+			variabili.addInt("quantita_imballata", "quantitaImballata", false, true);
+			variabili.addString("magazzino", "magazzino", true, false);
+		}
+		return variabili;
+	}
+
+	public Integer getIdOrdine() {
+		return idOrdine;
+	}
+
+	public void setIdOrdine(Integer idOrdine) {
+		this.idOrdine = idOrdine;
+	}
+
+	public Integer getIdProdotto() {
+		return idProdotto;
+	}
+
+	public void setIdProdotto(Integer idProdotto) {
+		this.idProdotto = idProdotto;
+	}
+
+	public Integer getQuantitaRichiesta() {
+		return quantitaRichiesta;
+	}
+
+	public void setQuantitaRichiesta(Integer quantitaRichiesta) {
+		this.quantitaRichiesta = quantitaRichiesta;
+	}
+
+	public Integer getQuantitaImballata() {
+		return quantitaImballata;
+	}
+
+	public void setQuantitaImballata(Integer quantitaImballata) {
+		this.quantitaImballata = quantitaImballata;
+	}
+
+	public String getMagazzino() {
+		return magazzino;
+	}
+
+	public void setMagazzino(String magazzino) {
+		this.magazzino = magazzino;
+	}
+
+}

@@ -1,0 +1,156 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.Date;
+
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.elements.Ordinatore;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class OrdinatoreSpedizioni extends Ordinatore<Spedizione> {
+	
+	private final SpedizioniController controllerSpedizioni;
+	
+	public OrdinatoreSpedizioni() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+
+	@Override
+	protected int compare(Spedizione t1, Spedizione t2, int property) {
+		int compare;
+		switch (property) {
+			case 0 : compare = ordinaPerData(t1, t2); break;
+			case 1 : compare = ordinaPerDestinatario(t1, t2); break;
+			case 2 : compare = ordinaPerRiferimento(t1, t2); break;
+			case 3 : compare = ordinaPerColli(t1, t2); break;
+			case 4 : compare = ordinaPerPezzi(t1, t2); break;
+			case 5 : compare = ordinaPerContrassegno(t1, t2); break;
+			case 6 : compare = ordinaPerGiacenza(t1, t2); break;
+			case 7 : compare = ordinaPerRitardo(t1, t2); break;
+			default : compare = 0;
+		}
+		return compare;
+	}
+
+	private int ordinaPerRitardo(Spedizione t1, Spedizione t2) {
+		int compare;
+		Boolean r1 = t1.getInRitardo() != null ? t1.getInRitardo() : false;
+		Boolean r2 = t2.getInRitardo() != null ? t2.getInRitardo() : false;
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerGiacenza(Spedizione t1, Spedizione t2) {
+		int compare;
+		Boolean r1 = t1.getGiacenza() != null ? t1.getGiacenza() : false;
+		Boolean r2 = t2.getGiacenza() != null ? t2.getGiacenza() : false;
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerContrassegno(Spedizione t1, Spedizione t2) {
+		int compare;
+		Boolean r1 = t1.getContrassegno() != null ? t1.getContrassegno() : false;
+		Boolean r2 = t2.getContrassegno() != null ? t2.getContrassegno() : false;
+		if (r1 && r2) {
+			Contrassegno c1 = controllerSpedizioni.getContrassegno(t1.getId());
+			Contrassegno c2 = controllerSpedizioni.getContrassegno(t2.getId());
+			compare = c1.getValore().compareTo(c2.getValore());
+			//Tie breaker
+			if (compare == 0) {
+				compare = ordinaPerData(t1, t2);
+			}
+		} else {
+			compare = r1.compareTo(r2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerPezzi(Spedizione t1, Spedizione t2) {
+		int compare;
+		Integer r1 = t1.getPezzi() != null ? t1.getPezzi() : 0;
+		Integer r2 = t2.getPezzi() != null ? t2.getPezzi() : 0;
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerColli(Spedizione t1, Spedizione t2) {
+		int compare;
+		Integer r1 = t1.getColli() != null ? t1.getColli() : 0;
+		Integer r2 = t2.getColli() != null ? t2.getColli() : 0;
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerRiferimento(Spedizione t1, Spedizione t2) {
+		int compare;
+		String r1 = t1.getRiferimentoCliente() != null ? t1.getRiferimentoCliente() : "";
+		String r2 = t2.getRiferimentoCliente() != null ? t2.getRiferimentoCliente() : "";
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+	
+	private int ordinaPerDestinatario(Spedizione t1, Spedizione t2) {
+		int compare;
+		String r1 = getDestinatario(t1);
+		String r2 = getDestinatario(t2);
+		compare = r1.compareTo(r2);
+		//Tie breaker
+		if (compare == 0) {
+			compare = ordinaPerData(t1, t2);
+		}
+		return compare;
+	}
+
+	private int ordinaPerData(Spedizione t1, Spedizione t2) {
+		Date d1 = t1.getData();
+		Date d2 = t2.getData();
+		int order;
+		if (d1 == null) {
+			if (d2 == null) {
+				order = 0;
+			} else {
+				order = -1;
+			}
+		} else {
+			if (d2 == null) {
+				order = 1;
+			} else {
+				order = d1.compareTo(d2);
+			}
+		}
+		return order * -1;
+	}
+	
+	public String getDestinatario(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		//null check
+		if (ragioneSociale == null)
+			ragioneSociale = "";
+		return ragioneSociale;
+	}
+
+}

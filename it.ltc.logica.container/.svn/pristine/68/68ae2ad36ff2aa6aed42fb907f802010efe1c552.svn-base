@@ -1,0 +1,80 @@
+package it.ltc.logica.container.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeDatiUtente extends Gruppo {
+	
+	private static final String titolo = "Utente";
+	private TextForString textUsername;
+	private TextForString textNome;
+	private TextForString textCognome;
+
+	public CompositeDatiUtente(Composite parent, int style) {
+		super(parent, style, titolo);
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		Label lblUsername = new Label(this, SWT.NONE);
+		lblUsername.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblUsername.setText("Username: ");
+		
+		textUsername = new TextForString(this, SWT.BORDER);
+		textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblNome = new Label(this, SWT.NONE);
+		lblNome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNome.setText("Nome: ");
+		
+		textNome = new TextForString(this, SWT.BORDER);
+		textNome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblCognome = new Label(this, SWT.NONE);
+		lblCognome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCognome.setText("Cognome: ");
+		
+		textCognome = new TextForString(this, SWT.BORDER);
+		textCognome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	public String getUsername() {
+		return textUsername.getText();
+	}
+	
+	public void setUsername(String value) {
+		textUsername.setText(value);
+	}
+	
+	public String getNome() {
+		return textNome.getText();
+	}
+	
+	public void setNome(String value) {
+		textNome.setText(value);
+	}
+	
+	public String getCognome() {
+		return textCognome.getText();
+	}
+	
+	public void setCognome(String value) {
+		textCognome.setText(value);
+	}
+
+}

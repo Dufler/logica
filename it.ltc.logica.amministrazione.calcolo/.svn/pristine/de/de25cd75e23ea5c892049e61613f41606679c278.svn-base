@@ -1,0 +1,26 @@
+package it.ltc.logica.amministrazione.calcolo.algoritmi;
+
+import it.ltc.logica.common.calcolo.algoritmi.StrategiaProporzionale;
+
+public enum StrategiaProporzionalePerAmministrazione implements StrategiaProporzionale {
+	
+	COLLI("Colli"),
+	PEZZI("Pezzi");
+	
+	private final String nome;
+	
+	private StrategiaProporzionalePerAmministrazione(String nome) {
+		this.nome = nome;
+	}
+
+	@Override
+	public String getNome() {
+		return nome;
+	}
+	
+	@Override
+	public String toString() {
+		return nome;
+	}
+
+}

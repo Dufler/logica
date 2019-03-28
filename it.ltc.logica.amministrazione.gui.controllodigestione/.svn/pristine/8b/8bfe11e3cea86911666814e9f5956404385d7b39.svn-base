@@ -1,0 +1,40 @@
+package it.ltc.logica.amministrazione.gui.controllodigestione.elements;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaCDGSpedizioni extends Tabella<Spedizione> {
+
+	public TabellaCDGSpedizioni(Composite parent) {
+		super(parent, new OrdinatoreCDGSpedizioni());
+		
+		aggiungiColonna("Riferimento", 200, new EtichettatoreCDGSpedizioni(), 0);
+		aggiungiColonna("Data", 100, new EtichettatoreCDGSpedizioni(), 1);
+		aggiungiColonna("Commessa", 100, new EtichettatoreCDGSpedizioni(), 2);
+		aggiungiColonna("Corriere", 150, new EtichettatoreCDGSpedizioni(), 3);
+		aggiungiColonna("Costo", 100, new EtichettatoreCDGSpedizioni(), 4);
+		aggiungiColonna("Ricavo", 100, new EtichettatoreCDGSpedizioni(), 5);
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

@@ -1,0 +1,40 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class OltreCinqueColli implements IAmbito {
+	
+	public static final String CODICE = "OLTRE_5_COLLI";
+	private static OltreCinqueColli instance;
+	
+	private OltreCinqueColli() {}
+	
+	public static OltreCinqueColli getInstance() {
+		if (instance == null) {
+			instance = new OltreCinqueColli();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		boolean applicabile = spedizione.getSpedizione().getColli() > 5;
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione)) {
+			valore = spedizione.getSpedizione().getColli() - 5;
+		}
+		return valore;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

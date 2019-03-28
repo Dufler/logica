@@ -1,0 +1,80 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.orm.ColumnList;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class SpedizioneStorica extends Spedizione { //implements Comparable<SpedizioneStorica> {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "storico_spedizione";
+	@JsonIgnore
+	private static final ColumnList variabiliStoriche = new ColumnList();
+	
+	//private Integer idOrdine;
+	
+	public SpedizioneStorica() {
+		assicurazione = false;
+		particolarita = false;
+		note = null;
+	}
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabiliStoriche.isEmpty()) {
+			variabiliStoriche.addAutoincrement("id", "id");
+			//variabiliStoriche.addInt("id_ordine", "idOrdine");
+			variabiliStoriche.addInt("id_corriere", "idCorriere");
+			variabiliStoriche.addInt("id_commessa", "idCommessa");
+			variabiliStoriche.addDate("data_partenza", "dataPartenza");
+			variabiliStoriche.addInt("indirizzo_partenza", "indirizzoPartenza");
+			variabiliStoriche.addInt("indirizzo_destinazione", "indirizzoDestinazione");		
+			variabiliStoriche.addInt("colli", "colli");
+			variabiliStoriche.addDouble("peso", "peso");
+			variabiliStoriche.addDouble("volume", "volume");
+			variabiliStoriche.addInt("pezzi", "pezzi");
+			variabiliStoriche.addString("servizio", "servizio");
+			variabiliStoriche.addBoolean("contrassegno", "contrassegno");
+			//variabili.addBoolean("assicurazione", "assicurazione");
+			variabiliStoriche.addString("stato", "stato");
+			variabiliStoriche.addBoolean("giacenza", "giacenza", false, true);
+			variabiliStoriche.addString("lettera_di_vettura", "letteraDiVettura");
+			variabiliStoriche.addDouble("valore_merce_dichiarato", "valoreMerceDichiarato");
+			//variabili.addBoolean("particolarita", "particolarita");
+			variabiliStoriche.addString("codice_cliente", "codiceCliente");
+			variabiliStoriche.addString("riferimento_cliente", "riferimentoCliente");
+			variabiliStoriche.addString("riferimento_mittente", "riferimentoMittente");
+			//variabili.addString("note", "note");
+			variabiliStoriche.addBoolean("in_ritardo", "inRitardo", false, true);
+			variabiliStoriche.addBoolean("dati_completi", "datiCompleti", false, true);
+			variabiliStoriche.addInt("fatturazione", "fatturazione", false, true);
+			variabiliStoriche.addDouble("costo", "costo");
+			variabiliStoriche.addDouble("ricavo", "ricavo");
+		}
+		return variabiliStoriche;
+	}
+
+	//Questo metodo viene ereditato.
+//	@Override
+//	public int compareTo(SpedizioneStorica ss) {
+//		int compare;
+//		if (ss != null) {
+//			Date dNull = new Date();
+//			Date d1 = getDataPartenza() != null ? getDataPartenza() : dNull;
+//			Date d2 = ss.getDataPartenza() != null ? ss.getDataPartenza() : dNull;
+//			compare = d1.compareTo(d2);
+//		} else {
+//			compare = -1;
+//		}
+//		return compare;
+//	}
+	
+}

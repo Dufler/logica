@@ -1,0 +1,23 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.corriere;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.ambiti.common.NoloSud;
+
+public class NoloSUDCorriere extends NoloSud {
+	
+	public static final int ID = 49;
+	
+	private static NoloSUDCorriere instance;
+
+	private NoloSUDCorriere(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static NoloSUDCorriere getInstance(SottoAmbitoFattura ambito) {
+		if (instance == null) {
+			instance = new NoloSUDCorriere(ambito);
+		}
+		return instance;
+	}
+
+}

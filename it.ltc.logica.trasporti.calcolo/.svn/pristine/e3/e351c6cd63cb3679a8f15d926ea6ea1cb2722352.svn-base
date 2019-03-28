@@ -1,0 +1,68 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import java.util.HashMap;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+
+public class FactoryAmbiti {
+	
+	private static final HashMap<Integer, IAmbitoTrasporto> mappaAmbiti = new HashMap<Integer, IAmbitoTrasporto>();
+	
+	public static boolean isAmbitoNoloBase(Integer id) {
+		boolean noloBase = false;
+		if (id != null) {
+			if (id == NoloItalia.ID || id == NoloSud.ID || id == NoloEstero.ID)
+				noloBase = true;
+		}
+		return noloBase;
+	}
+	
+	public static IAmbitoTrasporto getAmbito(Integer id) {
+		if (!mappaAmbiti.containsKey(id)) {
+			IAmbitoTrasporto ambito = creaAmbito(id);
+			mappaAmbiti.put(id, ambito);
+		}
+		return mappaAmbiti.get(id);
+	}
+	
+	private static IAmbitoTrasporto creaAmbito(Integer id) {
+		SottoAmbitoFattura ambitoTrasporto = SottoAmbitoFattura.getSottoAmbito(id);
+		IAmbitoTrasporto ambito;
+		switch (id) {
+			case ConsegnaAlPiano.ID : case 35 : ambito = new ConsegnaAlPiano(ambitoTrasporto); break;
+			case ConsegnaAiPrivati.ID : ambito = new ConsegnaAiPrivati(ambitoTrasporto); break;
+			case ConsegnaAGDO.ID : ambito = new ConsegnaAGDO(ambitoTrasporto); break;
+			case ConsegnaOre10.ID : ambito = new ConsegnaOre10(ambitoTrasporto); break;
+			case ConsegnaOre12.ID : ambito = new ConsegnaOre12(ambitoTrasporto); break;
+			case ConsegnaSuAppuntamento.ID : ambito = new ConsegnaSuAppuntamento(ambitoTrasporto); break;
+			case AmbitoContrassegno.ID : case 34 : ambito = new AmbitoContrassegno(ambitoTrasporto); break;
+			case Fuel.ID : ambito = new Fuel(ambitoTrasporto); break;
+			case Istat.ID : ambito = new Istat(ambitoTrasporto); break;
+			case NoloItalia.ID : case 33 : ambito = new NoloItalia(ambitoTrasporto); break;
+			case SupplementoCampioneItalia.ID : ambito = new SupplementoCampioneItalia(ambitoTrasporto); break;
+			case NoloDisagiate.ID : ambito = new NoloDisagiate(ambitoTrasporto); break;
+			case NoloPriorityOre10.ID : ambito = new NoloPriorityOre10(ambitoTrasporto); break;
+			case NoloPriorityOre12.ID : ambito = new NoloPriorityOre12(ambitoTrasporto); break;
+			case SupplementoElba.ID : ambito = new SupplementoElba(ambitoTrasporto); break;
+			case NoloEstero.ID : ambito = new NoloEstero(ambitoTrasporto); break;
+			case SupplementoIsoleMinori.ID : ambito = new SupplementoIsoleMinori(ambitoTrasporto); break;
+			case SupplementoIsoleVenezia.ID : ambito = new SupplementoIsoleVenezia(ambitoTrasporto); break;
+			case SupplementoLivigno.ID : ambito = new SupplementoLivigno(ambitoTrasporto); break;
+			case NoloSud.ID : ambito = new NoloSud(ambitoTrasporto); break;
+			case MoltiColli.ID : ambito = new MoltiColli(ambitoTrasporto); break;
+			case PriorityMonocollo.ID : ambito = new PriorityMonocollo(ambitoTrasporto); break;
+			case ProvaDiConsegna.ID : ambito = new ProvaDiConsegna(ambitoTrasporto); break;
+			case AnnullamentoContrassegno.ID : ambito = new AnnullamentoContrassegno(ambitoTrasporto); break;
+			case ContrassegnoSuperioreACinquemilaEuro.ID : ambito = new ContrassegnoSuperioreACinquemilaEuro(ambitoTrasporto); break;
+			case ContrassegnoSuperioreASeimilaCinquecentoEuro.ID : ambito = new ContrassegnoSuperioreASeimilaCinquecentoEuro(ambitoTrasporto); break;
+			case ContrassegnoInferioreASeimilaCinquecentoEuro.ID : ambito = new ContrassegnoInferioreASeimilaCinquecentoEuro(ambitoTrasporto); break;
+			case GiacenzaApertura.ID : ambito = new GiacenzaApertura(ambitoTrasporto); break;
+			case GiacenzaReso.ID : ambito = new GiacenzaReso(ambitoTrasporto); break;
+			case GiacenzaRiconsegna.ID : ambito = new GiacenzaRiconsegna(ambitoTrasporto); break;
+			case GiacenzaSosta.ID : ambito = new GiacenzaSosta(ambitoTrasporto); break;
+			default : ambito = null;
+		}
+		return ambito;
+	}
+
+}

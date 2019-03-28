@@ -1,0 +1,55 @@
+package it.ltc.logica.gui.elements;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.TreeColumn;
+
+/**
+ * Raffinamento della classe TreeViewer.
+ * Va implementato il provider specifico per il tipo scelto.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ * @param <T> il tipo di oggetti contenuti nell'albero.
+ */
+public class Albero<T> extends TreeViewer {
+	
+	public static final int DEFAULT_WIDTH = 100;
+
+	public Albero(Composite parent, AlberoProvider<T> provider) {
+		super(parent);
+		
+		setContentProvider(provider);
+	}
+	
+	/**
+	 * Aggiunge una colonna con il nome e l'etichettatore specificati lasciando il resto come default.
+	 * @param columnName il nome della colonna.
+	 * @param etichettatore l'etichettatore che si occupera' di riempire il contenuto delle celle nella colonna.
+	 */
+	protected void aggiungiColonna(String columnName, int indiceColonna, AlberoEtichettatore<T> etichettatore) {
+		aggiungiColonna(columnName, DEFAULT_WIDTH, SWT.NONE, indiceColonna, etichettatore);
+	}
+	
+	protected void aggiungiColonna(String columnName, int width, int style, int indiceColonna, AlberoEtichettatore<T> etichettatore) {
+		TreeViewerColumn treeColumn = new TreeViewerColumn(this, style);
+		TreeColumn column = treeColumn.getColumn();
+		column.setText(columnName);
+		column.setWidth(width);
+		
+		
+		if (etichettatore == null) {
+			treeColumn.setLabelProvider(new ColumnLabelProvider());
+		} else {
+			etichettatore.setColumnIndex(indiceColonna);
+			treeColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(etichettatore));
+		}
+		
+//		if (sorter != null)
+//			tblclmn.addSelectionListener(new ListenerColonna<T>(indiceColonna, tblclmn, getTable(), sorter, this));
+	}
+
+}

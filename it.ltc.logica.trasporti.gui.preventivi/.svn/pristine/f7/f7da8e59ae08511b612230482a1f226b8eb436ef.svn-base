@@ -1,0 +1,36 @@
+package it.ltc.logica.trasporti.gui.preventivi.elements;
+
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaTotali extends Tabella<Object> {
+
+	public TabellaTotali(Composite parent, int style) {
+		super(parent, style, null);
+		setLabelProvider(new LabelProvider());
+		aggiungiColonna("Nome", 100, null, 0);
+		aggiungiColonna("Totale", 100, null, 1);
+		aggiungiColonna("Nolo", 100, null, 2);
+		aggiungiColonna("Contrassegno", 100, null, 3);
+		aggiungiColonna("Extra", 100, null, 4);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//DO NOTHING! - Non è richiesto
+	}
+	
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING! - Non sono necessari altri listener.
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		//DO NOTHING! - Non sono necessari altri elementi di menu.
+	}
+
+}

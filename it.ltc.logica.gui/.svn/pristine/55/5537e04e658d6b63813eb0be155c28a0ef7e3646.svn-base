@@ -1,0 +1,104 @@
+package it.ltc.logica.gui.composite;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.gui.container.GruppoSemplice;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.DateField;
+
+public class CompositeDate extends GruppoSemplice {
+	
+	private DateField da;
+	private DateField a;
+
+	public CompositeDate(Composite parent, int style) {
+		super(parent, style);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(6, false));
+		
+		Label lblDa = new Label(this, SWT.NONE);
+		lblDa.setText("Da: ");
+		
+		da = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblA = new Label(this, SWT.NONE);
+		lblA.setText("A: ");
+		
+		a = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	@Override
+	public boolean validate() {
+		super.validate();
+		if (valid) {
+			valid = (da.getValue().compareTo(a.getValue()) < 0);
+		}
+		forwardValidation();
+		return valid;
+	}
+	
+	public Date getDa() {
+		return da.getValue();
+	}
+	
+	public void setDa(Date value) {
+		da.setValue(value);
+	}
+	
+	public void setDa(Calendar value) {
+		da.setValue(value);
+	}
+	
+	public Date getA() {
+		return a.getValue();
+	}
+	
+	public void setA(Date value) {
+		a.setValue(value);
+	}
+	
+	public void setA(Calendar value) {
+		a.setValue(value);
+	}
+
+	public void setInizioEFineMeseCorrente() {
+		GregorianCalendar today = new GregorianCalendar();
+		//Inizio mese
+		today.set(Calendar.DAY_OF_MONTH, 1);
+		Date inizioMese = today.getTime();
+		da.setValue(inizioMese);
+		//Fine mese
+		int daysInMonth = getDayInMonth(today.get(Calendar.MONTH));
+		today.set(Calendar.DAY_OF_MONTH, daysInMonth);
+		Date fineMese = today.getTime();
+		a.setValue(fineMese);
+	}
+	
+	private int getDayInMonth(int month) {
+		int days;
+		switch (month) {
+			case Calendar.FEBRUARY : days = 28; break;
+			case Calendar.APRIL : days = 30; break;
+			case Calendar.JUNE : days = 30; break;
+			case Calendar.SEPTEMBER : days = 30; break;
+			case Calendar.NOVEMBER : days = 30; break;
+			default : days = 31;
+		}
+		return days;
+	}
+
+}

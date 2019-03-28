@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_eRtzkP6AEea4e7ZqE6tX-Q" featurename="children" parentElementId="it.ltc.logica.trasporti.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_hbwtsP6AEea4e7ZqE6tX-Q" elementId="it.ltc.logica.trasporti.gui.indirizzi.part.funzioneindirizzi" contributionURI="bundleclass://it.ltc.logica.trasporti.gui.indirizzi/it.ltc.logica.trasporti.gui.indirizzi.parts.FunzioneIndirizziPart" label="Funzione - Indirizzi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/mail_16x16.png" tooltip="Qui puoi gestire gli indirizzi e i cap"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_SObLYP6BEea4e7ZqE6tX-Q" featurename="children" parentElementId="it.ltc.logica.trasporti.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Tb2n0P6BEea4e7ZqE6tX-Q" elementId="it.ltc.logica.trasporti.gui.indirizzi.part.indirizzi" contributionURI="bundleclass://it.ltc.logica.trasporti.gui.indirizzi/it.ltc.logica.trasporti.gui.indirizzi.parts.IndirizziPart" label="Indirizzi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/mail_16x16.png" tooltip="Qui puoi gestire gli indirizzi e i CAP"/>
+  </fragments>
+</fragment:ModelFragments>

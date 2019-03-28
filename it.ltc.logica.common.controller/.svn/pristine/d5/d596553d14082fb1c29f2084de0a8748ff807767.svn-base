@@ -1,0 +1,188 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura.Categoria;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerAmbitiFatturazione {
+	
+	private static final String titleAmbiti = "Ambiti di fatturazione";
+	private static final String titleSottoAmbiti = "Sotto ambiti di fatturazione";
+	
+	private static final String resourceURLAmbiti = "ambitifatturazione";
+	private static final String resourceURLSottoAmbiti = "sottoambitifatturazione";
+	
+	private static ControllerAmbitiFatturazione instance;
+	
+	private final HashMap<Integer, AmbitoFattura> ambiti;
+	private final HashMap<Integer, SottoAmbitoFattura> sottoambiti;
+
+	private ControllerAmbitiFatturazione() {
+		ambiti = new HashMap<>();
+		sottoambiti = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerAmbitiFatturazione getInstance() {
+		if (instance == null) {
+			instance = new ControllerAmbitiFatturazione();
+		}
+		return instance;
+	}
+	
+	public Collection<AmbitoFattura> getAmbiti() {
+		return ambiti.values();
+	}
+	
+	public AmbitoFattura getAmbito(int id) {
+		return ambiti.get(id);
+	}
+	
+	public List<AmbitoFattura> getAmbitiPerCategoria(Categoria categoria) {
+		List<AmbitoFattura> lista = new LinkedList<>(); 
+		for (AmbitoFattura ambito : getAmbiti()) {
+			if (ambito.getCategoria().equals(categoria.name())) {
+				lista.add(ambito);
+			}
+		}
+		return lista;
+	}
+	
+	public Collection<SottoAmbitoFattura> getSottoAmbiti() {
+		return sottoambiti.values();
+	}
+	
+	public SottoAmbitoFattura getSottoAmbito(int id) {
+		return sottoambiti.get(id);
+	}
+	
+	public List<SottoAmbitoFattura> getSottoAmbitiPerAmbito(Integer id) {
+		List<SottoAmbitoFattura> lista = new LinkedList<>();
+		for (SottoAmbitoFattura ambito : getSottoAmbiti()) {
+			if (ambito.getIdAmbito().equals(id)) {
+				lista.add(ambito);
+			}
+		}
+		return lista;
+	}
+	
+	public boolean update(AmbitoFattura valore) {
+		ProcessoAggiornamentoAmbito paa = new ProcessoAggiornamentoAmbito(valore);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(paa);
+		return paa.getEsito();
+	}
+
+	public boolean insert(AmbitoFattura valore) {
+		ProcessoInserimentoAmbito pia = new ProcessoInserimentoAmbito(valore);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pia);
+		boolean esito = pia.getEsito();
+		if (esito) {
+			AmbitoFattura ambito = pia.getObject();
+			ambiti.put(ambito.getId(), ambito);
+		}
+		return esito;
+	}
+
+	public boolean update(SottoAmbitoFattura valore) {
+		ProcessoAggiornamentoSottoAmbito pasa = new ProcessoAggiornamentoSottoAmbito(valore);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pasa);
+		return pasa.getEsito();
+	}
+
+	public boolean insert(SottoAmbitoFattura valore) {
+		ProcessoInserimentoSottoAmbito pisa = new ProcessoInserimentoSottoAmbito(valore);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pisa);
+		boolean esito = pisa.getEsito();
+		if (esito) {
+			SottoAmbitoFattura ambito = pisa.getObject();
+			sottoambiti.put(ambito.getId(), ambito);
+		}
+		return esito;
+	}
+	
+	public synchronized void caricaDati() {
+		
+		ProcessoCaricamentoAmbiti pca = new ProcessoCaricamentoAmbiti();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pca);
+		
+		List<AmbitoFattura> listaAmbiti = pca.getLista();
+		ambiti.clear();
+		for (AmbitoFattura ambito : listaAmbiti) {
+			ambiti.put(ambito.getId(), ambito);
+		}	
+		
+		ProcessoCaricamentoSottoAmbiti pcsa = new ProcessoCaricamentoSottoAmbiti();
+		DialogProgresso dialogSA = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialogSA.esegui(pcsa);
+		
+		List<SottoAmbitoFattura> listaSottoAmbiti = pcsa.getLista();
+		sottoambiti.clear();
+		for (SottoAmbitoFattura ambito : listaSottoAmbiti) {
+			sottoambiti.put(ambito.getId(), ambito);
+		}
+		
+	}
+	
+	private class ProcessoCaricamentoAmbiti extends ProcessoCaricamentoDati<AmbitoFattura> {
+		
+		public ProcessoCaricamentoAmbiti() {
+			super(titleAmbiti, resourceURLAmbiti, AmbitoFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoCaricamentoSottoAmbiti extends ProcessoCaricamentoDati<SottoAmbitoFattura> {
+
+		public ProcessoCaricamentoSottoAmbiti() {
+			super(titleSottoAmbiti, resourceURLSottoAmbiti, SottoAmbitoFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoAmbito extends ProcessoInserimentoDati<AmbitoFattura> {
+		
+		public ProcessoInserimentoAmbito(AmbitoFattura ambito) {
+			super(titleAmbiti, resourceURLAmbiti, ambito);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoSottoAmbito extends ProcessoInserimentoDati<SottoAmbitoFattura> {
+		
+		public ProcessoInserimentoSottoAmbito(SottoAmbitoFattura ambito) {
+			super(titleSottoAmbiti, resourceURLSottoAmbiti, ambito);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoAmbito extends ProcessoAggiornamentoDati<AmbitoFattura> {
+		
+		public ProcessoAggiornamentoAmbito(AmbitoFattura ambito) {
+			super(titleAmbiti, resourceURLAmbiti, ambito);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoSottoAmbito extends ProcessoAggiornamentoDati<SottoAmbitoFattura> {
+		
+		public ProcessoAggiornamentoSottoAmbito(SottoAmbitoFattura ambito) {
+			super(titleSottoAmbiti, resourceURLSottoAmbiti, ambito);
+		}
+		
+	}
+
+}

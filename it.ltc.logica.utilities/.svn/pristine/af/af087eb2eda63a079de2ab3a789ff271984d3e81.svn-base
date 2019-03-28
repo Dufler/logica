@@ -1,0 +1,84 @@
+package it.ltc.logica.utilities.json;
+
+import java.io.Reader;
+import java.io.StringReader;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+
+public class JSON {
+	
+	private JsonObject object;
+	private JsonObjectBuilder jsonBuilder;
+	
+	public JSON() {
+		jsonBuilder = Json.createObjectBuilder();
+	}
+	
+	public JSON(Reader risposta) {
+		JsonReader jsonReader = Json.createReader(risposta);
+		object = jsonReader.readObject();
+		jsonReader.close();
+	}
+	
+	public JSON(JsonObject obj) {
+		object = obj;
+	}
+
+	public void aggiungiProprieta(String nome, String valore) {
+		jsonBuilder = jsonBuilder.add(nome, valore);
+	}
+	
+	public String getString(String name) {
+		String value = object.getString(name);
+		return value;
+	}
+	
+	public int getInt(String name) {
+		int value = object.getInt(name);
+		return value;
+	}
+	
+	public int[] getIntArray(String name) {
+		JsonArray array = object.getJsonArray(name);
+		int[] values = new int[array.size()];
+		for (int index = 0; index < array.size(); index++) {
+			values[index] = array.getInt(index);
+		}
+		return values;
+	}
+	
+	public JSON getJSON(String name) {
+		JSON value = new JSON(object.getJsonObject(name));
+		return value;
+	}
+	
+	public JSON[] getJSONArray(String name) {
+		JsonArray array = object.getJsonArray(name);
+		JSON[] values = new JSON[array.size()];
+		for (int index = 0; index < array.size(); index++) {
+			values[index] = new JSON(array.getJsonObject(index));
+		}
+		return values;
+	}
+	
+	public String toString() {
+		object = jsonBuilder.build();
+		return object.toString();
+	}
+
+	public void parse(Reader risposta) {
+		JsonReader jsonReader = Json.createReader(risposta);
+		object = jsonReader.readObject();
+		jsonReader.close();
+	}
+	
+	public void parse(String json) {
+		StringReader reader = new StringReader(json);
+		parse(reader);
+	}
+
+}

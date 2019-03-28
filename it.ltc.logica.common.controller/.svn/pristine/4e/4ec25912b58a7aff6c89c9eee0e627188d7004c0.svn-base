@@ -1,0 +1,68 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Cliente;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.utilities.pdf.DocumentoPDF;
+import it.ltc.logica.utilities.pdf.PaginaPDF;
+import it.ltc.logica.utilities.pdf.parti.InfoClienteFattura;
+import it.ltc.logica.utilities.pdf.parti.IntestazioneFattura;
+import it.ltc.logica.utilities.pdf.parti.ModalitaPagamentoFattura;
+import it.ltc.logica.utilities.pdf.parti.TabellaFattura;
+
+public class PrimaPaginaFatturazionePDF extends PaginaPDF {
+	
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+	private static final float offsetIniziale = 40;
+
+	public PrimaPaginaFatturazionePDF(DocumentoPDF documento, DocumentoFattura fattura, Cliente cliente, Indirizzo indirizzo, HashMap<Integer, Integer> colonneVoci, HashMap<Integer, Double> totaliColonna) {
+		super(documento, false);
+
+		float y = getHeight() - offsetIniziale;
+		// Intestazione
+		IntestazioneFattura intestazione = new IntestazioneFattura(y);
+		aggiungiElemento(intestazione);
+		// Info cliente e fattura
+		String nome = cliente.getRagioneSociale();
+		String numeroCliente = ""; //TODO, forse lo metto dentro cliente. Da capire come sono usati questi numeri cliente.
+		String via = indirizzo.getIndirizzo();
+		String citta = indirizzo.getLocalita();
+		String cap = indirizzo.getCap();
+		String provincia = indirizzo.getProvincia();
+		String telefono = indirizzo.getTelefono();
+		String piva = cliente.getPartitaIva();
+		String numeroFattura = fattura.getNumeroFattura() + "/" + fattura.getAnnoFattura();
+		String dataFattura = sdf.format(fattura.getDataEmissione());
+		String modalitaPagamento = fattura.getModalitaPagamento(); //TODO - recuperare la descrizione
+		String coordinatePagamento = "" + fattura.getCoordinatePagamento(); //TODO - recuperare e combinare ente e coordinate
+		String imponibile = "9.315.20 €"; //TODO - trovalo nei totali colonna
+		String iva = fattura.getIva(); //TODO - recupera descrizione dalle enum
+		String totale = "9.315.20 €"; //calcola a partire dall'imponibile e dall'aliquota iva.
+		String nettoAPagare = null; //TODO - calcola solo per determinati tipi di iva, inserirlo come argument nell'oggetto ModalitaPagamentoFattura
+		InfoClienteFattura info = new InfoClienteFattura(y - intestazione.getAltezza() - 12, nome, numeroCliente, via, citta, cap, provincia, telefono, piva, numeroFattura, dataFattura);
+		aggiungiElemento(info);
+		// Dati fattura
+		List<String[]> righeFattura = new LinkedList<>();
+		String[] riga1 = { "", "NS. COMPETENZE PER SERVIZI DI LOGISTICA DISTRIBUTIVA VS MERCI  RESE NEL MESE DI OTTOBRE 2017", "", "", "", "" };
+		righeFattura.add(riga1);
+		String[] riga3 = { "70017116", "NOLO", "1", "ES", "6.315.20 €", "6.315.20 €" };
+		righeFattura.add(riga3);
+		String[] riga4 = { "70017116", "PRIORITY MONOCOLLO", "1", "ES", "985.00 €", "985.00 €" };
+		righeFattura.add(riga4);
+		String[] riga5 = { "70088888", "CONTRASSEGNO", "1", "ES", "2.985.00 €", "2.985.00 €" };
+		righeFattura.add(riga5);
+		TabellaFattura tabella = new TabellaFattura(y - intestazione.getAltezza() - info.getAltezza(), righeFattura);
+		aggiungiElemento(tabella);
+		// modalita pagamento
+		float yModalita = y - intestazione.getAltezza() - info.getAltezza() - tabella.getAltezza() - 20;
+		ModalitaPagamentoFattura modalita = new ModalitaPagamentoFattura(yModalita, modalitaPagamento, coordinatePagamento,	imponibile, iva, totale);
+		aggiungiElemento(modalita);
+	}
+
+}

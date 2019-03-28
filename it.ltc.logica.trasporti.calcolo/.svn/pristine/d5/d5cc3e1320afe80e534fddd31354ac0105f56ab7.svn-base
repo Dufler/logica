@@ -1,0 +1,71 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import it.ltc.logica.database.model.AmbitoDiTrasporto;
+
+public class VoceCalcolata {
+	
+	private final Integer id;
+	private AmbitoDiTrasporto ambito;
+	private double costo;
+	
+	public VoceCalcolata(Integer id, String codice) {
+		this.id = id;
+		ambito = AmbitoDiTrasporto.getAmbito(codice);
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public double getCosto() {
+		return costo;
+	}
+	
+	public void setCosto(double costo) {
+		this.costo = costo;
+	}
+
+	public AmbitoDiTrasporto getAmbito() {
+		return ambito;
+	}
+
+	public void setAmbito(AmbitoDiTrasporto ambito) {
+		this.ambito = ambito;
+	}
+
+	@Override
+	public String toString() {
+		return ambito + ", " + costo + " \u20AC";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ambito == null) ? 0 : ambito.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(costo);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VoceCalcolata other = (VoceCalcolata) obj;
+		if (ambito == null) {
+			if (other.ambito != null)
+				return false;
+		} else if (!ambito.equals(other.ambito))
+			return false;
+		if (Double.doubleToLongBits(costo) != Double.doubleToLongBits(other.costo))
+			return false;
+		return true;
+	}
+	
+}

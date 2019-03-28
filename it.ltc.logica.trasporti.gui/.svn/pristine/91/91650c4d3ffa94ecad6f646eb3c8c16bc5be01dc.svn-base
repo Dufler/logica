@@ -1,0 +1,251 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+
+public class FiltroSpedizioni extends ViewerFilter {
+	
+	private Date da;
+	private Date a;
+	private Integer idCommessa;
+	private Integer idCorriere;
+	private Boolean contrassegno;
+	private String riferimento;
+	private Boolean datiCompleti;
+	private Boolean giacenza;
+	private Boolean ritardo;
+
+	@Override
+	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		boolean toShow;
+		Spedizione spedizione = (Spedizione) element;
+		toShow = checkDataDa(spedizione.getData()) && checkDataA(spedizione.getData());
+		if (toShow) {
+			toShow = checkCommessa(spedizione.getIdCommessa());
+			if (toShow) {
+				toShow = checkCorriere(spedizione.getIdCorriere());
+				if (toShow) {
+					toShow = checkContrassegno(spedizione.getContrassegno());
+					if (toShow) {
+						toShow = checkRiferimento(spedizione);
+						if (toShow) {
+							toShow = checkDatiCompleti(spedizione.getDatiCompleti());
+							if (toShow) {
+								toShow = checkGiacenza(spedizione.getGiacenza());
+								if (toShow) {
+									toShow = checkRitardo(spedizione.getInRitardo());
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return toShow;
+	}
+	
+	private boolean checkDatiCompleti(Boolean c) {
+		boolean check = true;
+		if (datiCompleti != null) {
+			check = datiCompleti.equals(c);
+		}
+		return check;
+	}
+	
+	private boolean checkGiacenza(Boolean c) {
+		boolean check = true;
+		if (giacenza != null) {
+			check = giacenza.equals(c);
+		}
+		return check;
+	}
+	
+	private boolean checkRitardo(Boolean c) {
+		boolean check = true;
+		if (ritardo != null) {
+			check = ritardo.equals(c);
+		}
+		return check;
+	}
+
+	private boolean checkDataDa(Date dataSpedizione) {
+		boolean check = true;
+		if (da != null) {
+			if (dataSpedizione == null || da.after(dataSpedizione))
+				check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkDataA(Date dataSpedizione) {
+		boolean check = true;
+		if (a != null) {
+			if (dataSpedizione == null || a.before(dataSpedizione))
+				check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkCommessa(Integer id) {
+		boolean check = true;
+		if (idCommessa != null && !idCommessa.equals(id)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkCorriere(Integer id) {
+		boolean check = true;
+		if (idCorriere != null && !idCorriere.equals(id)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkContrassegno(Boolean c) {
+		boolean check = true;
+		if (contrassegno != null) {
+			check = contrassegno.equals(c);
+		}
+		return check;
+	}
+	
+	private boolean checkRiferimento(Spedizione spedizione) {
+		boolean check = true;
+		if (riferimento != null && !riferimento.isEmpty()) {
+			check = false;
+			ArrayList<String> listaElementiDiRicerca = getElementiDiRicerca(spedizione);
+			for (String elementoDiRicerca : listaElementiDiRicerca) {
+				check = elementoDiRicerca.contains(riferimento);
+				if (check)
+					break;
+			}
+		}
+		return check;
+	}
+	
+	private ArrayList<String> getElementiDiRicerca(Spedizione spedizione) {
+		ArrayList<String> listaCheck = new ArrayList<String>();
+		String letteraDiVettura = spedizione.getLetteraDiVettura();
+		if (letteraDiVettura != null && !letteraDiVettura.isEmpty())
+			listaCheck.add(letteraDiVettura);
+		String riferimentoCliente = spedizione.getRiferimentoCliente();
+		if (riferimentoCliente != null && !riferimentoCliente.isEmpty())
+			listaCheck.add(riferimentoCliente);
+		String riferimentoMittente = spedizione.getRiferimentoMittente();
+		if (riferimentoMittente != null && !riferimentoMittente.isEmpty())
+			listaCheck.add(riferimentoMittente);
+		return listaCheck;
+	}
+	
+	public void resetFiltri() {
+		da = null;
+		a = null;
+		idCommessa = null;
+		idCorriere = null;
+		contrassegno = null;
+		riferimento = null;
+		datiCompleti = null;
+		giacenza = null;
+		ritardo = null;
+	}
+
+	public Date getDa() {
+		return da;
+	}
+
+	public void setDa(Date da) {
+		Date inizio = null;
+		if (da != null) {
+			Calendar d = new GregorianCalendar();
+			d.setTime(da);
+			d.set(Calendar.DAY_OF_YEAR, d.get(Calendar.DAY_OF_YEAR) - 1);
+			d.set(Calendar.HOUR_OF_DAY, 23);
+			d.set(Calendar.MINUTE, 59);
+			d.set(Calendar.SECOND, 59);
+			inizio = d.getTime();
+		}
+		this.da = inizio;
+	}
+
+	public Date getA() {
+		return a;
+	}
+
+	public void setA(Date a) {
+		Date fine = null;
+		if (a != null) {
+			Calendar d = new GregorianCalendar();
+			d.setTime(a);
+			d.set(Calendar.HOUR_OF_DAY, 23);
+			d.set(Calendar.MINUTE, 59);
+			d.set(Calendar.SECOND, 59);
+			fine = d.getTime();
+		}
+		this.a = fine;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public String getRiferimento() {
+		return riferimento;
+	}
+
+	public void setRiferimento(String riferimento) {
+		this.riferimento = riferimento;
+	}
+
+	public Boolean getDatiCompleti() {
+		return datiCompleti;
+	}
+
+	public void setDatiCompleti(Boolean datiCompleti) {
+		this.datiCompleti = datiCompleti;
+	}
+
+	public Boolean getGiacenza() {
+		return giacenza;
+	}
+
+	public void setGiacenza(Boolean giacenza) {
+		this.giacenza = giacenza;
+	}
+
+	public Boolean getRitardo() {
+		return ritardo;
+	}
+
+	public void setRitardo(Boolean ritardo) {
+		this.ritardo = ritardo;
+	}
+
+}

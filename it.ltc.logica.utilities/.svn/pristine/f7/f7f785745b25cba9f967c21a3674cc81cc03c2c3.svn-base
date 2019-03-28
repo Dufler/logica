@@ -1,0 +1,23 @@
+package it.ltc.logica.utilities.excel.model.csv;
+
+public class RigaCSV {
+	
+	private final CampoCSV[] campi;
+	
+	public RigaCSV(String[] colonne) {
+		campi = new CampoCSV[colonne.length];
+	}
+	
+	public void setCampo(int posizione, CampoCSV campo) {
+		campi[posizione] = campo;
+	}
+	
+	public CampoCSV getCampo(int index) {
+		return campi[index];
+	}
+	
+	public CampoCSV[] getCampi() {
+		return campi;
+	}
+
+}

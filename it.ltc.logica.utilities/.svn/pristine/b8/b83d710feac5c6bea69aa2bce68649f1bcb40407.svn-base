@@ -1,0 +1,214 @@
+package it.ltc.logica.utilities.excel;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+
+import jxl.Workbook;
+import jxl.format.CellFormat;
+import jxl.write.DateFormat;
+import jxl.write.DateTime;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.NumberFormats;
+import jxl.write.WritableCell;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableFont;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+
+public class FileExcel {
+
+	private final WritableWorkbook fileExcel;
+	private final HashMap<String, WritableSheet> fogliExcel;
+	
+	private FileExcel(File file) throws IOException {
+		fileExcel = Workbook.createWorkbook(file);
+		fogliExcel = new HashMap<String, WritableSheet>();
+	}
+	
+	/**
+	 * Genera un'instanza con il nome e path specificati. Se fallisce restituisce un null.
+	 * @param file il nome del file completo del path.
+	 * @return la nuova instanza. null in caso di errori.
+	 */
+	public static FileExcel getFileExcel(String file) {
+		FileExcel fileExcel = null;
+		try {
+			fileExcel = new FileExcel(new File(file));
+		} catch(IOException e) {
+			//Problemi di generazione
+			e.printStackTrace();
+		}
+		return fileExcel;
+	}
+	
+	/**
+	 * Salve le modifiche effettuate sul foglio di lavoro e lo chiude.
+	 * @return l'esito dell'operazione.
+	 */
+	public boolean salvaEChiudi()  {
+		boolean successo = true;
+		try {
+			fileExcel.write();
+			fileExcel.close();
+		} catch (IOException | WriteException e) {
+			successo = false;
+			e.printStackTrace();
+		} 
+		return successo;
+	}
+	
+	/**
+	 * Restituisce il foglio con il nome indicato se già esiste, altrimenti ne crea uno con quel nome.
+	 * @param nome il nome del foglio.
+	 * @return il foglio con il nome specificato.
+	 */
+	public void creaFoglio(String nome) {
+		if (!fogliExcel.containsKey(nome))  {
+			WritableSheet foglio = fileExcel.createSheet(nome, fogliExcel.size());
+			fogliExcel.put(nome, foglio);
+		}
+		//return fogliExcel.get(nome);
+	}
+	
+	private boolean aggiungiCella(WritableSheet sheet, WritableCell cell) {
+		boolean aggiungi = true;
+		try {
+			sheet.addCell(cell);
+		} catch (WriteException e) {
+			aggiungi = false;
+			e.printStackTrace();
+		}
+		return aggiungi;
+	}
+	
+	private static CellFormat getFormatoTitolo() {
+		WritableFont arial16font = new WritableFont(WritableFont.ARIAL, 16);
+		return new WritableCellFormat(arial16font);
+	}
+	
+	private static CellFormat getFormatoSottoTitolo() {
+		WritableFont arial12font = new WritableFont(WritableFont.ARIAL, 12, WritableFont.BOLD);
+		return new WritableCellFormat(arial12font);
+	}
+	
+	private static CellFormat getFormatoTesto() {
+		WritableFont arial10font = new WritableFont(WritableFont.ARIAL, 10);
+		return new WritableCellFormat(arial10font);
+	}
+	
+	private static CellFormat getFormatoIntero() {
+		return new WritableCellFormat (NumberFormats.INTEGER);
+	}
+	
+	private static CellFormat getFormatoNumero() {
+		return new WritableCellFormat (NumberFormats.FLOAT);
+	}
+	
+	private static CellFormat getFormatoPercentuale() {
+		return new WritableCellFormat (NumberFormats.PERCENT_FLOAT);
+	}
+	
+	private static CellFormat getFormatoValuta() {
+//		NumberFormat formatoEuro = new NumberFormat(NumberFormat.CURRENCY_EURO_SUFFIX);
+//		return new WritableCellFormat(formatoEuro);
+		return new WritableCellFormat (NumberFormats.FLOAT);
+	}
+	
+	private static CellFormat getFormatoData() {
+		DateFormat customDateFormat = new DateFormat("dd/MMM/yyyy");
+		return new WritableCellFormat (customDateFormat);
+	}
+
+	public boolean aggiungiTitolo(String foglio, int colonna, int riga, String titolo) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Label label = new Label(colonna, riga, titolo);
+			label.setCellFormat(getFormatoTitolo());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiSottoTitolo(String foglio, int colonna, int riga, String sottoTitolo) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Label label = new Label(colonna, riga, sottoTitolo);
+			label.setCellFormat(getFormatoSottoTitolo());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiTesto(String foglio, int colonna, int riga, String testo) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Label label = new Label(colonna, riga, testo);
+			label.setCellFormat(getFormatoTesto());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiInteger(String foglio, int colonna, int riga, Integer valore) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Number label = new Number(colonna, riga, valore);
+			label.setCellFormat(getFormatoIntero());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiDouble(String foglio, int colonna, int riga, Double valore) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Number label = new Number(colonna, riga, valore);
+			label.setCellFormat(getFormatoNumero());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiPercentuale(String foglio, int colonna, int riga, Double valore) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Number label = new Number(colonna, riga, valore);
+			label.setCellFormat(getFormatoPercentuale());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiValuta(String foglio, int colonna, int riga, Double valore) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			Number label = new Number(colonna, riga, valore);
+			label.setCellFormat(getFormatoValuta());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+	public boolean aggiungiData(String foglio, int colonna, int riga, Date data) {
+		boolean aggiungi = false;
+		WritableSheet sheet = fogliExcel.get(foglio);
+		if (sheet != null) {
+			DateTime label = new DateTime(colonna, riga, data);
+			label.setCellFormat(getFormatoData());
+			aggiungi = aggiungiCella(sheet, label);
+		}
+		return aggiungi;
+	}
+	
+}

@@ -1,0 +1,109 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.trasporti.ControllerCap;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeCap;
+
+public class DialogCap extends DialogModel<Cap> {
+	
+	private final static String title = "CAP";
+	
+	private CompositeCap compositeCap;
+	private final Cap cap;
+	
+	private final boolean permessoGestione;
+	private final boolean modify;
+	
+	private final ControllerIndirizzi controllerIndirizzi;
+	private final ControllerCap controllerCap;
+	
+	public DialogCap(Cap c) {
+		super(title, c);
+		controllerCap = ControllerCap.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		permessoGestione = ControllerUtente.getInstance().isAllowed(Permessi.CAP_GESTIONE.getID());
+		cap = getValore();
+		modify = (c != null);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeCap = new CompositeCap(container, SWT.NONE);
+		compositeCap.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeCap.enableInputElements(permessoGestione);
+		if (modify)
+			compositeCap.enableIDFields(false);
+		addChild(compositeCap);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return compositeCap.isDirty();
+	}
+
+	@Override
+	public void loadModel() {
+		compositeCap.setCAP(cap.getCap());
+		compositeCap.setLocalita(cap.getLocalita());
+		compositeCap.setProvincia(controllerIndirizzi.getProvincia(cap.getProvincia()));
+		compositeCap.setOre10(cap.getTntOre10());
+		compositeCap.setOre12(cap.getTntOre12());
+		compositeCap.setDisagiato(cap.getBrtDisagiate());
+		compositeCap.setIsola(cap.getBrtIsole());
+		compositeCap.setZTL(cap.getBrtZtl());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		cap.setCap(compositeCap.getCAP());
+		cap.setLocalita(compositeCap.getLocalita());
+		cap.setProvincia(compositeCap.getProvincia().getSigla());
+		cap.setRegione(compositeCap.getProvincia().getRegione());
+		cap.setBrtDisagiate(compositeCap.getDisagiato());
+		cap.setBrtIsole(compositeCap.getIsola());
+		cap.setTntOre10(compositeCap.getOre10());
+		cap.setTntOre12(compositeCap.getOre12());
+		cap.setBrtZtl(compositeCap.getZTL());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ValidationResult esito = cap.validate();
+		return esito.getMessages();
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controllerCap.update(cap);
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		boolean insert = controllerCap.insert(cap);
+		return insert;
+	}
+
+	@Override
+	public Cap createNewModel() {
+		Cap cap = new Cap();
+		return cap;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!
+	}
+
+}

@@ -1,0 +1,25 @@
+package it.ltc.logica.database.orm;
+
+/**
+ * Questa enum contiene i possibili modi di comparazione dei dati.
+ * @author Damiano
+ *
+ */
+public enum Compare {
+	UGUALE("="),
+	MAGGIORE(">"),
+	MINORE("<"),
+	LIKE("LIKE"),
+	DIVERSO("<>");
+	
+	private final String comparisonOperator;
+	
+	private Compare(String operator) {
+		comparisonOperator = operator;
+	}
+
+	public String getComparisonOperator() {
+		return comparisonOperator;
+	}
+	
+}

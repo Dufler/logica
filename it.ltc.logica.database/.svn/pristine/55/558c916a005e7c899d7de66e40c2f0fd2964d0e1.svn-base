@@ -1,0 +1,29 @@
+package it.ltc.logica.database.orm;
+
+/**
+ * 
+ * @version 1.0
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public abstract class Entity {
+	
+	protected Entity() {}
+	
+	/**
+	 * Restituisce il nome della tabella che deve essere modellata
+	 * @return una stringa con il nome della tabella sul DB
+	 */
+	public abstract String getNomeTabella();
+	
+	/**
+	 * Restituisce la lista delle colonne della tabella che deve essere modellata.
+	 * Ogni colonna ha tre caratteristiche:
+	 *  - il nome della colonna sul DB
+	 *  - il tipo di dato nel DB
+	 *  - il nome della variabile associata sulla classe
+	 * @return una lista di oggetti DBColumn.
+	 */
+	public abstract ColumnList getVariabili();
+
+}

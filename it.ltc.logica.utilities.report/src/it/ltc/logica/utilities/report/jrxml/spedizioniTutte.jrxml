@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.4.2.final using JasperReports Library version 6.4.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Test_Json" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="cae3f774-77bc-4bcd-8223-32768b96b38f">
+	<!--
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="SQLLIte_Logica"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="411"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="578"/>
+	-->
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	
+	<parameter name="start_date" class="java.util.Date"/>
+	<parameter name="end_date" class="java.util.Date"/>
+	<!--
+	<queryString language="SQL">
+		<![CDATA[SELECT spedizione.colli,
+	spedizione.codice_cliente,
+	spedizione.contrassegno,
+	spedizione.data_partenza,
+	spedizione.id_commessa,
+	spedizione.id_corriere,
+	spedizione.peso,
+	spedizione.pezzi,spedizione.volume,spedizione.riferimento_cliente,  
+	spedizione.riferimento_mittente,  spedizione.ragione_sociale_destinatario,
+    indirizzo.localita,indirizzo.provincia 
+	FROM spedizione LEFT JOIN indirizzo 
+	ON  spedizione.indirizzo_destinazione=indirizzo.id
+	WHERE spedizione.data_partenza >=   $P{start_date} AND spedizione.data_partenza <= $P{end_date}
+	ORDER BY spedizione.data_partenza ASC]]>
+	</queryString>
+	-->
+	<field name="colli" class="java.lang.Integer"/>
+	<field name="codiceCliente" class="java.lang.String"/>
+	<field name="contrassegno" class="java.lang.Boolean"/>
+	<field name="dataPartenza" class="java.util.Date"/>
+	<field name="idCommessa" class="java.lang.Integer"/>
+	<field name="idCorriere" class="java.lang.Integer"/>
+	<field name="peso" class="java.lang.Double"/>
+	<field name="pezzi" class="java.lang.Integer"/>
+	<field name="volume" class="java.lang.Double"/>
+	<field name="riferimentoCliente" class="java.lang.String"/>
+	<field name="riferimentoMittente" class="java.lang.String"/>
+	<field name="ragioneSocialeDestinatario" class="java.lang.String"/>
+	<!--
+	<field name="localita" class="java.lang.String"/>
+	<field name="provincia" class="java.lang.String"/>
+	-->
+	<sortField name="dataPartenza"/>
+	<variable name="Totale_Colli" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{colli}]]></variableExpression>
+	</variable>
+	<variable name="Totpezzi" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{pezzi}]]></variableExpression>
+	</variable>
+	<variable name="TotPeso" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{peso}]]></variableExpression>
+	</variable>
+	<variable name="TotVolume" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{volume}]]></variableExpression>
+	</variable>
+	<group name="Codice Cliente">
+		<groupExpression><![CDATA[$F{codiceCliente}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="75" splitType="Stretch">
+			<staticText>
+				<reportElement x="310" y="10" width="210" height="18" uuid="71cdf173-8fe5-4e7b-b701-70f1a2a1a58f"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[REPORT SPEDIZIONI]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="0" y="0" width="100" height="19" uuid="2529ab75-a5a1-4253-80ee-ca87cd722a0b"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField pattern="HH:mm">
+				<reportElement x="0" y="17" width="100" height="23" uuid="fa4a0485-570b-4213-b31e-95a7205d6aba"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="310" y="40" width="100" height="22" uuid="13bccca7-20aa-4a84-b551-dcf4d480940b"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{start_date}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="410" y="40" width="110" height="22" uuid="d5669ee1-e354-4265-908c-65b66b3735ba"/>
+				<box padding="0">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{end_date}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="310" y="24" width="100" height="16" uuid="500141f9-6f53-4d91-adf8-e18aa2627880"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Dal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="410" y="24" width="110" height="16" uuid="38aae467-55a2-423a-a7bc-07a6e5c75fdf"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Al]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="32" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="7" width="100" height="20" uuid="e5d81213-7b2e-40bb-b55d-dbf51256438d"/>
+				<textFieldExpression><![CDATA[$F{codiceCliente}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="7" width="100" height="20" uuid="256f183f-575b-4729-ab1f-19f92540cfe3"/>
+				<textFieldExpression><![CDATA[$F{idCommessa}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="16" uuid="ddcc32fd-9657-4567-8abb-ec9c71bab9db"/>
+				<text><![CDATA[Data Partenza]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="540" y="0" width="40" height="16" uuid="c75508b6-9204-4c24-a206-abe0090fca82"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Colli]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="610" y="0" width="50" height="16" uuid="fef3bee6-2d6e-4cbf-bec4-2b99941196cf"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Peso Kg.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="680" y="0" width="50" height="16" uuid="6b556b79-22c2-4fa1-a4c2-90cedd641c39"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Pezzi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="732" y="2" width="60" height="16" uuid="ddff51e0-3abb-4ca1-a18a-7c839c674aa3"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Volume Mc.]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="16" width="800" height="3" uuid="81b9f136-ffd6-4821-a2bc-9c0336804d60"/>
+			</line>
+			<staticText>
+				<reportElement x="80" y="2" width="100" height="16" uuid="e7c569ce-308a-421e-b9b4-08ccf9688bfc">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<text><![CDATA[Rif.Cliente]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="180" y="0" width="210" height="18" uuid="8437aec1-4ac8-409b-b32e-a6ccd44161d1"/>
+				<text><![CDATA[Ragione sociale destinatario]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField isBlankWhenNull="true">
+				<reportElement key="" mode="Opaque" x="510" y="0" width="70" height="15" uuid="4e192d41-8aba-43e8-a42b-d2c96fae8544"/>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{colli}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement key="" mode="Opaque" x="610" y="0" width="50" height="15" uuid="b9a8e7aa-e8b2-41bf-a58a-a430b664a522">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{peso}]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement key="" mode="Opaque" x="680" y="0" width="50" height="15" uuid="370bcd1f-bee0-402b-b522-dc01bfc1925d"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{pezzi}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000">
+				<reportElement key="" mode="Opaque" x="732" y="0" width="60" height="15" uuid="48798434-2ea5-4768-a680-e631701b0d2a"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{volume}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="80" y="1" width="100" height="14" uuid="84c3599e-f31e-44ac-bb63-798c58de19bb"/>
+				<textFieldExpression><![CDATA[$F{riferimentoCliente}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yy">
+				<reportElement x="0" y="0" width="80" height="14" uuid="2f77e971-0c5a-4e17-bee9-08e8ce049582"/>
+				<textFieldExpression><![CDATA[$F{dataPartenza}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="180" y="0" width="350" height="14" uuid="fce0828c-ceed-4e6a-b992-cfad88da0c44"/>
+				<textFieldExpression><![CDATA[$F{ragioneSocialeDestinatario}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="26" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="0" width="800" height="1" uuid="7499fe0d-cab8-4f1c-93dd-be11ab4913d3"/>
+			</line>
+			<textField>
+				<reportElement x="660" y="-1" width="70" height="18" uuid="de1034ba-d962-4c2b-bb40-9801201dc091"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Totpezzi}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00#">
+				<reportElement x="600" y="0" width="60" height="16" uuid="c0cd74d1-b19f-44df-90aa-c00307b8b340"/>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TotPeso}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.000">
+				<reportElement x="732" y="0" width="60" height="16" uuid="04cf54ca-7d7e-4d11-ad5c-db8f3034755c"/>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TotVolume}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="480" y="2" width="100" height="16" uuid="d98d14dc-01f6-4094-aff5-dadf4f0d4866">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Totale_Colli}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band height="31" splitType="Stretch">
+			<textField>
+				<reportElement x="300" y="1" width="100" height="30" uuid="155aa250-d819-4b68-8b8d-db770fd2ec83"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Pagina " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="400" y="1" width="100" height="30" uuid="645f91d0-ed69-4423-948d-ae6fae224d08"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" di " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="13" splitType="Stretch"/>
+	</summary>
+</jasperReport>

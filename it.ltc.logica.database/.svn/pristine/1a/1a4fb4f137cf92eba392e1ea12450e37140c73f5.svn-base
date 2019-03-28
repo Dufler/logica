@@ -1,0 +1,74 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Contrassegno extends Entity {
+	
+	public static final String NOME_TABELLA = "spedizione_contrassegno";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idSpedizione;
+	private Double valore;
+	private String valuta;
+	private String tipo;
+	private Boolean annullato;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_spedizione", "idSpedizione", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addString("valuta", "valuta");
+			variabili.addString("tipo", "tipo");
+			variabili.addBoolean("annullato", "annullato", false, true);
+		}
+		return variabili;
+	}
+
+	public Integer getIdSpedizione() {
+		return idSpedizione;
+	}
+
+	public void setIdSpedizione(Integer idSpedizione) {
+		this.idSpedizione = idSpedizione;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	public String getValuta() {
+		return valuta;
+	}
+
+	public void setValuta(String valuta) {
+		this.valuta = valuta;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Boolean getAnnullato() {
+		return annullato;
+	}
+
+	public void setAnnullato(Boolean annullato) {
+		this.annullato = annullato;
+	}
+
+}

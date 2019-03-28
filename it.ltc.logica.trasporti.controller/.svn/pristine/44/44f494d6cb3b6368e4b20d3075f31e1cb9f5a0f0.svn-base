@@ -1,0 +1,227 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.model.CodiceClienteCorriere;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.ListinoCommessa;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.database.model.VoceDiListino;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.container.DialogProgresso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.Calcolatore;
+import it.ltc.logica.trasporti.calcolo.algoritmi.CommessaCalcolata;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class FatturazioneController {
+	
+	private static final String TITOLO_ERRORE_CODICE_NON_TROVATO = "Attenzione";
+	private static final String MESSAGGIO_ERRORE_CODICE_NON_TROVATO = "Il codice cliente [codice] non è stato ancora inserito, le spedizioni ad esso legate non saranno fatturate.";
+	
+	private static FatturazioneController instance;
+	
+	private final EntityManager<Spedizione> managerSpedizioni;
+	private final EntityManager<ListinoCommessa> managerListini;
+	
+	private final SimpleDateFormat sdf;
+	private final SimpleDateFormat meseEAnno;
+	private final HashMap<String, ListinoCommessa> listini;
+	private final HashMap<String, List<SpedizioneModel>> model;
+	
+	private Commessa commessa;
+	private Date inizio;
+	private Date fine;
+	
+	private FatturazioneController() {
+		managerSpedizioni = new EntityManager<Spedizione>(Spedizione.class);
+		managerListini = new EntityManager<ListinoCommessa>(ListinoCommessa.class);
+		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		meseEAnno = new SimpleDateFormat("MM-yyyy");
+		listini = new HashMap<String, ListinoCommessa>();
+		model = new HashMap<String, List<SpedizioneModel>>();
+	}
+
+	public static FatturazioneController getInstance() {
+		if (instance == null) {
+			instance = new FatturazioneController();
+		}
+		return instance;
+	}
+
+	public void setCommessa(Commessa selectedValue) {
+		commessa = selectedValue;		
+	}
+
+	public void setDataInizio(Date da) {
+		inizio = da;		
+	}
+
+	public void setDataFine(Date a) {
+		fine = a;		
+	}
+	
+	public HashMap<String, List<SpedizioneModel>> getSpedizioniFatturate() {
+		return model;
+	}
+	
+	private List<Spedizione> getSpedizioni() {
+		String query = "SELECT * FROM spedizione WHERE id_commessa = [idCommessa] AND Data > '[inizio]' AND Data < '[fine]'";
+		query = query.replace("[idCommessa]", commessa.getId().toString());
+		query = query.replace("[inizio]", sdf.format(inizio));
+		query = query.replace("[fine]", sdf.format(fine));
+		List<Spedizione> listaSpedizioni = managerSpedizioni.executeQuery(query);
+		return listaSpedizioni;
+	}
+	
+	private ListinoCommessa getListino(String codiceCliente) {
+		if (!listini.containsKey(codiceCliente)) {
+			CodiceClienteCorriere codice = CodiceClienteCorriere.getCodiceCliente(codiceCliente);
+			if (codice != null) {
+				ListinoCommessa filtro = new ListinoCommessa();
+				filtro.setId(codice.getIdListinoCommessa());
+				ListinoCommessa listino = managerListini.getEntity(filtro, true);
+				listini.put(codiceCliente, listino);
+			} else {
+				String messaggio = MESSAGGIO_ERRORE_CODICE_NON_TROVATO.replace("[codice]", codiceCliente);
+				DialogMessaggio.openError(TITOLO_ERRORE_CODICE_NON_TROVATO, messaggio);
+			}
+		}
+		return listini.get(codiceCliente);
+	}
+	
+	private List<SpedizioneModel> getListaSpedizioni(String codiceCliente) {
+		if (!model.containsKey(codiceCliente)) {
+			ArrayList<SpedizioneModel> lista = new ArrayList<SpedizioneModel>();
+			model.put(codiceCliente, lista);
+		}
+		return model.get(codiceCliente);
+	}
+
+	public void calcolaFatturazione() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				Calcolatore calcolatore = Calcolatore.getInstance();
+				listini.clear();
+				model.clear();
+				List<Spedizione> spedizioni = getSpedizioni();
+				monitor.beginTask("Calcolo della fatturazione", spedizioni.size());
+				for (Spedizione spedizione : spedizioni) {
+					String codiceCliente = spedizione.getCodiceCliente();
+					ListinoCommessa listinoCommessa = getListino(codiceCliente);
+					List<SpedizioneModel> listaModel = getListaSpedizioni(codiceCliente);
+					SpedizioneModel model = SpedizioneModel.caricaSpedizione(spedizione);
+					calcolatore.calcolaRicavo(model, listinoCommessa);
+					listaModel.add(model);
+					monitor.worked(1);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private String getNomeFile() {
+		File workingFolder = ControllerUtente.getInstance().getWorkSpaceFolder();
+		String tipoFile = "Fatturazione";
+		String nomeCommessa = commessa.getNome();
+		String periodo = meseEAnno.format(inizio);
+		String estensione = ".xls";
+		String nomeFile = workingFolder.getPath() + "\\" + tipoFile + " " + nomeCommessa + " " + periodo + estensione;
+		return nomeFile;
+	}
+
+	public void esportaDati() {
+		Calcolatore calcolatore = Calcolatore.getInstance();
+		String nomeFile = getNomeFile();
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		boolean successo = false;
+		if (workbook != null) {
+			for (String codice : model.keySet()) {
+				workbook.creaFoglio(codice);
+				//Titolo - riga 1
+				workbook.aggiungiTitolo(codice, 0, 0, commessa.getNome() + " - " + codice);
+				//Sotto titoli - riga 2
+				int colonnaSottoTitoli = 0;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Spedizione");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Data");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Riferimento");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Destinazione");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Colli");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Pezzi");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Peso");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Volume");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Contrassegno");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Totale");
+				colonnaSottoTitoli += 1;
+				ListinoCommessa listinoCommessa = getListino(codice);
+				List<VoceDiListino> voci = calcolatore.getVociDiListinoCommessa(listinoCommessa);
+				HashMap<String, Integer> colonneVoci = new HashMap<String, Integer>();
+				for (VoceDiListino voce : voci) {
+					colonnaSottoTitoli += 1;
+					workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, voce.getNome());
+					colonneVoci.put(voce.getSottoAmbito(), colonnaSottoTitoli);
+				}
+				//Spedizioni - righe successive
+				int riga = 1;
+				List<SpedizioneModel> spedizioni = model.get(codice);
+				for(SpedizioneModel spedizione : spedizioni) {
+					riga += 1;
+					workbook.aggiungiTesto(codice, 0, riga, spedizione.getDestinazione().getRagioneSociale());
+					workbook.aggiungiData(codice, 1, riga, spedizione.getSpedizione().getData());
+					workbook.aggiungiTesto(codice, 2, riga, spedizione.getSpedizione().getRiferimentoCliente());
+					workbook.aggiungiTesto(codice, 3, riga, spedizione.getDestinazione().getLocalita() + " (" + spedizione.getDestinazione().getProvincia() + ")");
+					workbook.aggiungiInteger(codice, 4, riga, spedizione.getSpedizione().getColli());
+					workbook.aggiungiInteger(codice, 5, riga, spedizione.getSpedizione().getPezzi());
+					workbook.aggiungiDouble(codice, 6, riga, spedizione.getSpedizione().getPeso());
+					workbook.aggiungiDouble(codice, 7, riga, spedizione.getSpedizione().getVolume());
+					if (spedizione.getContrassegno() != null) {
+						workbook.aggiungiValuta(codice, 8, riga, spedizione.getContrassegno().getValore());
+					} else {
+						//workbook.aggiungiTesto(codice, 7, riga, "-");
+					}
+					CommessaCalcolata preventivo = spedizione.getPreventivoRicavo();
+					workbook.aggiungiValuta(codice, 8, riga, preventivo.getTotale());
+					for (VoceCalcolata voce : preventivo.getVoci()) {
+						int colonna = colonneVoci.get(voce.getAmbito().getCodice());
+						workbook.aggiungiValuta(codice, colonna, riga, voce.getCosto());
+					}
+				}
+			}		
+			successo = workbook.salvaEChiudi();
+		}
+		if (successo) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file:\r\n" + nomeFile);
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non è stato possibile esportare i risultati.");
+		}
+	}
+}

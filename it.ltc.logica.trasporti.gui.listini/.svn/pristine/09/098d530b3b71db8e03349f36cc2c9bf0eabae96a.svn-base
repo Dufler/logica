@@ -1,0 +1,38 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.cliente;
+
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+
+public class RincaraListinoWizard extends Wizard {
+	
+	private ListiniClientiController controller;
+	
+	private RincaraProprietaWizardPage paginaProprieta;
+	private RincaraValoriWizardPage paginaValori;
+
+	public RincaraListinoWizard() {
+		setWindowTitle("Nuovo Listino Cliente");
+		controller = ListiniClientiController.getInstance();
+		paginaProprieta = new RincaraProprietaWizardPage();
+		paginaValori = new RincaraValoriWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+		addPage(paginaValori);
+	}
+
+	@Override
+	public boolean performFinish() {
+		ListinoCommessa listino = paginaProprieta.getListino();
+		ListinoCorriere listinoCorriere = paginaValori.getListinoCorriere();
+		Double[] rincari = paginaValori.getRincari();
+		boolean insert = controller.creaNuovoListinoDaCorriere(listino, listinoCorriere, rincari);
+		return insert;
+	}
+
+}

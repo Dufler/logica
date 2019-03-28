@@ -1,0 +1,218 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.gui.dialog.DialogSelezione;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.ProcessoUI;
+
+public class DialogSelezioneIndirizzo extends DialogSelezione<Indirizzo> {
+	
+	private static final String titolo = "Rubrica Indirizzi";
+	
+	//private final SpedizioniController controller;
+	private final ControllerIndirizzi controllerIndirizzi;
+	
+	private final UISynchronize sync;
+	
+	private Indirizzo indirizzoSelezionato;
+	
+	private Text textRagioneSociale;
+	private Text textIndirizzo;
+	private IndirizziTableViewer tableViewer;
+	private Table table;
+
+	public DialogSelezioneIndirizzo() {
+		super(titolo);
+		//controller = SpedizioniController.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		sync = ControllerUtente.getInstance().getSync();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblSelezionaUnindirizzoE = new Label(container, SWT.NONE);
+		lblSelezionaUnindirizzoE.setText("Seleziona un'indirizzo e premi \"Ok\"");
+		
+		Composite compositeFiltro = new Composite(container, SWT.NONE);
+		compositeFiltro.setLayout(new GridLayout(1, false));
+		compositeFiltro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Composite compositeCampiFiltro = new Composite(compositeFiltro, SWT.NONE);
+		compositeCampiFiltro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeCampiFiltro.setLayout(new GridLayout(2, false));
+		
+		Label lblRagioneSociale = new Label(compositeCampiFiltro, SWT.NONE);
+		lblRagioneSociale.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRagioneSociale.setText("Ragione Sociale: ");
+		
+		textRagioneSociale = new Text(compositeCampiFiltro, SWT.BORDER);
+		textRagioneSociale.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtra();
+				}
+			}
+		});
+		textRagioneSociale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textRagioneSociale.setSize(155, 21);
+		
+		Label lblIndirizzo = new Label(compositeCampiFiltro, SWT.NONE);
+		lblIndirizzo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblIndirizzo.setSize(50, 15);
+		lblIndirizzo.setText("Indirizzo, localit\u00E0,... : ");
+		
+		textIndirizzo = new Text(compositeCampiFiltro, SWT.BORDER);
+		textIndirizzo.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.character == SWT.CR || e.character == SWT.LF) {
+					filtra();
+				}
+			}
+		});
+		textIndirizzo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textIndirizzo.setSize(160, 21);
+		
+		Composite compositeControlli = new Composite(compositeFiltro, SWT.NONE);
+		compositeControlli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlli.setLayout(new GridLayout(3, false));
+		
+		Button btnFiltra = new Button(compositeControlli, SWT.NONE);
+		btnFiltra.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				filtra();
+			}
+		});
+		btnFiltra.setText("Filtra");
+		
+		Button btnAnnullaFiltro = new Button(compositeControlli, SWT.NONE);
+		btnAnnullaFiltro.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				annullaFiltro();
+			}
+		});
+		btnAnnullaFiltro.setSize(81, 25);
+		btnAnnullaFiltro.setText("Annulla filtro");
+		
+		Button btnNuovoIndirizzo = new Button(compositeControlli, SWT.NONE);
+		btnNuovoIndirizzo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserisciNuovoIndirizzo();
+			}
+		});
+		btnNuovoIndirizzo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+		btnNuovoIndirizzo.setText("Nuovo Indirizzo");
+		
+		tableViewer = new IndirizziTableViewer(container);
+		table = tableViewer.getTable();
+		table.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int selectionIndex = table.getSelectionIndex();
+				if (selectionIndex != -1) {
+					TableItem selectedItem = table.getItem(selectionIndex);
+					indirizzoSelezionato = (Indirizzo) selectedItem.getData();
+				}
+			}
+		});
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+
+	@Override
+	public void caricaModel() {
+		tableViewer.mostraIndirizzi(controllerIndirizzi.getIndirizzi());
+	}
+
+	@Override
+	public Indirizzo getSelezione() {
+		return indirizzoSelezionato;
+	}
+	
+	private void filtra() {
+		String ragioneSociale = textRagioneSociale.getText();
+		String indirizzo = textIndirizzo.getText();
+		impostaFiltro(ragioneSociale, indirizzo);
+	}
+	
+	private void impostaFiltro(final String ragioneSociale, final String indirizzo) {
+//		IRunnableWithProgress runnable = new IRunnableWithProgress() { 
+//			@Override
+//			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException { 
+//				monitor.beginTask("Filtraggio Spedizioni", IProgressMonitor.UNKNOWN);
+//				sync.asyncExec(new Runnable() {
+//					@Override
+//					public void run() {
+//						tableViewer.filtra(ragioneSociale, indirizzo);
+//					}
+//				});
+//				monitor.done();
+//			}
+//		};
+//		try {
+//			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+//			dialog.run(true, true, runnable);
+//		} catch (InvocationTargetException | InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		
+		ProcessoFiltraggio pf = new ProcessoFiltraggio(ragioneSociale, indirizzo);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pf);
+	}
+	
+	private void annullaFiltro() {
+		textRagioneSociale.setText("");
+		textIndirizzo.setText("");
+		impostaFiltro(null, null);
+	}
+	
+	private void inserisciNuovoIndirizzo() {
+		DialogIndirizzo dialog = new DialogIndirizzo(null);
+		indirizzoSelezionato = dialog.apri();
+		okPressed();
+	}
+	
+	private class ProcessoFiltraggio extends ProcessoUI {
+		
+		private static final String title = "Filtraggio indirizzi";
+		
+		private final String ragioneSociale;
+		private final String indirizzo;
+
+		public ProcessoFiltraggio(String ragioneSociale, String indirizzo) {
+			super(title, -1, false, sync);
+			this.ragioneSociale = ragioneSociale;
+			this.indirizzo = indirizzo;
+		}
+
+		@Override
+		public void eseguiOperazioniSincronizzate() {
+			tableViewer.filtra(ragioneSociale, indirizzo);
+		}
+		
+	}
+
+}

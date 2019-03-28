@@ -1,0 +1,554 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.configuration.Database;
+import it.ltc.logica.database.model.centrale.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.TipoListino;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriere;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereFissa;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorrierePercentuale;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereProporzionale;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereScaglioni;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereScaglioniRipetuti;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoFisso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class ListiniCorrieriController {
+
+	private static final String NESSUN_ALGORITMO_SELEZIONATO = "NESSUNO";
+	
+	private static ListiniCorrieriController instance;
+	
+	private String tipoAlgoritmoSelezionato;
+	private VoceDiListinoCorriere voceDiListino;
+	private VoceDiListinoCorriereFissa voceFisso;
+	private VoceDiListinoCorrierePercentuale vocePercentuale;
+	private VoceDiListinoCorriereProporzionale voceProporzionale;
+	private List<VoceDiListinoCorriereScaglioni> vociScaglioni;
+	private VoceDiListinoCorriereScaglioniRipetuti voceScaglioniRipetuti;
+	
+	private EntityManager<ListinoCorriere> managerListini;
+	private EntityManager<VoceDiListinoCorriere> managerVociDiListino;
+	private EntityManager<VoceDiListinoCorriereFissa> managerVociFisse;
+	private EntityManager<VoceDiListinoCorrierePercentuale> managerVociPercentuali;
+	private EntityManager<VoceDiListinoCorriereProporzionale> managerVociProporzionali;
+	private EntityManager<VoceDiListinoCorriereScaglioni> managerVociScaglioni;
+	private EntityManager<VoceDiListinoCorriereScaglioniRipetuti> managerVociScaglioniRipetuti;
+	
+	private List<ListinoCorriere> listini;
+	
+	private ListiniCorrieriController() {
+		Database db = ConfigurationManager.getDefault();
+		managerListini = new EntityManager<ListinoCorriere>(ListinoCorriere.class, db);
+		managerVociDiListino = new EntityManager<VoceDiListinoCorriere>(VoceDiListinoCorriere.class, db);
+		managerVociFisse = new EntityManager<VoceDiListinoCorriereFissa>(VoceDiListinoCorriereFissa.class, db);
+		managerVociPercentuali = new EntityManager<VoceDiListinoCorrierePercentuale>(VoceDiListinoCorrierePercentuale.class, db);
+		managerVociProporzionali = new EntityManager<VoceDiListinoCorriereProporzionale>(VoceDiListinoCorriereProporzionale.class, db);
+		managerVociScaglioni = new EntityManager<VoceDiListinoCorriereScaglioni>(VoceDiListinoCorriereScaglioni.class, db);
+		managerVociScaglioniRipetuti = new EntityManager<VoceDiListinoCorriereScaglioniRipetuti>(VoceDiListinoCorriereScaglioniRipetuti.class, db);
+		tipoAlgoritmoSelezionato = NESSUN_ALGORITMO_SELEZIONATO;
+	}
+
+	public static ListiniCorrieriController getInstance() {
+		if (instance == null) {
+			instance = new ListiniCorrieriController();
+		}
+		return instance;
+	}
+	
+	public void setTipoAlgoritmoSelezionato(String algoritmo) {
+		tipoAlgoritmoSelezionato = algoritmo;
+	}
+	
+	public String getTipoAlgoritmoSelezionato() {
+		return tipoAlgoritmoSelezionato;
+	}
+	
+	public void setNuovaVoceDiListino(VoceDiListinoCorriere voce) {
+		voceDiListino = voce;
+	}
+	
+	public void setFisso(VoceDiListinoCorriereFissa fisso) {
+		voceFisso = fisso;
+	}
+	
+	public void setPercentuale(VoceDiListinoCorrierePercentuale percentuale) {
+		vocePercentuale = percentuale;
+	}
+	
+	public void setProporzionale(VoceDiListinoCorriereProporzionale proporzionale) {
+		voceProporzionale = proporzionale;
+	}
+	
+	public void setScaglioni(List<VoceDiListinoCorriereScaglioni> scaglioni) {
+		vociScaglioni = scaglioni;
+	}
+	
+	public VoceDiListinoCorriere getNuovaVoceDiListino() {
+		return voceDiListino;
+	}
+
+	public VoceDiListinoCorriereFissa getVoceFisso() {
+		return voceFisso;
+	}
+
+	public VoceDiListinoCorrierePercentuale getVocePercentuale() {
+		return vocePercentuale;
+	}
+
+	public VoceDiListinoCorriereProporzionale getVoceProporzionale() {
+		return voceProporzionale;
+	}
+
+	public List<VoceDiListinoCorriereScaglioni> getVociScalgioni() {
+		return vociScaglioni;
+	}
+	
+	public void setScaglioniRipetuti(VoceDiListinoCorriereScaglioniRipetuti scaglione) {
+		voceScaglioniRipetuti = scaglione;
+	}
+	
+	public VoceDiListinoCorriereScaglioniRipetuti getVoceScaglioniRipetuti() {
+		return voceScaglioniRipetuti;
+	}
+	
+	public boolean creaNuovaVoceDiListino() {
+		boolean esito = false;
+		if (voceDiListino != null) {
+			int id = managerVociDiListino.insertAndReturnID(voceDiListino);
+			switch (tipoAlgoritmoSelezionato) {
+				case AlgoritmoFisso.NOME : {esito = creaNuovaVoceFissa(id); break;}
+				case AlgoritmoProporzionale.NOME : {esito = creaNuovaVoceProporzionale(id); break;}
+				case AlgoritmoScaglioni.NOME : {esito = creaNuoveVociScaglioni(id); break;}
+				case AlgoritmoScaglioniRipetuti.NOME : {esito = creaNuoveVociScaglioniRipetuti(id); break;}
+				case AlgoritmoPercentuale.NOME : {esito = creaNuovaVocePercentuale(id); break;}
+				default : break;
+			}
+		}
+		resetNuovaVoce();
+		return esito;
+	}
+	
+	private boolean creaNuovaVoceFissa(int idVoce) {
+		voceFisso.setId(idVoce);
+		boolean inserimento = managerVociFisse.insert(voceFisso);
+		return inserimento;
+	}
+	
+	private boolean creaNuovaVocePercentuale(int idVoce) {
+		vocePercentuale.setId(idVoce);
+		boolean inserimento = managerVociPercentuali.insert(vocePercentuale);
+		return inserimento;
+	}
+	
+	private boolean creaNuovaVoceProporzionale(int idVoce) {
+		voceProporzionale.setId(idVoce);
+		boolean inserimento = managerVociProporzionali.insert(voceProporzionale);
+		return inserimento;
+	}
+	
+	private boolean creaNuoveVociScaglioni(int idVoce) {
+		boolean inserimento = false;
+		int inserimenti = 0;
+		for (VoceDiListinoCorriereScaglioni voce : vociScaglioni) {
+			voce.setId(idVoce);
+			boolean insert = managerVociScaglioni.insert(voce);
+			if (insert)
+				inserimenti += 1;
+		}
+		if (inserimenti == vociScaglioni.size())
+			inserimento = true;
+		return inserimento;
+	}
+	
+	private boolean creaNuoveVociScaglioniRipetuti(int idVoce) {
+		voceScaglioniRipetuti.setId(idVoce);
+		boolean inserimento = managerVociScaglioniRipetuti.insert(voceScaglioniRipetuti);
+		return inserimento;
+	}
+	
+	private void resetNuovaVoce() {
+		voceDiListino = null;
+		voceFisso = null;
+		vocePercentuale = null;
+		voceProporzionale = null;
+		vociScaglioni = null;
+		tipoAlgoritmoSelezionato = NESSUN_ALGORITMO_SELEZIONATO;
+	}
+
+	public List<ListinoCorriere> getListiniCorrieri() {
+		if (listini == null) {
+			listini = managerListini.getEntities();
+		}
+		return listini;
+	}
+
+	public List<VoceDiListinoCorriere> getVociDiListino(ListinoCorriere listino) {
+		int idListino = listino.getId();
+		VoceDiListinoCorriere filtro = new VoceDiListinoCorriere();
+		filtro.setIdListino(idListino);
+		List<VoceDiListinoCorriere> vociDiListino = managerVociDiListino.getEntities(filtro);
+		return vociDiListino;
+	}
+
+	public boolean creaNuovoListino(ListinoCorriere listino) {
+		int id = managerListini.insertAndReturnID(listino);
+		boolean inserimento = id != -1;
+		if (inserimento) {
+			listino.setId(id);
+			listini.add(listino);
+		}
+		return inserimento;
+	}
+
+	public boolean aggiornaListino(ListinoCorriere listino) {
+		boolean update = managerListini.update(listino);
+		return update;
+	}
+
+	public boolean aggiornaVoceDiListino(VoceDiListinoCorriere voce) {
+		boolean update = managerVociDiListino.update(voce);
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoFissa(VoceDiListinoCorriereFissa voce) {
+		boolean update = managerVociFisse.update(voce);
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoProporzionale(VoceDiListinoCorriereProporzionale voce) {
+		boolean update = managerVociProporzionali.update(voce);
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoPercentuale(VoceDiListinoCorrierePercentuale voce) {
+		boolean update = managerVociPercentuali.update(voce);
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoScaglione(VoceDiListinoCorriereScaglioni voce) {
+		boolean update = managerVociScaglioni.update(voce);
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoScaglioni(List<VoceDiListinoCorriereScaglioni> vociScaglioni, Integer idVoce) {
+		boolean update = true;
+		VoceDiListinoCorriereScaglioni filtro = new VoceDiListinoCorriereScaglioni();
+		filtro.setId(idVoce);
+		managerVociScaglioni.delete(filtro);
+		for (VoceDiListinoCorriereScaglioni voce :vociScaglioni) {
+			boolean partialUpdate = managerVociScaglioni.insert(voce);
+			if (!partialUpdate)
+				update = false;
+		}
+		return update;
+	}
+	
+	public boolean aggiornaVoceDiListinoScaglioniRipetuti(VoceDiListinoCorriereScaglioniRipetuti voceScaglioni) {
+		boolean update = managerVociScaglioniRipetuti.update(voceScaglioni);
+		return update;
+	}
+
+	public VoceDiListinoCorriereFissa caricaVoceFissa(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereFissa filtro = new VoceDiListinoCorriereFissa();
+		filtro.setId(voce.getId());
+		VoceDiListinoCorriereFissa voceFissa = managerVociFisse.getEntity(filtro);
+		return voceFissa;
+	}
+
+	public VoceDiListinoCorrierePercentuale caricaVocePercentuale(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorrierePercentuale filtro = new VoceDiListinoCorrierePercentuale();
+		filtro.setId(voce.getId());
+		VoceDiListinoCorrierePercentuale vocePercentuale = managerVociPercentuali.getEntity(filtro);
+		return vocePercentuale;
+	}
+
+	public VoceDiListinoCorriereProporzionale caricaVoceProporzionale(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereProporzionale filtro = new VoceDiListinoCorriereProporzionale();
+		filtro.setId(voce.getId());
+		VoceDiListinoCorriereProporzionale voceProporzionale = managerVociProporzionali.getEntity(filtro);
+		return voceProporzionale;
+	}
+
+	public List<VoceDiListinoCorriereScaglioni> caricaVociScaglioni(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereScaglioni filtro = new VoceDiListinoCorriereScaglioni();
+		filtro.setId(voce.getId());
+		List<VoceDiListinoCorriereScaglioni> vociScaglioni = managerVociScaglioni.getEntities(filtro);
+		return vociScaglioni;
+	}
+	
+	public VoceDiListinoCorriereScaglioniRipetuti caricaVoceScaglioniRipetuti(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereScaglioniRipetuti filtro = new VoceDiListinoCorriereScaglioniRipetuti();
+		filtro.setId(voce.getId());
+		VoceDiListinoCorriereScaglioniRipetuti voceScaglioniRipetuti = managerVociScaglioniRipetuti.getEntity(filtro);
+		return voceScaglioniRipetuti;
+	}
+
+	public boolean eliminaListino(ListinoCorriere listino) {
+		int eliminazioni = managerListini.delete(listino);
+		boolean eliminazione = eliminazioni == 1;
+		if (eliminazione) {
+			listini.remove(listino);
+		}
+		return eliminazione;
+	}
+
+	public boolean eliminaVoceDiListino(VoceDiListinoCorriere voce) {
+		int eliminazione = managerVociDiListino.delete(voce);
+		return eliminazione == 1;
+	}
+
+	public ListinoCorriere getListinoCorriere(Integer idListinoCorriere) {
+		ListinoCorriere listino = null;
+		for (ListinoCorriere l : getListiniCorrieri()) {
+			if (l.getId().equals(idListinoCorriere)) {
+				listino = l;
+				break;
+			}
+		}
+		return listino;
+	}
+
+	public boolean copiaListino(ListinoCorriere listino) {
+		boolean copiato = true;
+		ListinoCorriere copia = new ListinoCorriere();
+		copia.setIdCorriere(listino.getIdCorriere());
+		copia.setNome("Copia di " + listino.getNome());
+		copia.setDescrizione(listino.getDescrizione());
+		copia.setTipo(listino.getTipo());
+		int idListinoCopia = managerListini.insertAndReturnID(copia);
+		if (idListinoCopia != -1) {
+			copia.setId(idListinoCopia);
+			VoceDiListinoCorriere filtroVoci = new VoceDiListinoCorriere();
+			filtroVoci.setIdListino(listino.getId());
+			List<VoceDiListinoCorriere> voci = managerVociDiListino.getEntities(filtroVoci);
+			for (VoceDiListinoCorriere voce : voci) {
+				VoceDiListinoCorriere nuovaVoce = new VoceDiListinoCorriere();
+				nuovaVoce.setIdListino(idListinoCopia);
+				nuovaVoce.setAmbito(voce.getAmbito());
+				nuovaVoce.setDescrizione(voce.getDescrizione());
+				nuovaVoce.setNome(voce.getNome());
+				nuovaVoce.setTipo(voce.getTipo());
+				int idVoceCopia = managerVociDiListino.insertAndReturnID(nuovaVoce);
+				switch (voce.getTipo()) {
+					case AlgoritmoFisso.NOME : {copiato = copiaVoceFissa(idVoceCopia, voce); break;}
+					case AlgoritmoProporzionale.NOME : {copiato = copiaVoceProporzionale(idVoceCopia, voce); break;}
+					case AlgoritmoScaglioni.NOME : {copiato = copiaVociScaglioni(idVoceCopia, voce); break;}
+					case AlgoritmoScaglioniRipetuti.NOME : {copiato = copiaVociScaglioniRipetuti(idVoceCopia, voce); break;}
+					case AlgoritmoPercentuale.NOME : {copiato = copiaVocePercentuale(idVoceCopia, voce); break;}
+					default : break;
+				}
+			}
+		} else {
+			copiato = false;
+		}
+		if (copiato)
+			listini.add(copia);
+		return copiato;
+	}
+
+	private boolean copiaVocePercentuale(int idVoceCopia, VoceDiListinoCorriere voce) {
+		VoceDiListinoCorrierePercentuale percentuale = caricaVocePercentuale(voce);
+		VoceDiListinoCorrierePercentuale copia = new VoceDiListinoCorrierePercentuale();
+		copia.setId(idVoceCopia);
+		copia.setTipo(percentuale.getTipo());
+		copia.setValore(percentuale.getValore());
+		copia.setMassimo(percentuale.getMassimo());
+		copia.setMinimo(percentuale.getMinimo());
+		boolean copiato = managerVociPercentuali.insert(copia);
+		return copiato;
+	}
+
+	private boolean copiaVociScaglioniRipetuti(int idVoceCopia, VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereScaglioniRipetuti voceSR = caricaVoceScaglioniRipetuti(voce);
+		VoceDiListinoCorriereScaglioniRipetuti copia = new VoceDiListinoCorriereScaglioniRipetuti();
+		copia.setId(idVoceCopia);
+		copia.setTipo(voceSR.getTipo());
+		copia.setValore(voceSR.getValore());
+		copia.setIntervallo(voceSR.getIntervallo());
+		copia.setMinimo(voceSR.getMinimo());
+		copia.setMassimo(voceSR.getMassimo());
+		boolean copiato = managerVociScaglioniRipetuti.insert(copia);
+		return copiato;
+	}
+
+	private boolean copiaVociScaglioni(int idVoceCopia, VoceDiListinoCorriere voce) {
+		int copiate = 0;
+		List<VoceDiListinoCorriereScaglioni> voci = caricaVociScaglioni(voce);
+		for (VoceDiListinoCorriereScaglioni voceScaglioni : voci) {
+			VoceDiListinoCorriereScaglioni copia = new VoceDiListinoCorriereScaglioni();
+			copia.setId(idVoceCopia);
+			copia.setTipo(voceScaglioni.getTipo());
+			copia.setValore(voceScaglioni.getValore());
+			copia.setInizio(voceScaglioni.getInizio());
+			copia.setFine(voceScaglioni.getFine());
+			boolean copiato = managerVociScaglioni.insert(copia);
+			if (copiato)
+				copiate += 1;
+		}
+		boolean copiato = copiate == voci.size();
+		return copiato;
+	}
+
+	private boolean copiaVoceProporzionale(int idVoceCopia, VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereProporzionale proporzionale = caricaVoceProporzionale(voce);
+		VoceDiListinoCorriereProporzionale copia = new VoceDiListinoCorriereProporzionale();
+		copia.setId(idVoceCopia);
+		copia.setMassimo(proporzionale.getMassimo());
+		copia.setMinimo(proporzionale.getMinimo());
+		copia.setTipo(proporzionale.getTipo());
+		copia.setValore(proporzionale.getValore());
+		boolean copiato = managerVociProporzionali.insert(copia);
+		return copiato;
+	}
+
+	private boolean copiaVoceFissa(int idVoceCopia, VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereFissa fissa = caricaVoceFissa(voce);
+		VoceDiListinoCorriereFissa copia = new VoceDiListinoCorriereFissa();
+		copia.setId(idVoceCopia);
+		copia.setValore(fissa.getValore());
+		boolean copiato = managerVociFisse.insert(copia);
+		return copiato;
+	}
+	
+	private String getNomeFile(ListinoCorriere listino, String path) {
+		String nomeListino = listino.getNome();
+		String estensione = ".xls";
+		String nomeFile = path + "\\"  + nomeListino + estensione;
+		return nomeFile;
+	}
+
+	public void esportaListino(ListinoCorriere listino, String path) {
+		String nomeFile = getNomeFile(listino, path);
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		boolean successo = false;
+		if (workbook != null) {
+			workbook.creaFoglio(listino.getNome());
+			//Titolo - riga 1
+			workbook.aggiungiTitolo(listino.getNome(), 0, 0, listino.getNome());
+			//Sotto titolo, tipo e descrizione - riga 2
+			workbook.aggiungiSottoTitolo(listino.getNome(), 0, 1, "Tipo: " + TipoListino.getTipo(listino.getTipo()));
+			workbook.aggiungiSottoTitolo(listino.getNome(), 1, 1, listino.getDescrizione());
+			//Nomi delle colonne per le voci di listino, salto una riga
+			workbook.aggiungiSottoTitolo(listino.getNome(), 0, 3, "Voce");
+			workbook.aggiungiSottoTitolo(listino.getNome(), 1, 3, "Ambito");
+			workbook.aggiungiSottoTitolo(listino.getNome(), 2, 3, "Tipo Calcolo");
+			workbook.aggiungiSottoTitolo(listino.getNome(), 3, 3, "Valori");
+			//Inserisco le voci di listino
+			int riga = 4;
+			for (VoceDiListinoCorriere voce : getVociDiListino(listino)) {
+				workbook.aggiungiTesto(listino.getNome(), 0, riga, voce.getNome());
+				workbook.aggiungiTesto(listino.getNome(), 1, riga, getDescrizioneAmbito(voce));
+				workbook.aggiungiTesto(listino.getNome(), 2, riga, voce.getTipo());
+				List<String> valori = getDescrizioneValori(voce);
+				for (String valore : valori) {
+					workbook.aggiungiTesto(listino.getNome(), 3, riga, valore);
+					riga += 1;
+				}
+			}
+			successo = workbook.salvaEChiudi();
+			
+		}
+		if (successo) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file:\r\n" + nomeFile);
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare il listino.");
+		}
+	}
+	
+	private String getDescrizioneAmbito(VoceDiListinoCorriere voce) {
+		AmbitoDiTrasporto ambito = AmbitoDiTrasporto.getAmbito(voce.getAmbito());
+		String nomeAmbito = ambito.getNome();
+		return nomeAmbito;
+	}
+	
+	private List<String> getDescrizioneValori(VoceDiListinoCorriere voce) {
+		List<String> valori = new LinkedList<String>();
+		switch (voce.getTipo()) {
+			case AlgoritmoFisso.NOME : {valori.add(stampaVoceFissa(voce)); break;}
+			case AlgoritmoProporzionale.NOME : {valori.addAll(stampaVoceProporzionale(voce)); break;}
+			case AlgoritmoScaglioni.NOME : {valori.addAll(stampaVociScaglioni(voce)); break;}
+			case AlgoritmoScaglioniRipetuti.NOME : {valori.addAll(stampaVoceScaglioniRipetuti(voce)); break;}
+			case AlgoritmoPercentuale.NOME : {valori.addAll(stampaVocePercentuale(voce)); break;}
+			default : break;
+		}
+		return valori;
+	}
+	
+	private String stampaVoceFissa(VoceDiListinoCorriere voce) {
+		VoceDiListinoCorriereFissa fissa = caricaVoceFissa(voce);
+		String stampa = Decorator.getEuroValue(fissa.getValore());
+		return stampa;
+	}
+	
+	private List<String> stampaVoceProporzionale(VoceDiListinoCorriere voce) {
+		List<String> valori = new LinkedList<String>();
+		VoceDiListinoCorriereProporzionale proporzionale = caricaVoceProporzionale(voce);
+		String tipo = "a: " + proporzionale.getTipo();
+		valori.add(tipo);
+		String stampa = " " + Decorator.getEuroValue(proporzionale.getValore());
+		if (proporzionale.getMinimo() != null)
+			stampa += " minimo: " + proporzionale.getMinimo();
+		if (proporzionale.getMassimo() != null)
+			stampa += " massimo: " + proporzionale.getMassimo();
+		valori.add(stampa);
+		return valori;
+	}
+	
+	private List<String> stampaVocePercentuale(VoceDiListinoCorriere voce) {
+		List<String> valori = new LinkedList<String>();
+		VoceDiListinoCorrierePercentuale percentuale = caricaVocePercentuale(voce);
+		String tipo = "Calcolato su: " + percentuale.getTipo();
+		valori.add(tipo);
+		String stampa = percentuale.getValore() + " %";
+		if (percentuale.getMinimo() != null)
+			stampa += " minimo: " + Decorator.getEuroValue(percentuale.getMinimo());
+		if (percentuale.getMassimo() != null)
+			stampa += " massimo: " + Decorator.getEuroValue(percentuale.getMassimo());
+		valori.add(stampa);
+		return valori;
+	}
+	
+	private List<String> stampaVoceScaglioniRipetuti(VoceDiListinoCorriere voce) {
+		List<String> valori = new LinkedList<String>();
+		VoceDiListinoCorriereScaglioniRipetuti sr = caricaVoceScaglioniRipetuti(voce);
+		String tipo = sr.getTipo();
+		String um = (tipo.equals("COLLI")) ? " Colli" : " Kg";
+		valori.add("Calcolato su: " + tipo);
+		String stampa = Decorator.getEuroValue(sr.getValore());
+		stampa += " ogni " + sr.getIntervallo() + um;
+		if (sr.getMinimo() != null)
+			stampa += " minimo: " + sr.getMinimo() + um;
+		if (sr.getMassimo() != null)
+			stampa += " massimo: " + sr.getMassimo() + um;
+		valori.add(stampa);
+		return valori;
+	}
+	
+	private List<String> stampaVociScaglioni(VoceDiListinoCorriere voce) {
+		List<String> valori = new LinkedList<String>();
+		List<VoceDiListinoCorriereScaglioni> voci = caricaVociScaglioni(voce);
+		String tipo = voci.get(0).getTipo();
+		String um = (tipo.equals("COLLI")) ? " Colli" : " Kg";
+		valori.add("Calcolato su: " + tipo);
+		for (VoceDiListinoCorriereScaglioni v : voci) {
+			String stampa = " da: " + v.getInizio() + um;
+			stampa += " a: " + v.getFine() + um;
+			stampa += " = " + Decorator.getEuroValue(v.getValore());
+			valori.add(stampa);
+		}
+		return valori;
+	}
+
+}

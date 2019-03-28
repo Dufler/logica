@@ -1,0 +1,94 @@
+package it.ltc.logica.gui.container;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+
+import it.ltc.logica.gui.decoration.Decorator;
+
+/**
+ * Classe estesa da dialog che servono a selezionare un'elemento
+ * @author Damiano
+ *
+ * @param <T> Il tipo di elemento da selezionare.
+ */
+public abstract class DialogSelezione<T> extends Dialog {
+	
+	public static final String OK_LABEL = "Ok";
+	public static final String CANCEL_LABEL = "Annulla";
+	
+	private String titolo;
+	private Composite container;
+
+	public DialogSelezione(String title) {
+		super(Display.getDefault().getActiveShell());
+		titolo = title;
+		setDefaultImage(Decorator.getImage(Decorator.WIZARD_16X16));
+	}
+	
+	@Override
+    protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(titolo);
+    }
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(1, false));
+		
+		aggiungiElementiGrafici(container);
+		
+		caricaModel();
+
+		return container;
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		createButton(parent, IDialogConstants.OK_ID, OK_LABEL, false);
+		createButton(parent, IDialogConstants.CANCEL_ID, CANCEL_LABEL, true);
+	}
+	
+	@Override
+	protected void okPressed() {
+		if (getSelezione() != null) {
+			super.okPressed();
+		}
+	}
+	
+	/**
+	 * Apre la dialog e restituisce il valore selezionato dall'utente.
+	 * Viene restituito <code>null</code> se l'utente ha cliccato su <code>Annulla</code> o ha chiuso la Dialog.
+	 * @return
+	 */
+	public T apri() {
+		T selectedValue = null;
+		int returnCode = open();
+		if (returnCode == Dialog.OK) 
+			selectedValue = getSelezione();
+		return selectedValue;
+	}
+	
+	/**
+	 * Aggiungere qui gli elementi grafici che compongono la dialog.
+	 * @param container
+	 */
+	public abstract void aggiungiElementiGrafici(Composite container);
+	
+	/**
+	 * Carica le informazioni nella maschera
+	 */
+	public abstract void caricaModel();
+	
+	/**
+	 * Recupera la selezione dell'utente
+	 * @return
+	 */
+	public abstract T getSelezione();
+
+}

@@ -1,0 +1,42 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.Contrassegno;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ContrassegnoSuperioreASeimilaCinquecentoEuro implements IAmbito {
+
+	public static final String CODICE = "CONTRASSEGNO_6500S";
+	private static ContrassegnoSuperioreASeimilaCinquecentoEuro instance;
+	
+	private ContrassegnoSuperioreASeimilaCinquecentoEuro() {}
+	
+	public static ContrassegnoSuperioreASeimilaCinquecentoEuro getInstance() {
+		if (instance == null) {
+			instance = new ContrassegnoSuperioreASeimilaCinquecentoEuro();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Contrassegno contrassegno = spedizione.getContrassegno();
+		boolean applicabile = (contrassegno != null && contrassegno.getValore() != null && contrassegno.getValore() > 6500);
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		Contrassegno contrassegno = spedizione.getContrassegno();
+		double valore = contrassegno.getValore();
+		if (contrassegno.getAnnullato())
+			valore = 0;
+		return valore;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

@@ -1,0 +1,210 @@
+package it.ltc.logica.gui.common.composite.fatturazione;
+
+import java.util.Date;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.ControllerCoordinateBancarie;
+import it.ltc.logica.common.controller.sistema.ControllerCommesse;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.CoordinateBancarie;
+import it.ltc.logica.database.model.centrale.fatturazione.ModalitaPagamentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura.Iva;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.DateField;
+import it.ltc.logica.gui.input.TextForDescription;
+import it.ltc.logica.gui.input.TextForInteger;
+import it.ltc.logica.gui.input.TextForString;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+
+public class CompositeDatiFatturazione extends Gruppo {
+
+	private static final String title = "Dati fattura";
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<AmbitoFattura> comboAmbito;
+	private ComboBox<ModalitaPagamentoFattura> comboPagamento;
+	private ComboBox<CoordinateBancarie> comboCoordinate;
+	private TextForString textDescrizione;
+	
+	private TextForInteger textNumeroFattura;
+	private TextForDescription textNote;
+	private DateField dateEmissione;
+	private ComboBox<Iva> comboIva;
+	
+	public CompositeDatiFatturazione(ParentValidationHandler parentValidator, Composite parent) {
+		super(parentValidator, parent, title);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		Label lblCommessa = new Label(this, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(ControllerCommesse.getInstance().getTutteCommesse());
+		comboCommessa.setEnabled(false);
+		
+		new SpacerLabel(this);
+		
+		Label lblAmbito = new Label(this, SWT.NONE);
+		lblAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAmbito.setText("Ambito:");
+		
+		comboAmbito = new ComboBox<AmbitoFattura>(this);
+		comboAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboAmbito.setItems(ControllerAmbitiFatturazione.getInstance().getAmbiti());
+		comboAmbito.setEnabled(false);
+		
+		new SpacerLabel(this);
+		
+		Label lblPagamento = new Label(this, SWT.NONE);
+		lblPagamento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPagamento.setText("Modalità Pagamento: ");
+		
+		comboPagamento = new ComboBox<ModalitaPagamentoFattura>(this);
+		comboPagamento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboPagamento.setItems(ModalitaPagamentoFattura.values());
+		
+		new SpacerLabel(this);
+		
+		Label lblCoordinatePagamento = new Label(this, SWT.NONE);
+		lblCoordinatePagamento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCoordinatePagamento.setText("Coordinate Pagamento: ");
+		
+		comboCoordinate = new ComboBox<CoordinateBancarie>(this);
+		comboCoordinate.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCoordinate.setItems(ControllerCoordinateBancarie.getInstance().getCoordinate());
+		
+		new SpacerLabel(this);
+		
+		Label lblIva = new Label(this, SWT.NONE);
+		lblIva.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblIva.setText("IVA: ");
+		
+		comboIva = new ComboBox<Iva>(this);
+		comboIva.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboIva.setItems(Iva.values());
+		
+		new SpacerLabel(this);
+		
+		Label lblDataEmissione = new Label(this, SWT.NONE);
+		lblDataEmissione.setText("Data emissione: ");
+		
+		dateEmissione = new DateField(this);
+		
+		new SpacerLabel(this);
+		
+		Label lblNumeroFattura = new Label(this, SWT.NONE);
+		lblNumeroFattura.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNumeroFattura.setText("Numero fattura: ");
+		
+		textNumeroFattura = new TextForInteger(this);
+		textNumeroFattura.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
+		new SpacerLabel(this);
+		
+		Label lblDescrizioneFattura = new Label(this, SWT.NONE);
+		lblDescrizioneFattura.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizioneFattura.setText("Descrizione Fattura: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER | SWT.MULTI | SWT.WRAP, null, 250);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		new SpacerLabel(this);
+		
+		Label lblNote = new Label(this, SWT.NONE);
+		lblNote.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblNote.setText("Note:");
+		
+		textNote = new TextForDescription(this);
+		textNote.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+
+		new SpacerLabel(this);
+	}
+	
+	public void setCommessa(Commessa value) {
+		comboCommessa.setSelectedValue(value);
+	}
+	
+	public Commessa getCommessa() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public void setAmbito(AmbitoFattura value) {
+		comboAmbito.setSelectedValue(value);
+	}
+	
+	public AmbitoFattura getAmbito() {
+		return comboAmbito.getSelectedValue();
+	}
+	
+	public void setModalitaPagamaneto(ModalitaPagamentoFattura value) {
+		comboPagamento.setSelectedValue(value);
+	}
+	
+	public ModalitaPagamentoFattura getModalitaPagamento() {
+		return comboPagamento.getSelectedValue();
+	}
+	
+	public void setCoordinatePagamento(CoordinateBancarie value) {
+		comboCoordinate.setSelectedValue(value);
+	}
+	
+	public CoordinateBancarie getCoordinatePagamento() {
+		return comboCoordinate.getSelectedValue();
+	}
+	
+	public void setDescrizione(String value) {
+		textDescrizione.setText(value);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+	
+	public void setNumeroFattura(int value) {
+		textNumeroFattura.setValue(value);
+	}
+	
+	public int getNumeroFattura() {
+		return textNumeroFattura.getValue();
+	}
+	
+	public void setNote(String value) {
+		textNote.setText(value);
+	}
+	
+	public String getNote() {
+		return textNote.getText();
+	}
+	
+	public void setDataEmissione(Date value) {
+		dateEmissione.setValue(value);
+	}
+	
+	public Date getDataEmissione() {
+		return dateEmissione.getValue();
+	}
+	
+	public void setIva(Iva value) {
+		comboIva.setSelectedValue(value);
+	}
+	
+	public Iva getIva() {
+		return comboIva.getSelectedValue();
+	}
+
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_foneENvvEeaiePEhCmZ2wQ" featurename="children" parentElementId="it.ltc.logica.trasporti.gui.partsashcontainer.listafunzioni" positionInList="after:it.ltc.logica.trasporti.gui.report.part.funzionereport">
+    <elements xsi:type="basic:Part" xmi:id="_h9fqwNvvEeaiePEhCmZ2wQ" elementId="it.ltc.logica.trasporti.gui.preventivi.part.funzionepreventivi" contributionURI="bundleclass://it.ltc.logica.trasporti.gui.preventivi/it.ltc.logica.trasporti.gui.preventivi.parts.FunzionePreventiviPart" label="Funzione - Preventivi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi calcolare i preventivi di costo e ricavo per le spedizioni."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_1uGHcNvvEeaiePEhCmZ2wQ" featurename="children" parentElementId="it.ltc.logica.trasporti.gui.partstack.funzioni" positionInList="after:it.ltc.logica.trasporti.gui.report.part.report">
+    <elements xsi:type="basic:Part" xmi:id="_3MMdINvvEeaiePEhCmZ2wQ" elementId="it.ltc.logica.trasporti.gui.preventivi.part.preventivi" contributionURI="bundleclass://it.ltc.logica.trasporti.gui.preventivi/it.ltc.logica.trasporti.gui.preventivi.parts.PreventiviPart" label="Preventivi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi calcolare i preventivi di costo e ricavo per le spedizioni."/>
+  </fragments>
+</fragment:ModelFragments>

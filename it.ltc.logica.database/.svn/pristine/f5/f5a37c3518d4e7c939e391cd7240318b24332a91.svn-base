@@ -1,0 +1,110 @@
+package it.ltc.logica.database.model.centrale.listini;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoCorrierePercentuale extends Entity implements ValidEntity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "listino_corriere_voce_percentuale";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer idVoce;
+	private Double valore;
+	private Double valoreMinimo;
+	private Double valoreMassimo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_voce", "idVoce", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addDouble("valore_minimo", "valoreMinimo");
+			variabili.addDouble("valore_massimo", "valoreMassimo");
+		}
+		return variabili;
+	}
+	
+	@Override
+	public String toString() {
+		return "VoceDiListinoCorrierePercentuale [valore=" + valore + ", minimo=" + valoreMinimo + ", massimo=" + valoreMassimo + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idVoce == null) ? 0 : idVoce.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VoceDiListinoCorrierePercentuale other = (VoceDiListinoCorrierePercentuale) obj;
+		if (idVoce == null) {
+			if (other.idVoce != null)
+				return false;
+		} else if (!idVoce.equals(other.idVoce))
+			return false;
+		return true;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore percentuale deve essere valido e maggiore di 0.");
+		}
+		return esito;
+	}
+
+	public Integer getIdVoce() {
+		return idVoce;
+	}
+
+	public void setIdVoce(Integer id) {
+		this.idVoce = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	public Double getValoreMinimo() {
+		return valoreMinimo;
+	}
+
+	public void setValoreMinimo(Double valoreMinimo) {
+		this.valoreMinimo = valoreMinimo;
+	}
+
+	public Double getValoreMassimo() {
+		return valoreMassimo;
+	}
+
+	public void setValoreMassimo(Double valoreMassimo) {
+		this.valoreMassimo = valoreMassimo;
+	}
+
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_YiT9kFtCEeeO2ep1lYbkaA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_aIG2sFtCEeeO2ep1lYbkaA" elementId="it.ltc.logica.ufficio.gui.ingressi.part.funzioneingressi" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.ingressi/it.ltc.logica.ufficio.gui.ingressi.parts.FunzioneIngressiPart" label="Funzione - Ingressi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaBluSu_16x16.png" tooltip="Qui puoi gestire i carichi di merce in ingresso"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="__MqckFtEEeeO2ep1lYbkaA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_AWfLYFtFEeeO2ep1lYbkaA" elementId="it.ltc.logica.ufficio.gui.ingressi.part.ingressi" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.ingressi/it.ltc.logica.ufficio.gui.ingressi.parts.IngressiPart" label="Ingressi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaBluSu_16x16.png" tooltip="Qui puoi gestire la merce in ingresso."/>
+  </fragments>
+</fragment:ModelFragments>

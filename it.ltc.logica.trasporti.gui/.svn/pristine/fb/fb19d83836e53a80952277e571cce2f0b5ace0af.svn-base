@@ -1,0 +1,165 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+
+import it.ltc.logica.database.model.Spedizione;
+
+public class FiltroSpedizioni extends ViewerFilter {
+	
+	private Date da;
+	private Date a;
+	private Integer idCommessa;
+	private Integer idCorriere;
+	private Boolean contrassegno;
+	private String riferimento;
+
+	@Override
+	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		boolean toShow;
+		Spedizione spedizione = (Spedizione) element;
+//		boolean checkDa = checkDataDa(spedizione.getData());
+//		boolean checkA = checkDataA(spedizione.getData());
+//		boolean checkCommessa = checkCommessa(spedizione.getIdCommessa());
+//		boolean checkCorriere = checkCorriere(spedizione.getIdCorriere());
+//		boolean checkCotrassegno = checkCotrassegno(spedizione.getContrassegno());
+//		boolean checkRiferimento = checkRiferimento(spedizione);
+//		boolean toShow = checkDa && checkA && checkCommessa && checkCorriere && checkCotrassegno && checkRiferimento;
+		toShow = checkDataDa(spedizione.getData()) && checkDataA(spedizione.getData());
+		if (toShow) {
+			toShow = checkCommessa(spedizione.getIdCommessa());
+			if (toShow) {
+				toShow = checkCorriere(spedizione.getIdCorriere());
+				if (toShow) {
+					toShow = checkContrassegno(spedizione.getContrassegno());
+					if (toShow)
+						toShow = checkRiferimento(spedizione);
+				}
+			}
+		}
+		return toShow;
+	}
+
+	private boolean checkDataDa(Date dataSpedizione) {
+		boolean check = true;
+		if (da != null && da.after(dataSpedizione)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkDataA(Date dataSpedizione) {
+		boolean check = true;
+		if (a != null && a.before(dataSpedizione)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkCommessa(Integer id) {
+		boolean check = true;
+		if (idCommessa != null && !idCommessa.equals(id)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkCorriere(Integer id) {
+		boolean check = true;
+		if (idCorriere != null && !idCorriere.equals(id)) {
+			check = false;
+		}
+		return check;
+	}
+	
+	private boolean checkContrassegno(Boolean c) {
+		boolean check = true;
+		if (contrassegno != null) {
+			check = contrassegno.equals(c);
+		}
+		return check;
+	}
+	
+	private boolean checkRiferimento(Spedizione spedizione) {
+		boolean check = true;
+		if (riferimento != null && !riferimento.isEmpty()) {
+			check = false;
+			ArrayList<String> listaElementiDiRicerca = getElementiDiRicerca(spedizione);
+			for (String elementoDiRicerca : listaElementiDiRicerca) {
+				check = elementoDiRicerca.contains(riferimento);
+				if (check)
+					break;
+			}
+		}
+		return check;
+	}
+	
+	private ArrayList<String> getElementiDiRicerca(Spedizione spedizione) {
+		ArrayList<String> listaCheck = new ArrayList<String>();
+		listaCheck.add(spedizione.getLetteraDiVettura());
+		listaCheck.add(spedizione.getRiferimentoCliente());
+		listaCheck.add(spedizione.getRiferimentoMittente());
+		return listaCheck;
+	}
+	
+	public void resetFiltri() {
+		da = null;
+		a = null;
+		idCommessa = null;
+		idCorriere = null;
+		contrassegno = null;
+		riferimento = null;
+	}
+
+	public Date getDa() {
+		return da;
+	}
+
+	public void setDa(Date da) {
+		this.da = da;
+	}
+
+	public Date getA() {
+		return a;
+	}
+
+	public void setA(Date a) {
+		this.a = a;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public Boolean getContrassegno() {
+		return contrassegno;
+	}
+
+	public void setContrassegno(Boolean contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+
+	public String getRiferimento() {
+		return riferimento;
+	}
+
+	public void setRiferimento(String riferimento) {
+		this.riferimento = riferimento;
+	}
+
+}

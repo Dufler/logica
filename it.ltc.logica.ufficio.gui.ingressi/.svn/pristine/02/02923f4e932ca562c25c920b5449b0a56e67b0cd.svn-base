@@ -1,0 +1,83 @@
+package it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.common.controller.ingressi.ControllerIngressi;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoColloDettaglio;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
+import it.ltc.logica.database.model.composed.Carico;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+import it.ltc.logica.gui.wizard.WizardConRisultati;
+
+public class WizardNuovoIngresso extends WizardConRisultati {
+	
+	//Pagine
+	private final PaginaTestata testata;
+	private final PaginaDettaglio dettaglio;
+	private final PaginaDettaglioPerCollo dettaglioPerCollo;
+	private final PaginaRiepilogo riepilogo;
+	private final LinkedList<PaginaWizardRisultati> risultati;
+	
+	//Model
+	private final Carico nuovoCarico;
+	private final Ingresso ingresso;
+	private final List<IngressoDettaglio> dettagli;
+	private final List<IngressoColloDettaglio> dettagliPerCollo;
+
+	public WizardNuovoIngresso() {
+		setWindowTitle("Nuovo Carico");
+		//Inizializzo i model
+		nuovoCarico = new Carico();
+		ingresso = new Ingresso();
+		dettagli = new LinkedList<IngressoDettaglio>();
+		dettagliPerCollo = new LinkedList<IngressoColloDettaglio>();
+		nuovoCarico.setIngresso(ingresso);
+		nuovoCarico.setDettagli(dettagli);
+		nuovoCarico.setDettagliPerCollo(dettagliPerCollo);
+		//Inizializzo le pagine
+		testata = new PaginaTestata(ingresso);
+		dettaglio = new PaginaDettaglio(ingresso, dettagli);
+		dettaglioPerCollo = new PaginaDettaglioPerCollo(ingresso, dettagli, dettagliPerCollo);
+		riepilogo = new PaginaRiepilogo(ingresso);
+		risultati = new LinkedList<PaginaWizardRisultati>();
+		risultati.add(dettaglio);
+		risultati.add(dettaglioPerCollo);
+		risultati.add(riepilogo);
+	}
+
+	@Override
+	public void addPages() {
+		addPage(testata);
+		addPage(dettaglio);
+		addPage(dettaglioPerCollo);
+		addPage(riepilogo);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = null;
+		if (page.equals(testata)) {
+			nextPage = testata.isDettaglioPerCollo() ? dettaglioPerCollo : dettaglio;
+		} else if (page.equals(dettaglio) || page.equals(dettaglioPerCollo)) {
+			nextPage = riepilogo;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		return risultati;
+	}
+	
+	@Override
+	public boolean finisci() {
+		Ingresso nuovoIngresso = ControllerIngressi.getInstance().inserisciNuovoCarico(nuovoCarico);
+		boolean inserimento = nuovoIngresso != null;
+		return inserimento;
+	}
+
+}

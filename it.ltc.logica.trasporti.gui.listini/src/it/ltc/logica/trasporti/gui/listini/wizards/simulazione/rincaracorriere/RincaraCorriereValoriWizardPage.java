@@ -1,0 +1,156 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione.rincaracorriere;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.listini.ControllerListiniCorrieri;
+import it.ltc.logica.database.model.centrale.listini.ListinoCorriere;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForPercentage;
+import it.ltc.logica.gui.wizard.PaginaWizard;
+
+public class RincaraCorriereValoriWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuovo listino simulazione - propriet\u00E0";
+	private static final String descrizione = "Seleziona il listino corriere e scegli i valori delle maggiorazioni da applicare.\r\nAlcune voci con ambiti specifici non verranno copiate!";
+	
+	private static final String tooltipNoloBase = "Tutto quello che concerne il prezzo base del trasporto";
+	private static final String tooltipNoloExtra = "Tutto quello che riguarda i costi aggiuntivi legati al trasporto. Es. priority";
+	private static final String tooltipExtra = "Servizi aggiuntivi vari. Es. Prova di consegna";
+	private static final String tooltipContrassegno = "Tutti i costi legati al contrassegno.";
+	private static final String tooltipFuel = "Costo addizionale che potrebbe variare in base ai rincari sul carburante.";
+	private static final String tooltipISTAT = "Tutte le maggiorazioni legate alle maggiorazioni ISTAT.";
+
+	private ControllerListiniCorrieri controller;
+	private ListinoCorriere listinoCorriere;
+	private Double[] rincari;
+	
+	private ComboBox<ListinoCorriere> comboListini;
+	private TextForPercentage textNoloBase;
+	private TextForPercentage textNoloExtra;
+	private TextForPercentage textExtra;
+	private TextForPercentage textContrassegno;
+	private TextForPercentage textIstat;
+	private TextForPercentage textFuel;
+	
+	protected RincaraCorriereValoriWizardPage() {
+		super(titolo, descrizione, true);
+		controller = ControllerListiniCorrieri.getInstance();
+		rincari = new Double[6];
+	}
+	
+	public ListinoCorriere getListinoCorriere() {
+		return listinoCorriere;
+	}
+	
+	public Double[] getRincari() {
+		return rincari;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblSelezionaIlListino = new Label(container, SWT.NONE);
+		lblSelezionaIlListino.setText("Seleziona il listino corriere da copiare: ");
+		
+		comboListini = new ComboBox<ListinoCorriere>(container);
+		comboListini.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboListini.setItems(controller.getListini());
+		addChild(comboListini);
+		
+		Label lblInserisciIValori = new Label(container, SWT.NONE);
+		lblInserisciIValori.setText("Inserisci i valori di rincaro da applicare:");
+		
+		Composite compositeValori = new Composite(container, SWT.NONE);
+		compositeValori.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeValori.setLayout(new GridLayout(3, false));
+		
+		Label lblNoloBase = new Label(compositeValori, SWT.NONE);
+		lblNoloBase.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNoloBase.setBounds(0, 0, 55, 15);
+		lblNoloBase.setText("Nolo Base: ");
+		lblNoloBase.setToolTipText(tooltipNoloBase);
+		
+		textNoloBase = new TextForPercentage(compositeValori);
+		textNoloBase.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textNoloBase.setToolTipText(tooltipNoloBase);
+		addChild(textNoloBase);
+		
+		new SpacerLabel(compositeValori);
+		
+		Label lblNoloExtra = new Label(compositeValori, SWT.NONE);
+		lblNoloExtra.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNoloExtra.setText("Nolo Extra: ");
+		lblNoloExtra.setToolTipText(tooltipNoloExtra);
+		
+		textNoloExtra = new TextForPercentage(compositeValori);
+		textNoloExtra.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textNoloExtra.setToolTipText(tooltipNoloExtra);
+		addChild(textNoloExtra);
+		
+		new SpacerLabel(compositeValori);
+		
+		Label lblExtra = new Label(compositeValori, SWT.NONE);
+		lblExtra.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblExtra.setText("Extra: ");
+		lblExtra.setToolTipText(tooltipExtra);
+		
+		textExtra = new TextForPercentage(compositeValori);
+		textExtra.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textExtra.setToolTipText(tooltipExtra);
+		addChild(textExtra);
+
+		new SpacerLabel(compositeValori);
+		
+		Label lblContrassegno = new Label(compositeValori, SWT.NONE);
+		lblContrassegno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblContrassegno.setText("Contrassegno: ");
+		lblContrassegno.setToolTipText(tooltipContrassegno);
+		
+		textContrassegno = new TextForPercentage(compositeValori);
+		textContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textContrassegno.setToolTipText(tooltipContrassegno);
+		addChild(textContrassegno);
+
+		new SpacerLabel(compositeValori);
+		
+		Label lblFuel = new Label(compositeValori, SWT.NONE);
+		lblFuel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblFuel.setText("Fuel: ");
+		lblFuel.setToolTipText(tooltipFuel);
+		
+		textFuel = new TextForPercentage(compositeValori);
+		textFuel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFuel.setToolTipText(tooltipFuel);
+		
+		new SpacerLabel(compositeValori);
+		
+		Label lblIstat = new Label(compositeValori, SWT.NONE);
+		lblIstat.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblIstat.setText("Istat: ");
+		lblIstat.setToolTipText(tooltipISTAT);
+		
+		textIstat = new TextForPercentage(compositeValori);
+		textIstat.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textIstat.setToolTipText(tooltipISTAT);
+		addChild(textIstat);
+		
+		new SpacerLabel(compositeValori);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		listinoCorriere = comboListini.getSelectedValue();
+		rincari[0] = textNoloBase.getValue();
+		rincari[1] = textNoloExtra.getValue();
+		rincari[2] = textExtra.getValue();
+		rincari[3] = textContrassegno.getValue();
+		rincari[4] = textIstat.getValue();
+		rincari[5] = textFuel.getValue();
+	}
+}

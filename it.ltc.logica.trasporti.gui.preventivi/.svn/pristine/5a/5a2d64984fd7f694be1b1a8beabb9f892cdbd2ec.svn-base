@@ -1,0 +1,21 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia;
+
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+public class PreventivoSpedizioneFittiziaRisultatoWizardPage extends WizardPage {
+
+	public PreventivoSpedizioneFittiziaRisultatoWizardPage() {
+		super("wizardPage");
+		setTitle("Preventivo di costo e fatturazione per una spedizione");
+		setDescription("Il risultato del preventivo.");
+	}
+
+	public void createControl(Composite parent) {
+		Composite container = new Composite(parent, SWT.NULL);
+
+		setControl(container);
+	}
+
+}

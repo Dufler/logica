@@ -1,0 +1,228 @@
+package it.ltc.logica.database.orm;
+
+/**
+ * 
+ * @version 1.2
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class Column {
+	
+	//Tipi di dato
+	public static final int STRING = 0;
+	public static final int INT = 1;
+	public static final int DOUBLE = 2;
+	public static final int BOOLEAN = 3;
+	public static final int AUTOINCREMENT = 4;
+	public static final int DATE = 5;
+	
+	//Tipi di confronto
+	public static final int UGUALE = 0;
+	public static final int MAGGIORE = 1;
+	public static final int MINORE = 2;
+	public static final int LIKE = 3;
+	public static final int DIVERSO = 4;
+	
+	//Variabili d'istanza
+	private final String nomeColonna;
+	private final int tipoDato;
+	private final String nomeVariabile;
+	private final int operatoreConfronto;
+	private final boolean chiave;
+	private final boolean usaValoreDefault;
+	
+	/**
+	 * Costruttore di ogni oggetto Column.
+	 * Al momento dell'istanziazione devono essere passati:
+	 *  - il nome della colonna sul DB
+	 *  - il tipo di dato sul DB (la classe ha gia' dei valori default da utilizzare)
+	 *  - il nome della variabile nella classe Entity che modella la tabella
+	 *  
+	 *  es. DBColumn id = new DBColumn("ID", DBColumn.AUTOINCREMENT, "id")
+	 *  Gli oggetti DBColumn vanno aggiunti alla lista delle variabili dell'oggetto Entity nel metodo getVariabili()
+	 *  
+	 * @param nome Stringa che rappresenta il nome della colonna sul DB
+	 * @param tipo tipo di dato memorizzato nella colonna sul DB.
+	 * @param variabile Stringa che rappresenta il nome della variabile nella classe.
+	 * @throws IllegalArgumentException Se il tipo di dato specificato non è valido
+	 */
+	public Column(String nome, int tipo, String variabile) throws IllegalArgumentException {
+		if (tipo < 0 || tipo > 5)
+			throw new IllegalArgumentException("Il tipo di dato deve essere valido. Scegli fra quelli dentro la classe Column.");
+		nomeColonna = nome;
+		tipoDato = tipo;
+		String iniziale = variabile.substring(0, 1);
+		iniziale = iniziale.toUpperCase();
+		nomeVariabile = iniziale + variabile.substring(1);
+		operatoreConfronto = UGUALE;
+		if (tipo == AUTOINCREMENT)
+			chiave = true;
+		else
+			chiave = false;
+		usaValoreDefault = false;
+	}
+	
+	/**
+	 * Costruttore per oggetti Column per cui è possibile specificare se il campo fa parte della chiave.
+	 * Questo influenza metodi come l'update su un oggetto specifico.
+	 * @param nome Stringa che rappresenta il nome della colonna sul DB
+	 * @param tipo tipo tipo di dato memorizzato nella colonna sul DB.
+	 * @param variabile Stringa che rappresenta il nome della variabile nella classe.
+	 * @param key boolean che indica se questo campo fa parte della chiave della tabella.
+	 * @param key boolean che indica se per questo campo va inserito il valore di default indicato nello schema del DB.
+	 * @throws IllegalArgumentException Se il tipo di dato specificato non è valido
+	 */
+	public Column(String nome, int tipo, String variabile, boolean key, boolean defaultValue) throws IllegalArgumentException {
+		if (tipo < 0 || tipo > 5)
+			throw new IllegalArgumentException("Il tipo di dato deve essere valido. Scegli fra quelli dentro la classe Column.");
+		nomeColonna = nome;
+		tipoDato = tipo;
+		String iniziale = variabile.substring(0, 1);
+		iniziale = iniziale.toUpperCase();
+		nomeVariabile = iniziale + variabile.substring(1);
+		operatoreConfronto = UGUALE;
+		chiave = key;
+		usaValoreDefault = defaultValue;
+	}
+	
+	/**
+	 * Costruttore per oggetti Column da utilizzare nell'ambito della ricerca di oggetti sulla tabella.
+	 * E' necessario passare un operatore di confronto al costruttore.
+	 * I possibili operatori di confronto sono:
+	 * - UGUALE
+	 * - MINORE
+	 * - MAGGIORE
+	 * - DIVERSO
+	 * - LIKE
+	 * Non è possibile utilizzare un operatore qualsiasi per ogni tipo di dato. (es. LIKE è utilizzabile solo per un campo STRINGA)
+	 * @param nome Stringa che rappresenta il nome della colonna sul DB
+	 * @param tipo tipo tipo tipo di dato memorizzato nella colonna sul DB.
+	 * @param variabile Stringa che rappresenta il nome della variabile nella classe.
+	 * @param confronto Il tipo di operatore di confronto da utilizzare per questa Column
+	 * @throws IllegalArgumentException Se il tipo di dato specificato non è valido
+	 */
+	public Column(String nome, int tipo, String variabile, int confronto) throws IllegalArgumentException {
+		if (tipo < 0 || tipo > 5)
+			throw new IllegalArgumentException("Il tipo di dato deve essere valido. Scegli fra quelli dentro la classe Column.");
+		switch(confronto) {
+			case (UGUALE) : { break; }
+			case (DIVERSO) : { break; }
+			case (MAGGIORE) :
+			{
+				if (tipo != INT && tipo != DOUBLE && tipo != AUTOINCREMENT && tipo != DATE)
+					throw new IllegalArgumentException("L'operatore maggiore può essere usato solo per INT e DOUBLE");
+				break;
+			}
+			case (MINORE) :
+			{
+				if (tipo != INT && tipo != DOUBLE && tipo != AUTOINCREMENT && tipo != DATE)
+					throw new IllegalArgumentException("L'operatore minore può essere usato solo per INT e DOUBLE");
+				break;
+			}
+			case (LIKE) :
+			{
+				if (tipo != STRING)
+					throw new IllegalArgumentException("L'operatore LIKE può essere usato solo per STRING");
+				break;
+			}
+			default : throw new IllegalArgumentException("L'operatore deve essere valido. Scegli fra quelli dentro la classe Column.");
+		}
+		nomeColonna = nome;
+		tipoDato = tipo;
+		String iniziale = variabile.substring(0, 1);
+		iniziale = iniziale.toUpperCase();
+		nomeVariabile = iniziale + variabile.substring(1);
+		operatoreConfronto = confronto;
+		if (tipo == AUTOINCREMENT)
+			chiave = true;
+		else
+			chiave = false;
+		usaValoreDefault = false;
+	}
+	
+	/**
+	 * Restituisce il nome della colonna sul DB
+	 * @return una stringa che indica il nome della colonna
+	 */
+	public String getColonna() {
+		return nomeColonna;
+	}
+	
+	/**
+	 * Restituisce un numero intero che codifica il tipo di dato sul campo del DB.
+	 * I valori ammissibili sono variabili di classe per Column
+	 * @return un intero che codifica il tipo di dato
+	 */
+	public int getTipo() {
+		return tipoDato;
+	}
+	
+	/**
+	 * Il nome della variabile nell'oggetto Entity che mappa la tabella.
+	 * @return una stringa con il nome della variabile
+	 */
+	public String getVariabile() {
+		return nomeVariabile;
+	}
+	
+	/**
+	 * Restituisce un numero intero che codifica il tipo di operatore scelto per la colonna.
+	 * I valori ammissibili sono variabili di classe per Column
+	 * @return un intero che codifica il tipo di operatore
+	 */
+	public int getConfronto() {
+		return operatoreConfronto;
+	}
+	
+	/**
+	 * Restituisce la stringa SQL rappresentativa dell'operatore di confronto specificato
+	 * @return parte di una stringa utilizzabile in SQL
+	 */
+	public String getOperatoreConfronto() {
+		String operatore;
+		switch(operatoreConfronto) {
+			case (UGUALE) : { operatore = "="; break; }
+			case (DIVERSO) : { operatore = "<>"; break; }
+			case (MAGGIORE) : { operatore = ">"; break; }
+			case (MINORE) :	{ operatore = "<"; break; }
+			case (LIKE) : { operatore = "LIKE"; break; }
+			default : operatore = "=";
+		}
+		return operatore;
+	}
+	
+	/**
+	 * Restituisce il nome del metodo 'setter' collegato alla variabile d'interesse
+	 * @return una stringa che rappresenta il nome del metodo setter
+	 */
+	public String getSetter() {
+		String nomeMetodo = "set" + nomeVariabile;
+		return nomeMetodo;
+	}
+	
+	/**
+	 * Restituisce il nome del metodo 'getter' collegato alla variabile d'interesse
+	 * @return una stringa che rappresenta il nome del metodo getter
+	 */
+	public String getGetter() {
+		String nomeMetodo;
+//		if (tipoDato == BOOLEAN)
+//			nomeMetodo = "is" + nomeVariabile;
+//		else
+			nomeMetodo = "get" + nomeVariabile; 
+		return nomeMetodo;
+	}
+
+	/**
+	 * Specifica se il campo è chiave o meno per la tabella.
+	 * @return un boolean indicativo del fatto se questo è un campo chiave.
+	 */
+	public boolean isChiave() {
+		return chiave;
+	}
+
+	public boolean isUsaValoreDefault() {
+		return usaValoreDefault;
+	}
+
+}

@@ -1,0 +1,16 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.centrale.Spedizione;
+
+public class RiferimentoLabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		String riferimentoCliente = spedizione.getRiferimentoCliente();
+		//String riferimentoMittente = spedizione.getRiferimentoMittente();
+		return riferimentoCliente; // + " / " + riferimentoMittente;
+	}
+
+}

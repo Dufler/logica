@@ -1,0 +1,142 @@
+package it.ltc.logica.trasporti.gui.listini.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaVoceListinoCommessaFissa;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaVoceListinoCommessaPercentuale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaVoceListinoCommessaProporzionale;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaVoceListinoCommessaScaglioni;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaVoceListinoCommessaScaglioniRipetuti;
+
+public class TabellaVociListinoClienti extends Tabella<VoceDiListino> {
+	
+	private String filtroVociDiListino;
+	
+	private MenuItem modify;
+	private boolean permessoModifica;
+
+	public TabellaVociListinoClienti(Composite parent) {
+		super(parent, new OrdinatoreVociListiniClienti());
+		
+		aggiungiColonna("Voce", 100, new EtichettatoreVociListiniClienti(), 0);
+		aggiungiColonna("Ambito", 100, new EtichettatoreVociListiniClienti(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreVociListiniClienti(), 2);
+	}
+	
+	public void setFiltro(String filtro) {
+		filtroVociDiListino = filtro;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				VoceDiListino listino = (VoceDiListino) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroVociDiListino != null)
+					toShow = nome.contains(filtroVociDiListino);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	public void setPermessoModifica(boolean permesso) {
+		modify.setEnabled(permesso);
+		permessoModifica = permesso;
+	}
+	
+	private void apriDialogModifica() {
+		VoceDiListino voceSelezionata = getVoceDiListinoSelezionata();
+		if (voceSelezionata != null) {
+			apriModificaVoce(voceSelezionata);
+		}
+	}
+	
+	private VoceDiListino getVoceDiListinoSelezionata() {
+		VoceDiListino voceSelezionata = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			voceSelezionata = (VoceDiListino) selectedItem.getData();
+		}
+		return voceSelezionata;
+	}
+	
+	private void apriModificaVoce(VoceDiListino voce) {
+		TipoAlgoritmo tipoAlgoritmo = TipoAlgoritmo.getTipo(voce.getTipo());
+		int esito;
+		switch (tipoAlgoritmo) {
+			case FISSO : 
+			{
+				ProprietaVoceListinoCommessaFissa proprieta = new ProprietaVoceListinoCommessaFissa(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case PERCENTUALE :
+			{
+				ProprietaVoceListinoCommessaPercentuale proprieta = new ProprietaVoceListinoCommessaPercentuale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case PROPORZIONALE :
+			{
+				ProprietaVoceListinoCommessaProporzionale proprieta = new ProprietaVoceListinoCommessaProporzionale(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case SCAGLIONI :
+			{
+				ProprietaVoceListinoCommessaScaglioni proprieta = new ProprietaVoceListinoCommessaScaglioni(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			case SCAGLIONI_RIPETUTI :
+			{
+				ProprietaVoceListinoCommessaScaglioniRipetuti proprieta = new ProprietaVoceListinoCommessaScaglioniRipetuti(voce, permessoModifica);
+				esito = proprieta.open();
+				break;
+			}
+			default : esito = Dialog.CANCEL;
+		}
+		if (esito == Dialog.OK) {
+			refresh();
+		}
+	}
+
+}

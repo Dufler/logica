@@ -1,0 +1,230 @@
+package it.ltc.logica.database.model.centrale.indirizzi;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class Indirizzo extends Entity implements ValidEntity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "indirizzo";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private String ragioneSociale;
+	private String indirizzo;
+	private String cap;
+	private String localita;
+	private String provincia;
+	private String nazione;
+	private String telefono;
+	private String email;
+	private Boolean consegnaPrivato;
+	private Boolean consegnaAlPiano;
+	private Boolean consegnaGdo;
+	private Boolean consegnaAppuntamento;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("ragione_sociale", "ragioneSociale");
+			variabili.addString("indirizzo", "indirizzo");
+			variabili.addString("cap", "cap");
+			variabili.addString("localita", "localita");
+			variabili.addString("provincia", "provincia");
+			variabili.addString("nazione", "nazione");
+			variabili.addString("telefono", "telefono");
+			variabili.addString("email", "email");
+			variabili.addBoolean("consegna_privato", "consegnaPrivato", false, true);
+			variabili.addBoolean("consegna_al_piano", "consegnaAlPiano", false, true);
+			variabili.addBoolean("consegna_gdo", "consegnaGdo", false, true);
+			variabili.addBoolean("consegna_appuntamento", "consegnaAppuntamento", false, true);
+		}
+		return variabili;
+	}
+
+	@Override
+	public String toString() {
+		return "Indirizzo [ragioneSociale=" + ragioneSociale + ", indirizzo=" + indirizzo + ", cap=" + cap + ", localita=" + localita + ", provincia=" + provincia + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cap == null) ? 0 : cap.hashCode());
+		result = prime * result + ((indirizzo == null) ? 0 : indirizzo.hashCode());
+		result = prime * result + ((localita == null) ? 0 : localita.hashCode());
+		result = prime * result + ((provincia == null) ? 0 : provincia.hashCode());
+		result = prime * result + ((ragioneSociale == null) ? 0 : ragioneSociale.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Indirizzo other = (Indirizzo) obj;
+		if (cap == null) {
+			if (other.cap != null)
+				return false;
+		} else if (!cap.equals(other.cap))
+			return false;
+		if (indirizzo == null) {
+			if (other.indirizzo != null)
+				return false;
+		} else if (!indirizzo.equals(other.indirizzo))
+			return false;
+		if (localita == null) {
+			if (other.localita != null)
+				return false;
+		} else if (!localita.equals(other.localita))
+			return false;
+		if (provincia == null) {
+			if (other.provincia != null)
+				return false;
+		} else if (!provincia.equals(other.provincia))
+			return false;
+		if (ragioneSociale == null) {
+			if (other.ragioneSociale != null)
+				return false;
+		} else if (!ragioneSociale.equals(other.ragioneSociale))
+			return false;
+		return true;
+	}
+	
+	public boolean quasiUguali(Indirizzo indirizzo) {
+		String capIndirizzo = indirizzo.getCap();
+		String localitaIndirizzo = indirizzo.getLocalita();
+		boolean capUguali = cap.equals(capIndirizzo);
+		boolean localitaUguali = localita.equals(localitaIndirizzo);
+		boolean uguali = capUguali && localitaUguali;
+		return uguali;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		// TODO Auto-generated method stub
+		ValidationResult esito = ValidationResult.getValidResult();
+		return esito;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRagioneSociale() {
+		return ragioneSociale;
+	}
+
+	public void setRagioneSociale(String ragioneSociale) {
+		this.ragioneSociale = ragioneSociale;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getLocalita() {
+		return localita;
+	}
+
+	public void setLocalita(String localita) {
+		this.localita = localita;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getNazione() {
+		return nazione;
+	}
+
+	public void setNazione(String nazione) {
+		this.nazione = nazione;
+	}
+	
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Boolean getConsegnaPrivato() {
+		return consegnaPrivato;
+	}
+
+	public void setConsegnaPrivato(Boolean consegnaPrivato) {
+		this.consegnaPrivato = consegnaPrivato;
+	}
+
+	public Boolean getConsegnaAlPiano() {
+		return consegnaAlPiano;
+	}
+
+	public void setConsegnaAlPiano(Boolean consegnaPiano) {
+		this.consegnaAlPiano = consegnaPiano;
+	}
+
+	public Boolean getConsegnaGdo() {
+		return consegnaGdo;
+	}
+
+	public void setConsegnaGdo(Boolean consegnaGDO) {
+		this.consegnaGdo = consegnaGDO;
+	}
+
+	public Boolean getConsegnaAppuntamento() {
+		return consegnaAppuntamento;
+	}
+
+	public void setConsegnaAppuntamento(Boolean consegnaAppuntamento) {
+		this.consegnaAppuntamento = consegnaAppuntamento;
+	}
+
+}

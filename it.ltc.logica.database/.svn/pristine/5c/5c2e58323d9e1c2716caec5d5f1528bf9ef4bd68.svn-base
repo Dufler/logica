@@ -1,0 +1,787 @@
+package it.ltc.logica.database.orm;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.log4j.Logger;
+
+/**
+ * Questa classe viene utilizzata per gestire un tipo di oggetti sul DB.
+ * Esiste una corrispondenza biunivoca fra la classe e la tabella.
+ * Il tipo di classe viene scelto all'istanziazone dell'entity manager.
+ * Es. di utilizzo:
+ * EntityManager<myEntity> myManager = new EntityManager<myEntity>(myEntity.class);
+ * List<myEntity> oggetti = myManager.getEntities();
+ * 
+ * @version 1.11
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ * @param <T> la classe che modella la tabella, deve necessariamente estendere la classe Entity.
+ */
+public class EntityManager <T extends Entity> {
+	
+	protected static final String ERRORE_CHIUSURA_CONNESSIONE = "Errore nella chiusura della connessione: ";
+	
+	private static final long DEFAULT_CACHE_TIME = 0;
+	private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	
+	private final Class<T> classe;
+	protected final T istanza;
+	protected DBManager dbManager;
+	protected String entitiesQuery;
+	protected String entityQuery;
+	protected final List<T> cachedEntities;
+	protected T cachedEntity;
+	protected Date lastQueryTime;
+	protected long cacheTime;
+	private SimpleDateFormat dateFormatter;
+	private Logger logger;
+	
+	
+	public EntityManager(Class<T> c) {
+		classe = c;
+		istanza = getInstance();
+		entitiesQuery = "";
+		entityQuery = "";
+		cachedEntities = new LinkedList<T>();
+		cachedEntity = null;
+		cacheTime = DEFAULT_CACHE_TIME;
+		dateFormatter = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+		try {
+			dbManager = DBManager.getInstance();
+		} catch(InstantiationException e) {
+        	out("Fallita istanziazione DB: " + e.getMessage(), e);
+        }
+		logger = null;
+	}
+	
+	public EntityManager(Class<T> c, DBManager settings) {
+		classe = c;
+		istanza = getInstance();
+		entitiesQuery = "";
+		entityQuery = "";
+		cachedEntities = new LinkedList<T>();
+		cachedEntity = null;
+		cacheTime = DEFAULT_CACHE_TIME;
+		dateFormatter = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+		dbManager = settings;
+		logger = null;
+	}
+	
+	protected T getInstance() {
+		T oggetto = null;
+		try {
+			oggetto = classe.newInstance();
+		} catch(InstantiationException e) {
+        	System.out.println("Impossibile creare nuova istanza: " + e.getMessage());
+        } catch(IllegalAccessException e) {
+        	System.out.println("Accesso vietato: " + e.getMessage());
+        }
+		return oggetto;
+	}
+	
+	protected void out(String message) {
+		if (logger != null)
+			logger.info(message);
+		System.out.println(message);
+	}
+	
+	protected void out(String message, Exception e) {
+		if (logger != null)
+			logger.error(message);
+		System.out.println(message);
+		e.printStackTrace();
+	}
+	
+	private String adjustString(String value) {
+		value = value.replaceAll("'", "''");
+		return value;
+	}
+	
+	protected void setValues(T t, ResultSet r){
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+			try {
+				switch (variabile.getTipo()) {
+					case Column.STRING :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), String.class);
+						setter.invoke(t, r.getString(variabile.getColonna()));
+						break;
+					}
+					case Column.INT :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), Integer.class);
+						Integer value = r.getInt(variabile.getColonna());
+						if (r.wasNull()) {
+							value = null;
+						} 
+						setter.invoke(t, value);
+						break;
+					}
+					case Column.DOUBLE :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), Double.class);
+						Double value = r.getDouble(variabile.getColonna());
+						if (r.wasNull()) {
+							value = null;
+						}
+						setter.invoke(t, value);
+						break;
+					}
+					case Column.BOOLEAN :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), Boolean.class);
+						Boolean value = r.getBoolean(variabile.getColonna());
+						if (r.wasNull()) {
+							value = null;
+						} 
+						setter.invoke(t, value);
+						break;
+					}
+					case Column.AUTOINCREMENT :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), Integer.class);
+						Integer value = r.getInt(variabile.getColonna());
+						if (r.wasNull()) {
+							value = null;
+						}
+						setter.invoke(t, value);
+						break;
+					}
+					case Column.DATE :
+					{
+						Method setter = classe.getMethod(variabile.getSetter(), Date.class);
+						setter.invoke(t, r.getTimestamp(variabile.getColonna()));
+						break;
+					}
+					default : break;
+				}			
+			} catch (SQLException | InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+				out("Metodo setValues: " + e.getMessage(), e);
+			}
+		}
+	}
+	
+	protected String getCondition(T t) {
+		String sqlCondition = "WHERE 1 = 1 ";
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+			try {
+				Method getter = classe.getMethod(variabile.getGetter());
+				Object value = getter.invoke(t);
+				if (value != null) {
+					String condition = "";
+					boolean valueOk = true;
+					switch (variabile.getTipo()) {
+						case Column.STRING :
+						{
+							condition = value.toString().trim();
+							if (condition.isEmpty())
+								valueOk = false;
+							else {
+								condition = adjustString(condition);
+								if (variabile.getConfronto() == Column.LIKE)
+									condition = "%" + condition + "%";
+								condition = "'" + condition + "'";
+							}
+								
+							break;
+						}
+						case Column.INT :
+						{
+							condition = value.toString().trim();
+							if (condition.isEmpty())
+								valueOk = false;
+							break;
+						}
+						case Column.DOUBLE :
+						{
+							condition = value.toString().trim();
+							if (condition.isEmpty())
+								valueOk = false;
+							break;
+						}
+						case Column.BOOLEAN :
+						{
+							condition = value.toString().trim();
+							if (condition.isEmpty())
+								valueOk = false;
+							break;
+						}
+						case Column.AUTOINCREMENT :
+						{
+							condition = value.toString().trim();
+							if (condition.isEmpty() || condition.equals("0"))
+								valueOk = false;
+							break;
+						}
+						case Column.DATE :
+						{
+							Date date = (Date) value;
+							condition = dateFormatter.format(date);
+							if (condition == null || condition.isEmpty() || condition.endsWith("1970"))
+								valueOk = false;
+							else
+								condition = "'" + condition + "'";
+							break;
+						}
+						default : valueOk = false;
+					}
+					if (valueOk)
+						sqlCondition += " AND " + variabile.getColonna() + " " + variabile.getOperatoreConfronto() + " " + condition;
+				}
+			} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+				out("Metodo getCondition: " + e.getMessage(), e);
+			}
+		}
+		return sqlCondition;
+	}
+	
+	protected String getStrictCondition(T t) {
+		String sqlCondition = "";
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+//			if (variabile.getTipo() == Column.AUTOINCREMENT)
+			if (variabile.isChiave())
+			try {
+				Method getter = classe.getMethod(variabile.getGetter());
+				Object value = getter.invoke(t);
+				if (value != null) {
+					if (sqlCondition.isEmpty())
+						sqlCondition += "WHERE ";
+					sqlCondition += variabile.getColonna() + " = ";
+					if (variabile.getTipo() == Column.STRING)
+						sqlCondition += "'" + value.toString() + "'";
+					else
+						sqlCondition += value.toString();
+				}
+			} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+				out("Metodo getStrictCondition: " + e.getMessage(), e);
+			}
+		}
+		return sqlCondition;
+	}
+	
+	private String getUpdateValue(Object value, Column variabile) {
+		String update = "";
+		if (variabile.getConfronto() == Column.UGUALE) {
+			String condition = "";
+			boolean valueOk = true;
+			switch (variabile.getTipo()) {
+				case Column.STRING :
+				{
+					condition = value.toString().trim();
+					condition = adjustString(condition);
+					condition = "'" + condition + "'";
+					break;
+				}
+				case Column.INT :
+				{
+					condition = value.toString().trim();
+					if (condition.isEmpty())
+						valueOk = false;
+					break;
+				}
+				case Column.DOUBLE :
+				{
+					condition = value.toString().trim();
+					if (condition.isEmpty())
+						valueOk = false;
+					break;
+				}
+				case Column.BOOLEAN :
+				{
+					condition = value.toString().trim();
+					if (condition.isEmpty())
+						valueOk = false;
+					break;
+				}
+				case Column.AUTOINCREMENT :
+				{
+					valueOk = false;
+					break;
+				}
+				case Column.DATE :
+				{
+					Date date = (Date) value;
+					condition = dateFormatter.format(date);
+					if (condition == null || condition.isEmpty())
+						valueOk = false;
+					else
+						condition = "'" + condition + "'";
+					break;
+				}
+				default : valueOk = false;
+			}
+			if (valueOk)
+				update += variabile.getColonna() + " = " + condition + ", ";
+		}
+		return update;
+	}
+	
+	protected String getUpdate(T t) {
+		String sqlUpdate = "SET ";
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+			try {
+				Method getter = classe.getMethod(variabile.getGetter());
+				Object value = getter.invoke(t);
+				if (value != null) {
+					sqlUpdate += getUpdateValue(value, variabile);
+				}
+			} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+				out("Metodo getUpdate: " + e.getMessage(), e);
+			}
+		}
+		int index = sqlUpdate.lastIndexOf(',');
+		if (index != -1)
+			sqlUpdate = sqlUpdate.substring(0, index);
+		return sqlUpdate;
+	}
+	
+	protected String getUpdateWithNull(T t) {
+		String sqlUpdate = "SET ";
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+			//if (!variabile.isChiave()) {
+				try {
+					Method getter = classe.getMethod(variabile.getGetter());
+					Object value = getter.invoke(t);
+					if (value != null) {
+						sqlUpdate += getUpdateValue(value, variabile);
+					} else {
+						if (variabile.getConfronto() == Column.UGUALE)
+							sqlUpdate += variabile.getColonna() + " = NULL, ";
+					}
+				} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+					out("Metodo getUpdateWithNull: " + e.getMessage(), e);
+				}
+			//}
+		}
+		int index = sqlUpdate.lastIndexOf(',');
+		if (index != -1)
+			sqlUpdate = sqlUpdate.substring(0, index);
+		return sqlUpdate;
+	}
+	
+	protected String getInsert(T t) {
+		String sqlInsert = "(";
+		List<Column> variabili = t.getVariabili();
+		for (Column variabile : variabili) {
+			if (variabile.getTipo() != Column.AUTOINCREMENT && variabile.getConfronto() == Column.UGUALE)
+				sqlInsert += variabile.getColonna() + ", ";
+		}
+		int index = sqlInsert.lastIndexOf(',');
+		if (index != -1)
+			sqlInsert = sqlInsert.substring(0, index);
+		sqlInsert += ") VALUES (";
+		for (Column variabile : variabili) {
+			if (variabile.getConfronto() == Column.UGUALE) {
+				try {
+					Method getter = classe.getMethod(variabile.getGetter());
+					Object value = getter.invoke(t);
+					if (value != null) {
+						String condition;
+						switch (variabile.getTipo()) {
+							case Column.STRING :
+							{
+								condition = value.toString().trim();
+								condition = adjustString(condition);
+								break;
+							}
+							case Column.INT :
+							{
+								condition = value.toString().trim();
+								break;
+							}
+							case Column.DOUBLE :
+							{
+								condition = value.toString().trim();
+								break;
+							}
+							case Column.BOOLEAN :
+							{
+								condition = value.toString().trim();
+								break;
+							}
+							case Column.AUTOINCREMENT :
+							{
+								condition = null;
+								break;
+							}
+							case Column.DATE :
+							{
+								Date date = (Date) value;
+								condition = dateFormatter.format(date);
+								break;
+							}
+							default : condition = "DEFAULT";
+						}
+						if (condition != null) {
+							if (!(condition.equals("DEFAULT") || condition.equalsIgnoreCase("TRUE") || condition.equalsIgnoreCase("FALSE")))
+								condition = "'" + condition + "'";
+							sqlInsert += condition + ", ";
+						}					
+					} else if (variabile.isUsaValoreDefault()) {
+						sqlInsert += "DEFAULT, ";
+					} else {
+						if (variabile.getTipo() != Column.AUTOINCREMENT)
+							sqlInsert += "NULL, ";
+					}
+				} catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | SecurityException e) {
+					out("Metodo getInsert: " + e.getMessage(), e);
+				}
+			}
+		}
+		int secondIndex = sqlInsert.lastIndexOf(',');
+		if (secondIndex != -1)
+			sqlInsert = sqlInsert.substring(0, secondIndex);
+		sqlInsert += ")";
+		return sqlInsert;
+	}
+
+	/**
+	 * Inserisce nel DB l'oggetto. 
+	 * @param t l'oggetto da inserire.
+	 * @return l'esito dell'inserimento: true successo, false fallimento.
+	 */
+	public boolean insert(T t) {
+		boolean inserimento = false;
+		String query = "INSERT INTO " + istanza.getNomeTabella() + " " + getInsert(t);
+    	out(query);
+    	PoolableConnection connection = dbManager.getConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+			statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	int righeAggiornate = statement.executeUpdate();
+        	if (righeAggiornate > 0)
+        		inserimento = true;
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return inserimento;
+	}
+	
+	/**
+	 * Inserisce nel DB l'oggetto. 
+	 * @param t l'oggetto da inserire.
+	 * @return l'esito dell'inserimento: true successo, false fallimento.
+	 */
+	public int insertAndReturnID(T t) {
+		int inserimento = -1;
+		String query = "INSERT INTO " + istanza.getNomeTabella() + " " + getInsert(t);
+    	out(query);
+    	PoolableConnection connection = dbManager.getConnection();
+    	PreparedStatement statement = null;
+    	ResultSet resultSet = null;
+    	if (connection != null)	try {
+        	statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        	statement.executeUpdate();
+        	resultSet = statement.getGeneratedKeys();
+        	if (resultSet.next()) {
+        		inserimento = resultSet.getInt(1);
+        	}
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return inserimento;
+	}
+	
+	/**
+	 * Aggiorna il DB con le informazioni contenute nell'oggetto passato al metodo
+	 * @param update l'oggetto che viene utilizzato per aggiornare il DB, le informazioni in esso contenute 
+	 * 			sono utilizzate per l'aggiornamento
+	 * @param condition  l'oggetto usato per determinare le condizioni di aggiornamento nel WHERE
+	 * @return il numero di righe aggiornate nel DB
+	 */
+	public int update(T update, T condition) {
+		int righeAggiornate = 0;
+		String query = "UPDATE " + istanza.getNomeTabella() + " " +  getUpdate(update) + " " + getCondition(condition);
+    	out(query);
+    	PoolableConnection connection = dbManager.getConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+			statement = connection.prepareStatement(query);
+        	righeAggiornate = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return righeAggiornate;
+	}
+	
+	public boolean update(T t) {
+		boolean update = false;
+		String condition = getStrictCondition(t);
+		String query = "UPDATE " + istanza.getNomeTabella() + " " + getUpdateWithNull(t) + " " + condition;
+		out(query);
+		if (condition.isEmpty())
+			out("Attenzione, non sono presenti campi chiave! L'aggiornamento avra' esito negativo.");
+		PoolableConnection connection = dbManager.getConnection();
+		PreparedStatement statement = null;
+		if (connection != null && !condition.isEmpty()) try {		
+        	statement = connection.prepareStatement(query);
+        	int righeAggiornate = statement.executeUpdate();
+        	if (righeAggiornate == 1)
+        		update = true;
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return update;
+	}
+	
+	/**
+	 * Cancella nel DB tutte le righe corrispondenti alle informazioni dell'oggetto passato al metodo
+	 * @param t l'oggetto che viene utilizzato per aggiornare il DB, le informazioni in esso contenute 
+	 * 			sono utilizzate per determinare le condizioni di cancellazione
+	 * @return il numero di righe cancellate nel DB
+	 */
+	public int delete(T t) {
+		int righeAggiornate = 0;
+		String query = "DELETE FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	PoolableConnection connection = dbManager.getConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {
+        	statement = connection.prepareStatement(query);
+        	righeAggiornate = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return righeAggiornate;
+	}
+	
+	/**
+	 * Restituisce una lista di oggetti recuperati dal DB senza specificare condizioni
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public List<T> getEntities() {
+		String query = "SELECT * FROM " + istanza.getNomeTabella();
+		out(query);
+		Date now = new Date();
+    	if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		PoolableConnection connection = dbManager.getConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}
+		return cachedEntities;
+	}
+	
+	/**
+	 * Restituisce una lista di oggetti recuperati dal DB specificando le condizioni
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public List<T> getEntities(T t) {
+		String query = "SELECT * FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	Date now = new Date();
+    	if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		PoolableConnection connection = dbManager.getConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntities;
+	}
+	
+	/**
+	 * Restituisce un oggetto recuperato dal DB specificando le condizioni.
+	 * Da usare solo quando le condizioni fornite permettono di identificare con chiarezza un solo oggetto.
+	 * Nel caso in cui vengano recuperati piu' oggetti restituisce il primo della lista.
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public T getEntity(T t) {
+		return getEntity(t, false);
+	}
+	
+	/**
+	 * Restituisce un oggetto recuperato dal DB specificando le condizioni.
+	 * Da usare solo quando le condizioni fornite permettono di identificare con chiarezza un solo oggetto.
+	 * Se viene passato true per match e vengono recuperati piu' oggetti allora viene restituito un null.
+	 * @return una lista di oggetti recuperati dal DB
+	 */
+	public T getEntity(T t, boolean match) {
+		String query = "SELECT * FROM " + istanza.getNomeTabella() + " " + getCondition(t);
+    	out(query);
+    	Date now = new Date();
+    	if (!query.equals(entityQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntity = null;
+    		entityQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		PoolableConnection connection = dbManager.getConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	if (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntity = entity;
+            	}
+            	if (match && resultSet.next())
+            		cachedEntity = null;
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntity;
+	}
+	
+	/**
+	 * Metodo per eseguire codice SQL a scelta per aggiornare il DB.
+	 * @param updateQuery la query SQL da eseguire.
+	 * @return il numero di righe sul DB aggiornate.
+	 */
+	public int executeUpdate(String updateQuery) {
+		int rows = 0;
+		out(updateQuery);
+		PoolableConnection connection = dbManager.getConnection();
+    	PreparedStatement statement = null;
+    	if (connection != null)	try {       	
+        	statement = connection.prepareStatement(updateQuery);
+        	rows = statement.executeUpdate();
+		} catch(SQLException e) {
+        	out("Errore in lettura/scrittura DB: " + e.getMessage(), e);
+        } finally {
+        	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+        }
+		return rows;
+	}
+	
+	/**
+	 * Metodo per eseguire codice SQL a scelta per recuperare informazioni dal DB.
+	 * @param query la query SQL da eseguire.
+	 * @return la lista di oggetti recuperati dal DB.
+	 */
+	public List<T> executeQuery(String query) {
+		out(query);
+		Date now = new Date();
+		if (!query.equals(entitiesQuery) || (lastQueryTime.getTime() + cacheTime < now.getTime())) {
+    		cachedEntities.clear();
+    		entitiesQuery = query;
+    		lastQueryTime = new Date(now.getTime());
+    		PoolableConnection connection = dbManager.getConnection();
+    		PreparedStatement statement = null;
+    		ResultSet resultSet = null;
+    		if (connection != null)	try {      	
+            	statement = connection.prepareStatement(query);
+            	resultSet = statement.executeQuery();
+            	while (resultSet.next()) {
+            		T entity = getInstance();
+            		setValues(entity, resultSet);
+            		cachedEntities.add(entity);
+            	}
+            } catch(SQLException e) {
+            	out("Errore in lettura DB: " + e.getMessage(), e);
+            } finally {
+            	try {if (resultSet != null) resultSet.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (statement != null) statement.close();} catch(SQLException sqlEx) {out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            	try {if (connection != null) connection.close();} catch(SQLException sqlEx){out(ERRORE_CHIUSURA_CONNESSIONE, sqlEx);}
+            }
+    	}  
+		return cachedEntities;
+	}
+	
+	/**
+	 * Imposta la durata massima dei dati in cache.
+	 * Il deafult è 0 (nessuna cache) 
+	 * @param time il tempo in millisecondi.
+	 */
+	public void setCacheTime(long time) {
+		cacheTime = time;
+	}
+	
+	/**
+	 * Imposta il formato della data da utilizzare.
+	 * Il default è dd/MM/yyyy
+	 * Si rimanda al JavaDoc di SimpleDateFormat per maggiori informazioni.
+	 * @param format il formato da utilizzare.
+	 */
+	public void setDateFormat(String format) {
+		dateFormatter = new SimpleDateFormat(format);
+	}
+	
+	/**
+	 * Imposta il logger da utilizzare.
+	 * @param l il logger da utilizzare.
+	 */
+	public void setLogger(Logger l) {
+		logger = l;
+	}
+	
+	/**
+	 * Permette di specificare una particolare istanza di DB da usare.
+	 * Pu� risultare comodo per migliorare la performance quando bisonga passare spesso fra DB diversi.
+	 * @param settings l'istanza di DBManager da utilizzare.
+	 */
+	public void setSettings(DBManager settings) {
+		dbManager = settings;
+	}
+}
+

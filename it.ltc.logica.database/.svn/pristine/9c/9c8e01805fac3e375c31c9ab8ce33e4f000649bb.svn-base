@@ -1,0 +1,104 @@
+package it.ltc.logica.database.model.sqlserver.ltc;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class CorrieriPerCliente extends Entity {
+	
+	private static final String nomeTabella = "dbo.CorrieriPerCliente";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private String corriere;
+	private String cliente;
+	private String codiceCliente;
+	private String mailCorriere;
+	private String mailResponsabile;
+	private String percorsoFile;
+	private String percorsoStorico;
+
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("Corriere", "corriere");
+			variabili.addString("Cliente", "cliente");
+			variabili.addString("CodiceCliente", "codiceCliente");
+			variabili.addString("MailCorriere", "mailCorriere");
+			variabili.addString("MailResponsabile", "mailResponsabile");
+			variabili.addString("CartellaFile", "percorsoFile");
+			variabili.addString("CartellaStorico", "percorsoStorico");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(String corriere) {
+		this.corriere = corriere;
+	}
+
+	public String getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(String cliente) {
+		this.cliente = cliente;
+	}
+
+	public String getCodiceCliente() {
+		return codiceCliente;
+	}
+
+	public void setCodiceCliente(String codiceCliente) {
+		this.codiceCliente = codiceCliente;
+	}
+
+	public String getMailCorriere() {
+		return mailCorriere;
+	}
+
+	public void setMailCorriere(String mailCorriere) {
+		this.mailCorriere = mailCorriere;
+	}
+	
+	public String getMailResponsabile() {
+		return mailResponsabile;
+	}
+
+	public void setMailResponsabile(String mailResponsabile) {
+		this.mailResponsabile = mailResponsabile;
+	}
+
+	public String getPercorsoFile() {
+		return percorsoFile;
+	}
+
+	public void setPercorsoFile(String percorsoFile) {
+		this.percorsoFile = percorsoFile;
+	}
+
+	public String getPercorsoStorico() {
+		return percorsoStorico;
+	}
+
+	public void setPercorsoStorico(String percorsoStorico) {
+		this.percorsoStorico = percorsoStorico;
+	}
+	
+}

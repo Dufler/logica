@@ -1,0 +1,62 @@
+package it.ltc.logica.gui.container;
+
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+/**
+ * Classe astratta da implementare nei punti di codice dove vanno eseguite operazioni lente.
+ * @author Damiano
+ *
+ */
+public abstract class Processo /*implements IRunnableWithProgress*/ {
+	
+	private final String titolo;
+	private final Integer operazioni;
+	private IProgressMonitor monitor;
+	private final IRunnableWithProgress runnable;
+	
+	/**
+	 * Costruisce un processo per cui andranno specificate le operazioni da eseguire.
+	 * Se viene indicato un numero di operazioni nullo o minore di 0 allora vienesupposto che non si sappia quante sono.
+	 * @param titolo Il messaggio da mostrare nella schermata di caricamento
+	 * @param operazioni Il numero di operazioni da eseguire
+	 */
+	public Processo(String title, Integer operations) {
+		titolo = title;
+		if (operations == null || operations <= 0)
+			operations = IProgressMonitor.UNKNOWN;
+		operazioni = operations;
+		runnable = new IRunnableWithProgress() {
+
+			@Override
+			public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
+				monitor = m;
+				if (monitor != null)
+					monitor.beginTask(titolo, operazioni);
+				eseguiOperazioni();
+				if (monitor != null)
+					monitor.done();
+			}
+			
+		};
+	}
+	
+	public void aumentaProgresso(int progresso) {
+		if (monitor != null)
+			monitor.worked(progresso);
+	}
+	
+	/**
+	 * Questo metodo va implementato, qui vanno inserite le operazioni da eseguire.
+	 * E' possibile e doveroso chiamare all'interno il metodo <code>monitor.worked(1)</code> ogniqualvolta viene eseguita una operazione
+	 * @param monitor Il monitor che indica l'avanzamento di processo.
+	 */
+	public abstract void eseguiOperazioni();
+
+	public IRunnableWithProgress getRunnable() {
+		return runnable;
+	}
+
+}

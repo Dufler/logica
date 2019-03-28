@@ -1,0 +1,361 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.HashMap;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.configuration.Database;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.ListinoCommessa;
+import it.ltc.logica.database.model.VoceDiListino;
+import it.ltc.logica.database.model.VoceDiListinoFissa;
+import it.ltc.logica.database.model.VoceDiListinoPercentuale;
+import it.ltc.logica.database.model.VoceDiListinoProporzionale;
+import it.ltc.logica.database.model.VoceDiListinoScaglioni;
+import it.ltc.logica.database.model.VoceDiListinoScaglioniRipetuti;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoFisso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.trasporti.calcolo.algoritmi.FactoryAlgoritmi;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+
+public class ListiniClientiController {
+	
+	private static final String NESSUN_ALGORITMO_SELEZIONATO = "NESSUNO";
+	
+	private static ListiniClientiController instance;
+	
+	private final EntityManager<ListinoCommessa> managerListini;
+	private final EntityManager<VoceDiListino> managerVociDiListino;
+	//private final EntityManager<VoceDiListinoTrasporti> managerVociTrasporti;
+	private final EntityManager<VoceDiListinoFissa> managerVociFisse;
+	private final EntityManager<VoceDiListinoPercentuale> managerVociPercentuali;
+	private final EntityManager<VoceDiListinoProporzionale> managerVociProporzionali;
+	private final EntityManager<VoceDiListinoScaglioni> managerVociScaglioni;
+	private final EntityManager<VoceDiListinoScaglioniRipetuti> managerVociScaglioniRipetuti;
+	
+	private HashMap<String, IAlgoritmo> algoritmi;
+	
+	private String tipoAlgoritmoSelezionato;
+	private VoceDiListino voce;
+	//private VoceDiListinoTrasporti voceTrasporti;
+	private VoceDiListinoFissa voceFissa;
+	private VoceDiListinoPercentuale vocePercentuale;
+	private VoceDiListinoProporzionale voceProporzionale;
+	private List<VoceDiListinoScaglioni> vociScaglioni;
+	private VoceDiListinoScaglioniRipetuti voceScaglioniRipetuti;
+	
+	private List<ListinoCommessa> listini;
+
+	private ListiniClientiController() {
+		Database db = ConfigurationManager.getDefault();
+		managerListini = new EntityManager<ListinoCommessa>(ListinoCommessa.class, db);
+		managerVociDiListino = new EntityManager<VoceDiListino>(VoceDiListino.class, db);
+		managerVociFisse = new EntityManager<VoceDiListinoFissa>(VoceDiListinoFissa.class, db);
+		managerVociPercentuali = new EntityManager<VoceDiListinoPercentuale>(VoceDiListinoPercentuale.class, db);
+		managerVociProporzionali = new EntityManager<VoceDiListinoProporzionale>(VoceDiListinoProporzionale.class, db);
+		managerVociScaglioni = new EntityManager<VoceDiListinoScaglioni>(VoceDiListinoScaglioni.class, db);
+		managerVociScaglioniRipetuti = new EntityManager<VoceDiListinoScaglioniRipetuti>(VoceDiListinoScaglioniRipetuti.class, db);
+		algoritmi = new HashMap<String, IAlgoritmo>();
+		tipoAlgoritmoSelezionato = NESSUN_ALGORITMO_SELEZIONATO;
+	}
+	
+	public static ListiniClientiController getInstance() {
+		if (instance == null) {
+			instance = new ListiniClientiController();
+		}
+		return instance;
+	}
+
+	public boolean eliminaListino(ListinoCommessa listino) {
+		int eliminazioni = managerListini.delete(listino);
+		boolean eliminato = eliminazioni == 1;
+		if (eliminato)
+			listini.remove(listino);
+		return eliminato;
+	}
+
+	public boolean eliminaVoceDiListino(VoceDiListino voce) {
+		int eliminazioni = managerVociDiListino.delete(voce);
+		return eliminazioni == 1;
+	}
+
+	public List<ListinoCommessa> getListiniClienti() {
+		if (listini == null) {
+			listini = managerListini.getEntities();
+		}
+		return listini;
+	}
+
+	public List<VoceDiListino> getVociDiListino(ListinoCommessa listino) {
+		VoceDiListino filtro = new VoceDiListino();
+		filtro.setIdListino(listino.getId());
+		List<VoceDiListino> vociDiListino = managerVociDiListino.getEntities(filtro);
+		return vociDiListino;
+	}
+
+	public boolean creaNuovoListino(ListinoCommessa listino) {
+		int id = managerListini.insertAndReturnID(listino);
+		boolean inserimento = id != -1;
+		if (inserimento) {
+			listino.setId(id);
+			listini.add(listino);
+		}
+		return inserimento;
+	}
+	
+	public List<Commessa> getListaCommesse() {
+		return Commessa.getCommesse();
+	}
+
+	public boolean aggiornaListinoCliente(ListinoCommessa listino) {
+		boolean update = managerListini.update(listino);
+		return update;
+	}
+
+	public HashMap<String, IAlgoritmo> getTipiAlgoritmo() {
+		if (algoritmi.isEmpty()) {
+			for (IAlgoritmo algoritmo : FactoryAlgoritmi.getAlgoritmi()) {
+				algoritmi.put(algoritmo.getNome(), algoritmo);
+			}
+		}
+		return algoritmi;
+	}
+	
+	public void setTipoAlgoritmoSelezionato(String algoritmo) {
+		tipoAlgoritmoSelezionato = algoritmo;		
+	}
+	
+	public String getTipoAlgoritmoSelezionato() {
+		return tipoAlgoritmoSelezionato;
+	}
+
+	public void setNuovaVoceDiListino(VoceDiListino nuovaVoce) {
+		voce = nuovaVoce;
+	}
+	
+	public VoceDiListino getNuovaVoceDiListino() {
+		return voce;
+	}
+	
+//	public VoceDiListinoTrasporti getVoceTrasporti() {
+//		return voceTrasporti;
+//	}
+//
+//	public void setVoceTrasporti(VoceDiListinoTrasporti voceTrasporti) {
+//		this.voceTrasporti = voceTrasporti;
+//	}
+
+	public void setVoceFisso(VoceDiListinoFissa nuovaVoce) {
+		voceFissa = nuovaVoce;
+	}
+
+	public VoceDiListinoFissa getVoceFisso() {
+		return voceFissa;
+	}
+
+	public VoceDiListinoPercentuale getVocePercentuale() {
+		return vocePercentuale;
+	}
+
+	public void setVocePercentuale(VoceDiListinoPercentuale vocePercentuale) {
+		this.vocePercentuale = vocePercentuale;
+	}
+
+	public VoceDiListinoProporzionale getVoceProporzionale() {
+		return voceProporzionale;
+	}
+
+	public void setVoceProporzionale(VoceDiListinoProporzionale voceProporzionale) {
+		this.voceProporzionale = voceProporzionale;
+	}
+
+	public VoceDiListinoScaglioniRipetuti getVoceScaglioniRipetuti() {
+		return voceScaglioniRipetuti;
+	}
+
+	public void setVoceScaglioniRipetuti(VoceDiListinoScaglioniRipetuti voceScaglioniRipetuti) {
+		this.voceScaglioniRipetuti = voceScaglioniRipetuti;
+	}
+
+	public List<VoceDiListinoScaglioni> getVociScaglioni() {
+		return vociScaglioni;
+	}
+
+	public void setVociScaglioni(List<VoceDiListinoScaglioni> vociScaglioni) {
+		this.vociScaglioni = vociScaglioni;
+	}
+
+	public boolean creaNuovaVoceDiListino() {
+		boolean esito = false;
+		if (voce != null) {
+			int id = managerVociDiListino.insertAndReturnID(voce);
+			//creaVoceTrasporti(id);
+			switch (tipoAlgoritmoSelezionato) {
+				case AlgoritmoFisso.NOME : {esito = creaNuovaVoceFissa(id); break;}
+				case AlgoritmoProporzionale.NOME : {esito = creaNuovaVoceProporzionale(id); break;}
+				case AlgoritmoScaglioni.NOME : {esito = creaNuoveVociScaglioni(id); break;}
+				case AlgoritmoScaglioniRipetuti.NOME : {esito = creaNuoveVociScaglioniRipetuti(id); break;}
+				case AlgoritmoPercentuale.NOME : {esito = creaNuovaVocePercentuale(id); break;}
+				default : break;
+			}
+		}
+		resetNuovaVoce();
+		return esito;
+	}
+	
+//	private boolean creaVoceTrasporti(int idVoce) {
+//		voceTrasporti.setId(idVoce);
+//		boolean inserimento = managerVociTrasporti.insert(voceTrasporti);
+//		return inserimento;
+//	}
+	
+	private boolean creaNuovaVoceFissa(int idVoce) {
+		voceFissa.setId(idVoce);
+		boolean inserimento = managerVociFisse.insert(voceFissa);
+		return inserimento;
+	}
+	
+	private boolean creaNuovaVocePercentuale(int idVoce) {
+		vocePercentuale.setId(idVoce);
+		boolean inserimento = managerVociPercentuali.insert(vocePercentuale);
+		return inserimento;
+	}
+	
+	private boolean creaNuovaVoceProporzionale(int idVoce) {
+		voceProporzionale.setId(idVoce);
+		boolean inserimento = managerVociProporzionali.insert(voceProporzionale);
+		return inserimento;
+	}
+	
+	private boolean creaNuoveVociScaglioni(int idVoce) {
+		boolean inserimento = false;
+		int inserimenti = 0;
+		for (VoceDiListinoScaglioni voce : vociScaglioni) {
+			voce.setId(idVoce);
+			boolean insert = managerVociScaglioni.insert(voce);
+			if (insert)
+				inserimenti += 1;
+		}
+		if (inserimenti == vociScaglioni.size())
+			inserimento = true;
+		return inserimento;
+	}
+	
+	private boolean creaNuoveVociScaglioniRipetuti(int idVoce) {
+		voceScaglioniRipetuti.setId(idVoce);
+		boolean inserimento = managerVociScaglioniRipetuti.insert(voceScaglioniRipetuti);
+		return inserimento;
+	}
+	
+	private void resetNuovaVoce() {
+		voce = null;
+		//voceTrasporti = null;
+		voceFissa = null;
+		vocePercentuale = null;
+		voceProporzionale = null;
+		vociScaglioni = null;
+		tipoAlgoritmoSelezionato = NESSUN_ALGORITMO_SELEZIONATO;
+	}
+
+	public VoceDiListinoFissa caricaVoceFissa(VoceDiListino voceDiListino) {
+		VoceDiListinoFissa filtro = new VoceDiListinoFissa();
+		filtro.setId(voceDiListino.getId());
+		VoceDiListinoFissa voceCaricata = managerVociFisse.getEntity(filtro);
+		return voceCaricata;
+	}
+
+	public boolean aggiornaVoceDiListino(VoceDiListino voceDiListino) {
+		boolean update = managerVociDiListino.update(voceDiListino);
+		return update;
+	}
+
+	public boolean aggiornaVoceDiListinoFissa(VoceDiListinoFissa voceDiListinoFissa) {
+		boolean update = managerVociFisse.update(voceDiListinoFissa);
+		return update;
+	}
+
+//	public VoceDiListinoTrasporti caricaVoceTrasporti(VoceDiListino voceDiListino) {
+//		VoceDiListinoTrasporti filtro = new VoceDiListinoTrasporti();
+//		filtro.setId(voceDiListino.getId());
+//		VoceDiListinoTrasporti voceCaricata = managerVociTrasporti.getEntity(filtro);
+//		return voceCaricata;
+//	}
+
+//	public boolean aggiornaVoceDiListinoTrasporti(VoceDiListinoTrasporti voceDiListinoTrasporti) {
+//		boolean update = managerVociTrasporti.update(voceDiListinoTrasporti);
+//		return update;
+//		
+//	}
+
+	public VoceDiListinoPercentuale caricaVocePercentuale(VoceDiListino voceDiListino) {
+		VoceDiListinoPercentuale filtro = new VoceDiListinoPercentuale();
+		filtro.setId(voceDiListino.getId());
+		VoceDiListinoPercentuale voceCaricata = managerVociPercentuali.getEntity(filtro);
+		return voceCaricata;
+	}
+
+	public boolean aggiornaVoceDiListinoPercentuale(VoceDiListinoPercentuale voceDiListinoPercentuale) {
+		boolean update = managerVociPercentuali.update(voceDiListinoPercentuale);
+		return update;
+	}
+
+	public VoceDiListinoProporzionale caricaVoceProporzionale(VoceDiListino voceDiListino) {
+		VoceDiListinoProporzionale filtro = new VoceDiListinoProporzionale();
+		filtro.setId(voceDiListino.getId());
+		VoceDiListinoProporzionale voceCaricata = managerVociProporzionali.getEntity(filtro);
+		return voceCaricata;
+	}
+
+	public boolean aggiornaVoceDiListinoProporzionale(VoceDiListinoProporzionale voceDiListinoProporzionale) {
+		boolean update = managerVociProporzionali.update(voceDiListinoProporzionale);
+		return update;
+	}
+
+	public VoceDiListinoScaglioniRipetuti caricaVoceScaglioniRipetuti(VoceDiListino voceDiListino) {
+		VoceDiListinoScaglioniRipetuti filtro = new VoceDiListinoScaglioniRipetuti();
+		filtro.setId(voceDiListino.getId());
+		VoceDiListinoScaglioniRipetuti voceCaricata = managerVociScaglioniRipetuti.getEntity(filtro);
+		return voceCaricata;
+	}
+
+	public boolean aggiornaVoceDiListinoScaglioniRipetuti(VoceDiListinoScaglioniRipetuti voceDiListinoScaglioniRipetuti) {
+		boolean update = managerVociScaglioniRipetuti.update(voceDiListinoScaglioniRipetuti);
+		return update;
+	}
+
+	public List<VoceDiListinoScaglioni> caricaVociScaglioni(VoceDiListino voceDiListino) {
+		VoceDiListinoScaglioni filtro = new VoceDiListinoScaglioni();
+		filtro.setId(voceDiListino.getId());
+		List<VoceDiListinoScaglioni> vociCaricate = managerVociScaglioni.getEntities(filtro);
+		return vociCaricate;
+	}
+
+	public boolean aggiornaVoceDiListinoScaglioni(List<VoceDiListinoScaglioni> listaVociScaglioni, Integer id) {
+		boolean insert = true;
+		VoceDiListinoScaglioni filtro = new VoceDiListinoScaglioni();
+		filtro.setId(id);
+		managerVociScaglioni.delete(filtro);
+		for (VoceDiListinoScaglioni scaglione : listaVociScaglioni) {
+			boolean partialInsert = managerVociScaglioni.insert(scaglione);
+			if (!partialInsert)
+				insert = false;
+		}
+		return insert;
+	}
+
+	public ListinoCommessa getListinoCliente(Integer idListinoCommessa) {
+		ListinoCommessa listino = null;
+		for (ListinoCommessa l : getListiniClienti()) {
+			if (l.getId().equals(idListinoCommessa)) {
+				listino = l;
+				break;
+			}
+		}
+		return listino;
+	}
+
+}

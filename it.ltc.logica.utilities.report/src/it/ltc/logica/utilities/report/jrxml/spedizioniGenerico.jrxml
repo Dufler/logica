@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.4.2.final using JasperReports Library version 6.4.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="spedizioniGenerico" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9a90629a-0953-456d-b416-e5234d7b3056">
+	<parameter name="DataDa" class="java.util.Date" isForPrompting="false"/>
+	<parameter name="DataA" class="java.util.Date"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="colli" class="java.lang.Integer"/>
+	<field name="pezzi" class="java.lang.Integer"/>
+	<field name="peso" class="java.lang.Double"/>
+	<field name="volume" class="java.lang.Double"/>
+	<field name="contrassegno" class="java.lang.Boolean"/>
+	<field name="dataPartenza" class="java.util.Date"/>
+	<variable name="PesoMedio" class="java.lang.Double" incrementType="Report" calculation="Average">
+		<variableExpression><![CDATA[$F{peso}]]></variableExpression>
+	</variable>
+	<variable name="PesoTotale" class="java.lang.Double" incrementType="Report" calculation="Sum">
+		<variableExpression><![CDATA[$F{peso}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="20" width="280" height="41" uuid="ac9cb922-cad0-4754-afc6-1fbe5e72efd4"/>
+				<textElement>
+					<font fontName="SansSerif" size="20"/>
+				</textElement>
+				<text><![CDATA[Spedizioni: Report Semplice]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="49" splitType="Stretch">
+			<textField>
+				<reportElement x="40" y="1" width="90" height="21" uuid="7741bdea-e4df-4cbf-bab7-9338a1f79aab"/>
+				<textFieldExpression><![CDATA[$P{DataDa}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="31" height="21" uuid="23bf69aa-edcf-48e5-af1c-ea11e569e2b7"/>
+				<text><![CDATA[Da:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="21" width="31" height="19" uuid="5f6ea1c3-ca4b-4625-a6b2-60852b5b5057"/>
+				<text><![CDATA[A:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="40" y="21" width="91" height="21" uuid="8365e54c-f468-4d9b-9fcb-1880ad966f24"/>
+				<textFieldExpression><![CDATA[$P{DataA}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="63" splitType="Stretch">
+			<textField evaluationTime="Report">
+				<reportElement x="110" y="2" width="121" height="21" uuid="a1ef4900-0fac-4733-bf40-da0eefab3d0f"/>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="0" width="101" height="21" uuid="080324a1-159c-4954-b9bf-475f20190dfc"/>
+				<text><![CDATA[Totale spedizioni:gh]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="21" width="81" height="21" uuid="0957b7eb-1b97-4b26-b4be-846580584d29"/>
+				<text><![CDATA[Peso totale:]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="80" y="21" width="122" height="21" uuid="456f8afc-b3b2-43b0-9fce-29715e9d9ddf"/>
+				<textFieldExpression><![CDATA[$V{PesoTotale}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="42" width="81" height="21" uuid="659e0f75-3a54-4e3b-8a23-2af19aacfe11"/>
+				<text><![CDATA[Peso medio:]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="80" y="42" width="120" height="21" uuid="fda7e004-e3e2-4fa1-a2be-73bf3d932cbc"/>
+				<textFieldExpression><![CDATA[$V{PesoMedio}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

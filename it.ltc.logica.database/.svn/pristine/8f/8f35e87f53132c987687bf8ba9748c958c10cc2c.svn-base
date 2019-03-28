@@ -1,0 +1,336 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class TestataOrdini extends Entity {
+
+	private static final String nomeTabella = "dbo.TestataOrdini";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private String lista;
+	private Integer nrListaArrivato;
+	private String rifOrdineCli;
+	private String nrOrdine;
+	private Date dataOrdine;
+	private String codCliente;
+	private String stato;
+	private Integer qtaTotaleSpedire;
+	private String operatore;
+	private String nomeFileArrivo;
+	private Integer idDestinatario;
+	private Date dataConsegna;
+	private String nrDoc;
+	private Date dataDoc;
+	private String tipoDoc;
+	private Integer annodoc;
+	private Integer annoOrdine;
+	private String tipoOrdine;
+	private String membroUE;
+	private String ragstampe;
+	private Integer priorita;
+	private String note;
+	private String letteraDiVettura;
+	private Double valoreDoganale;
+	private String codiceCorriere;
+	private String corriere;
+	private String tipoContrassegno;
+	private Double valoreContrassegno;
+	private String tipoTrasporto;
+	private String codiceClienteCorriere;
+	
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdTestaSped", "id");
+			variabili.addString("NrLista", "lista");
+			variabili.addInt("NrListaArrivato", "nrListaArrivato");
+			variabili.addString("RifOrdineCli", "RifOrdineCli");
+			variabili.addString("NrOrdine", "NrOrdine");
+			variabili.addString("Note", "note");
+			variabili.addDate("DataOrdine", "dataOrdine");
+			variabili.addString("CodCliente", "codCliente");
+			variabili.addString("Stato", "stato");
+			variabili.addInt("QtaTotaleSpedire", "qtaTotaleSpedire");
+			variabili.addString("Operatore", "operatore");
+			variabili.addString("NomeFileArrivo", "nomeFileArrivo");
+			variabili.addInt("IdDestina", "idDestinatario");
+			variabili.addDate("DataConsegna", "dataConsegna");
+			variabili.addString("NrDoc", "nrDoc");
+			variabili.addDate("DataDoc", "dataDoc");
+			variabili.addString("TipoDoc", "tipoDoc");
+			variabili.addInt("Annodoc", "annodoc");
+			variabili.addInt("AnnoOrdine", "annoOrdine");
+			variabili.addString("MembroUE", "membroUE");
+			variabili.addString("Ragstampe", "ragstampe");
+			variabili.addString("TipoOrdine", "tipoOrdine", false, true);
+			variabili.addInt("Priorita", "priorita", false, true);
+			variabili.addString("NrLetteraVettura", "letteraDiVettura");
+			variabili.addDouble("ValoreDoganale", "valoreDoganale");
+			variabili.addString("CodCorriere", "codiceCorriere");
+			variabili.addString("Corriere", "corriere");
+			variabili.addString("TipoIncasso", "tipoContrassegno", false, true);
+			variabili.addDouble("ValContrassegno", "valoreContrassegno", false, true);
+			variabili.addString("TipoTrasporto", "tipoTrasporto", false, true);
+			variabili.addString("CodiceClienteCorriere", "codiceClienteCorriere");
+		}
+		return variabili;
+	}
+
+	public String getLista() {
+		return lista;
+	}
+
+	public void setLista(String lista) {
+		this.lista = lista;
+	}
+
+	public Integer getNrListaArrivato() {
+		return nrListaArrivato;
+	}
+
+	public void setNrListaArrivato(Integer nrListaArrivato) {
+		this.nrListaArrivato = nrListaArrivato;
+	}
+
+	public Integer getIdDestinatario() {
+		return idDestinatario;
+	}
+
+	public void setIdDestinatario(Integer idDestinatario) {
+		this.idDestinatario = idDestinatario;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getLetteraDiVettura() {
+		return letteraDiVettura;
+	}
+
+	public void setLetteraDiVettura(String letteraDiVettura) {
+		this.letteraDiVettura = letteraDiVettura;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRifOrdineCli() {
+		return rifOrdineCli;
+	}
+
+	public void setRifOrdineCli(String rifOrdineCli) {
+		this.rifOrdineCli = rifOrdineCli;
+	}
+
+	public String getNrOrdine() {
+		return nrOrdine;
+	}
+
+	public void setNrOrdine(String nrOrdine) {
+		this.nrOrdine = nrOrdine;
+	}
+
+	public Date getDataOrdine() {
+		return dataOrdine;
+	}
+
+	public void setDataOrdine(Date dataOrdine) {
+		this.dataOrdine = dataOrdine;
+	}
+
+	public String getCodCliente() {
+		return codCliente;
+	}
+
+	public void setCodCliente(String codCliente) {
+		this.codCliente = codCliente;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public Integer getQtaTotaleSpedire() {
+		return qtaTotaleSpedire;
+	}
+
+	public void setQtaTotaleSpedire(Integer qtaTotaleSpedire) {
+		this.qtaTotaleSpedire = qtaTotaleSpedire;
+	}
+
+	public String getOperatore() {
+		return operatore;
+	}
+
+	public void setOperatore(String operatore) {
+		this.operatore = operatore;
+	}
+
+	public String getNomeFileArrivo() {
+		return nomeFileArrivo;
+	}
+
+	public void setNomeFileArrivo(String nomeFileArrivo) {
+		this.nomeFileArrivo = nomeFileArrivo;
+	}
+
+	public Date getDataConsegna() {
+		return dataConsegna;
+	}
+
+	public void setDataConsegna(Date dataConsegna) {
+		this.dataConsegna = dataConsegna;
+	}
+
+	public String getNrDoc() {
+		return nrDoc;
+	}
+
+	public void setNrDoc(String nrDoc) {
+		this.nrDoc = nrDoc;
+	}
+
+	public Date getDataDoc() {
+		return dataDoc;
+	}
+
+	public void setDataDoc(Date dataDoc) {
+		this.dataDoc = dataDoc;
+	}
+
+	public String getTipoDoc() {
+		return tipoDoc;
+	}
+
+	public void setTipoDoc(String tipoDoc) {
+		this.tipoDoc = tipoDoc;
+	}
+
+	public Integer getAnnodoc() {
+		return annodoc;
+	}
+
+	public void setAnnodoc(Integer annodoc) {
+		this.annodoc = annodoc;
+	}
+
+	public Integer getAnnoOrdine() {
+		return annoOrdine;
+	}
+
+	public void setAnnoOrdine(Integer annoOrdine) {
+		this.annoOrdine = annoOrdine;
+	}
+
+	public String getTipoOrdine() {
+		return tipoOrdine;
+	}
+
+	public void setTipoOrdine(String tipoOrdine) {
+		this.tipoOrdine = tipoOrdine;
+	}
+
+	public String getMembroUE() {
+		return membroUE;
+	}
+
+	public void setMembroUE(String membroUE) {
+		this.membroUE = membroUE;
+	}
+
+	public String getRagstampe() {
+		return ragstampe;
+	}
+
+	public void setRagstampe(String ragstampe) {
+		this.ragstampe = ragstampe;
+	}
+
+	public Integer getPriorita() {
+		return priorita;
+	}
+
+	public void setPriorita(Integer priorita) {
+		this.priorita = priorita;
+	}
+
+	public Double getValoreDoganale() {
+		return valoreDoganale;
+	}
+
+	public void setValoreDoganale(Double valoreDoganale) {
+		this.valoreDoganale = valoreDoganale;
+	}
+
+	public String getCodiceCorriere() {
+		return codiceCorriere;
+	}
+
+	public void setCodiceCorriere(String codiceCorriere) {
+		this.codiceCorriere = codiceCorriere;
+	}
+
+	public String getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(String corriere) {
+		this.corriere = corriere;
+	}
+
+	public String getTipoContrassegno() {
+		return tipoContrassegno;
+	}
+
+	public void setTipoContrassegno(String tipoContrassegno) {
+		this.tipoContrassegno = tipoContrassegno;
+	}
+
+	public Double getValoreContrassegno() {
+		return valoreContrassegno;
+	}
+
+	public void setValoreContrassegno(Double valoreContrassegno) {
+		this.valoreContrassegno = valoreContrassegno;
+	}
+
+	public String getTipoTrasporto() {
+		return tipoTrasporto;
+	}
+
+	public void setTipoTrasporto(String tipoTrasporto) {
+		this.tipoTrasporto = tipoTrasporto;
+	}
+
+	public String getCodiceClienteCorriere() {
+		return codiceClienteCorriere;
+	}
+
+	public void setCodiceClienteCorriere(String codiceClienteCorriere) {
+		this.codiceClienteCorriere = codiceClienteCorriere;
+	}
+
+}

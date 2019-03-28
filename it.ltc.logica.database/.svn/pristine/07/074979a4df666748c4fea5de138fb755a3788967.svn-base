@@ -1,0 +1,43 @@
+package it.ltc.logica.database.controller.centrale;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public abstract class EntityController<T extends Entity> {
+	
+	protected final EntityManager<T> manager;
+	protected final List<T> entities;
+	
+	protected EntityController(EntityManager<T> manager) {
+		this.manager = manager;
+		entities = manager.getEntities();
+	}
+	
+	public boolean insert(T entity) {
+		boolean insert = manager.insert(entity);
+		if (insert)
+			entities.add(entity);
+		return insert;
+	}
+	
+	public boolean update(T entity) {
+		boolean update = manager.update(entity);
+		return update;
+	}
+	
+	public int delete(T entity) {
+		int deletion = manager.delete(entity);
+		if (deletion > 0) {
+			entities.clear();
+			entities.addAll(manager.getEntities());
+		}
+		return deletion;
+	}
+	
+	public List<T> getEntities() {
+		return entities;
+	}
+
+}

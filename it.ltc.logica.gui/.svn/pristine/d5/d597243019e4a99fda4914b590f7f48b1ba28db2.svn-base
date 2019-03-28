@@ -1,0 +1,64 @@
+package it.ltc.logica.gui.input;
+
+import org.eclipse.swt.widgets.Composite;
+
+public class TextForPercentage extends TextField<Double> {
+	
+public static final String ERROR_MESSAGE = "Il valore inserito non \u00E8 corretto. Esempio valido: 12345.678";
+	
+	private static final String regex = "^100|^\\d{1,2}(\\.\\d{1,3})?";
+	
+	private Double value;
+
+	public TextForPercentage(Composite parent, int style) {
+		super(parent, style);
+		setRegex(regex);
+	}
+	@Override
+	public Double getValue() {
+		try {
+			String valore = getText();
+			value = Double.valueOf(valore);
+		} catch (NumberFormatException e) {
+			value = null;
+		}
+		return value;
+	}
+
+	@Override
+	public void setValue(Double value) {
+		this.value = value;
+		if (value != null) {
+			String valore = value.toString();
+			setText(valore);
+		} else {
+			setText("");
+		}
+		resetDirty();
+	}
+	
+	public String getFormattedText() {
+		String text = getText();
+		int separatorIndex = text.indexOf('.');
+		if (separatorIndex == -1) {
+			text += ".00";
+		} else if (text.length() >= separatorIndex + 3) {
+			text = text.substring(0, separatorIndex + 3);
+		} else {
+			text += "0";
+		}
+		text += " \u20AC";
+		return text;
+	}
+	
+	@Override
+	protected void setDefaultRequiredMessage() {
+		requiredDecoration.setDescriptionText(TextField.DEAFULT_REQUIRED_MESSAGE);		
+	}
+
+	@Override
+	protected void setDefaultErrorMessage() {
+		wrongDecoration.setDescriptionText(ERROR_MESSAGE);
+	}
+	
+}

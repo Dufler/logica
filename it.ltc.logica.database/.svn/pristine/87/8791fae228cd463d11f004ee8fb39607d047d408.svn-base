@@ -1,0 +1,44 @@
+package it.ltc.logica.database.model.sqlserver.ltc;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Cliente extends Entity {
+	
+	private static final String nomeTabella = "dbo.WebCliDep";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private String nomeCliente;
+
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdCliDep", "id");
+			variabili.addString("Descrizione", "nomeCliente");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getNomeCliente() {
+		return nomeCliente;
+	}
+
+	public void setNomeCliente(String nomeCliente) {
+		this.nomeCliente = nomeCliente;
+	}
+
+}

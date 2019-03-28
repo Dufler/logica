@@ -1,0 +1,57 @@
+ 
+package it.ltc.logica.trasporti.gui.spedizioni.parts;
+
+import javax.inject.Inject;
+
+import javax.annotation.PostConstruct;
+
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+
+public class FunzioneSpedizioniPart {
+	
+	@Inject private EPartService partService;
+	
+	@Inject
+	public FunzioneSpedizioniPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setBackground(SWTResourceManager.getColor(SWT.COLOR_WIDGET_BACKGROUND));
+		parent.setLayout(new GridLayout(1, false));
+		Label l = new Label(parent, SWT.NONE);
+		l.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				mostraPart();
+			}
+		});
+		l.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		l.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		l.setToolTipText("Da qui puoi trovare e gestire le spedizioni.");
+		l.setText("Spedizioni");
+	}
+	
+	private void mostraPart() {
+		MPart part = partService.findPart(SpedizioniPart.partID);
+		if (part != null) {
+			System.out.println("Mostro la part: " + SpedizioniPart.partID);
+			part.setVisible(true);
+			partService.showPart(part, PartState.VISIBLE);
+		}
+	}
+	
+	
+}

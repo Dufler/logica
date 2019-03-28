@@ -1,0 +1,338 @@
+package it.ltc.logica.database.model.sqlserver.ltc;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Compare;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.Type;
+
+public class TrackingOrdini extends Entity {
+	
+	private static final String nomeTabella = "dbo.Tracking_Ordini";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer cliente;
+	private String cap;
+	private Integer corriere;
+	private String nrLetteraVettura;
+	private String nrRiferimentoSpedizione;
+	private String tipoServizioSpedizione;
+	private String nrDocFiscale;
+	private String ragioneSociale1;
+	private String ragioneSociale2;
+	private String citta;
+	private String provincia;
+	private String statoAlert;
+	private String archiviato;
+	private String indirizzo;
+	private String nazione;
+	private String codISOnazione;
+	private Double pesoKg;
+	private Double volumeMc;
+	private Double valoreContrassegno;
+	private String codiceTipoIncassoContrassegno;
+	private Integer nrColli;
+	private String codiceClienteCorriere;
+	private String nrLista ;
+	private String nrOrdineCliente;
+	private String tipoAcquisizione;
+	private String note;
+	
+	private String nrOrdineClienteLike;
+	private String nrDocFiscaleLike;
+	private String ragioneSocialeLike;
+	private String nrListaLike;
+
+	public String getNrOrdineClienteLike() {
+		return nrOrdineClienteLike;
+	}
+
+	public void setNrOrdineClienteLike(String nrOrdineClienteLike) {
+		this.nrOrdineClienteLike = nrOrdineClienteLike;
+	}
+
+	public String getNrDocFiscaleLike() {
+		return nrDocFiscaleLike;
+	}
+
+	public void setNrDocFiscaleLike(String nrDocFiscaleLike) {
+		this.nrDocFiscaleLike = nrDocFiscaleLike;
+	}
+
+	public String getRagioneSocialeLike() {
+		return ragioneSocialeLike;
+	}
+
+	public void setRagioneSocialeLike(String ragioneSocialeLike) {
+		this.ragioneSocialeLike = ragioneSocialeLike;
+	}
+
+	public String getNrListaLike() {
+		return nrListaLike;
+	}
+
+	public void setNrListaLike(String nrListaLike) {
+		this.nrListaLike = nrListaLike;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return nomeTabella;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("cliente", "cliente");
+			variabili.addString("cap", "cap");
+			variabili.addInt("corriere", "corriere");
+			variabili.addString("nrLetteraVettura", "nrLetteraVettura");
+			variabili.addString("nrRiferimentoSpedizione", "nrRiferimentoSpedizione");
+			variabili.addString("TipoServizio", "tipoServizioSpedizione");
+			variabili.addString("nrDocFiscale", "nrDocFiscale");
+			variabili.addString("ragioneSociale1", "ragioneSociale1");
+			variabili.addString("ragioneSociale2", "ragioneSociale2");
+			variabili.addString("citta", "citta");
+			variabili.addString("provincia", "provincia");
+			variabili.addString("alert", "statoAlert");
+			variabili.addString("archiviato", "archiviato");
+			variabili.addString("indirizzo", "indirizzo");
+			variabili.addString("nazione", "nazione");
+			variabili.addString("codiceISO", "codISOnazione");
+			variabili.addDouble("peso", "pesoKg");
+			variabili.addDouble("volume", "volumeMc");
+			variabili.addDouble("contrassegno", "valoreContrassegno");
+			variabili.addString("tipoIncassoContrassegno", "codiceTipoIncassoContrassegno");
+			variabili.addInt("nrColli", "nrColli");
+			variabili.addString("codiceClienteCorriere", "codiceClienteCorriere");
+			variabili.addString("nrLista", "nrLista");
+			variabili.addString("nrOrdineCliente", "nrOrdineCliente");
+			variabili.addString("tipoAcquisizione", "tipoAcquisizione");
+			variabili.addString("note", "note");
+			
+			variabili.add(new Column("nrOrdineCliente", Type.STRING, "nrOrdineClienteLike", Compare.LIKE));
+			variabili.add(new Column("nrDocFiscale", Type.STRING, "nrDocFiscaleLike", Compare.LIKE));
+			variabili.add(new Column("ragioneSociale1", Type.STRING, "ragioneSocialeLike", Compare.LIKE));
+			variabili.add(new Column("nrLista", Type.STRING, "nrListaLike", Compare.LIKE));
+		}
+		return variabili;
+	}
+
+	public Double getValoreContrassegno() {
+		return valoreContrassegno;
+	}
+
+	public void setValoreContrassegno(Double valoreContrassegno) {
+		this.valoreContrassegno = valoreContrassegno;
+	}
+
+	public String getCodiceTipoIncassoContrassegno() {
+		return codiceTipoIncassoContrassegno;
+	}
+
+	public void setCodiceTipoIncassoContrassegno(String codiceTipoIncassoContrassegno) {
+		this.codiceTipoIncassoContrassegno = codiceTipoIncassoContrassegno;
+	}
+
+	public Integer getNrColli() {
+		return nrColli;
+	}
+
+	public void setNrColli(Integer nrColli) {
+		this.nrColli = nrColli;
+	}
+
+	public String getCodiceClienteCorriere() {
+		return codiceClienteCorriere;
+	}
+
+	public void setCodiceClienteCorriere(String codiceClienteCorriere) {
+		this.codiceClienteCorriere = codiceClienteCorriere;
+	}
+
+	public String getNrLista() {
+		return nrLista;
+	}
+
+	public void setNrLista(String nrLista) {
+		this.nrLista = nrLista;
+	}
+
+	public String getNrOrdineCliente() {
+		return nrOrdineCliente;
+	}
+
+	public void setNrOrdineCliente(String nrOrdineCliente) {
+		this.nrOrdineCliente = nrOrdineCliente;
+	}
+
+	public String getTipoAcquisizione() {
+		return tipoAcquisizione;
+	}
+
+	public void setTipoAcquisizione(String tipoAcquisizione) {
+		this.tipoAcquisizione = tipoAcquisizione;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(Integer cliente) {
+		this.cliente = cliente;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public Integer getCorriere() {
+		return corriere;
+	}
+
+	public void setCorriere(Integer corriere) {
+		this.corriere = corriere;
+	}
+
+	public String getNrLetteraVettura() {
+		return nrLetteraVettura;
+	}
+
+	public void setNrLetteraVettura(String nrLetteraVettura) {
+		this.nrLetteraVettura = nrLetteraVettura;
+	}
+
+	public String getNrRiferimentoSpedizione() {
+		return nrRiferimentoSpedizione;
+	}
+
+	public void setNrRiferimentoSpedizione(String nrRiferimentoSpedizione) {
+		this.nrRiferimentoSpedizione = nrRiferimentoSpedizione;
+	}
+
+	public String getTipoServizioSpedizione() {
+		return tipoServizioSpedizione;
+	}
+
+	public void setTipoServizioSpedizione(String tipoServizioSpedizione) {
+		this.tipoServizioSpedizione = tipoServizioSpedizione;
+	}
+
+	public String getNrDocFiscale() {
+		return nrDocFiscale;
+	}
+
+	public void setNrDocFiscale(String nrDocFiscale) {
+		this.nrDocFiscale = nrDocFiscale;
+	}
+
+	public String getRagioneSociale1() {
+		return ragioneSociale1;
+	}
+
+	public void setRagioneSociale1(String ragioneSociale1) {
+		this.ragioneSociale1 = ragioneSociale1;
+	}
+
+	public String getRagioneSociale2() {
+		return ragioneSociale2;
+	}
+
+	public void setRagioneSociale2(String ragioneSociale2) {
+		this.ragioneSociale2 = ragioneSociale2;
+	}
+
+	public String getCitta() {
+		return citta;
+	}
+
+	public void setCitta(String citta) {
+		this.citta = citta;
+	}
+
+	public String getStatoAlert() {
+		return statoAlert;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public void setStatoAlert(String statoAlert) {
+		this.statoAlert = statoAlert;
+	}
+
+	public String getArchiviato() {
+		return archiviato;
+	}
+
+	public void setArchiviato(String archiviato) {
+		this.archiviato = archiviato;
+	}
+	
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+	
+	public String getNazione() {
+		return nazione;
+	}
+
+	public void setNazione(String nazione) {
+		this.nazione = nazione;
+	}
+	
+	public String getCodISOnazione() {
+		return codISOnazione;
+	}
+
+	public void setCodISOnazione(String codISOnazione) {
+		this.codISOnazione = codISOnazione;
+	}
+	
+	public Double getPesoKg() {
+		return pesoKg;
+	}
+
+	public void setPesoKg(Double pesoKg) {
+		this.pesoKg = pesoKg;
+	}
+
+	public Double getVolumeMc() {
+		return volumeMc;
+	}
+
+	public void setVolumeMc(Double volumeMc) {
+		this.volumeMc = volumeMc;
+	}
+}

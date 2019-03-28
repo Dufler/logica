@@ -1,0 +1,204 @@
+package it.ltc.logica.database.model;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Prodotto extends Entity {
+	
+	public static final String NOME_TABELLA = "prodotto";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private Integer idCliente;
+	private Integer idCategoria;
+	private Integer idBrand;
+	private String codiceModello;
+	private String taglia;
+	private String codificaCliente;
+	private String barcode;
+	private String descrizione;
+	private Integer peso;
+	private Integer h;
+	private Integer l;
+	private Integer z;
+	private String madeIn;
+	private String composizione;
+	private String sottoCategoria;
+	private String colore;
+	private Double valore;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_cliente", "idCliente");
+			variabili.addInt("id_categoria", "idCategoria");
+			variabili.addInt("id_brand", "idBrand");
+			variabili.addString("codice_modello", "codiceModello");
+			variabili.addString("taglia", "taglia");
+			variabili.addString("codifica_cliente", "codificaCliente");
+			variabili.addString("barcode", "barcode");
+			variabili.addString("descrizione", "descrizione");
+			variabili.addString("made_in", "madeIn");
+			variabili.addString("composizione", "composizione");
+			variabili.addString("sotto_categoria", "sottoCategoria");
+			variabili.addString("colore", "colore");
+			variabili.addDouble("valore", "valore");
+			variabili.addInt("peso", "peso");
+			variabili.addInt("h", "h");
+			variabili.addInt("l", "l");
+			variabili.addInt("z", "z");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCliente() {
+		return idCliente;
+	}
+
+	public void setIdCliente(Integer idCliente) {
+		this.idCliente = idCliente;
+	}
+
+	public Integer getIdCategoria() {
+		return idCategoria;
+	}
+
+	public void setIdCategoria(Integer idCategoria) {
+		this.idCategoria = idCategoria;
+	}
+
+	public Integer getIdBrand() {
+		return idBrand;
+	}
+
+	public void setIdBrand(Integer idBrand) {
+		this.idBrand = idBrand;
+	}
+
+	public String getCodiceModello() {
+		return codiceModello;
+	}
+
+	public void setCodiceModello(String codiceModello) {
+		this.codiceModello = codiceModello;
+	}
+
+	public String getTaglia() {
+		return taglia;
+	}
+
+	public void setTaglia(String taglia) {
+		this.taglia = taglia;
+	}
+
+	public String getCodificaCliente() {
+		return codificaCliente;
+	}
+
+	public void setCodificaCliente(String codificaCliente) {
+		this.codificaCliente = codificaCliente;
+	}
+
+	public String getBarcode() {
+		return barcode;
+	}
+
+	public void setBarcode(String barcode) {
+		this.barcode = barcode;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public Integer getPeso() {
+		return peso;
+	}
+
+	public void setPeso(Integer peso) {
+		this.peso = peso;
+	}
+
+	public Integer getH() {
+		return h;
+	}
+
+	public void setH(Integer h) {
+		this.h = h;
+	}
+
+	public Integer getL() {
+		return l;
+	}
+
+	public void setL(Integer l) {
+		this.l = l;
+	}
+
+	public Integer getZ() {
+		return z;
+	}
+
+	public void setZ(Integer z) {
+		this.z = z;
+	}
+
+	public String getMadeIn() {
+		return madeIn;
+	}
+
+	public void setMadeIn(String madeIn) {
+		this.madeIn = madeIn;
+	}
+
+	public String getComposizione() {
+		return composizione;
+	}
+
+	public void setComposizione(String composizione) {
+		this.composizione = composizione;
+	}
+
+	public String getSottoCategoria() {
+		return sottoCategoria;
+	}
+
+	public void setSottoCategoria(String sottoCategoria) {
+		this.sottoCategoria = sottoCategoria;
+	}
+
+	public String getColore() {
+		return colore;
+	}
+
+	public void setColore(String colore) {
+		this.colore = colore;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+}

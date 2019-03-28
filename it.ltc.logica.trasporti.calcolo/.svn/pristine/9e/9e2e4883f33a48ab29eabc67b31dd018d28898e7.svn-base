@@ -1,0 +1,176 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.HashMap;
+
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbito;
+
+public class AlgoritmoScaglioniRipetuti implements IAlgoritmo {
+	
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "A Scaglioni ripetuti";
+	
+	private static final HashMap<Tipo, AlgoritmoScaglioniRipetuti> tipi = new HashMap<Tipo, AlgoritmoScaglioniRipetuti>(8);
+	
+	public enum Tipo {
+		
+		COLLI (1, "COLLI", "Colli"),
+		PESO_VOLUME_100 (100, "PESO_VOLUME_100", "Rapporto 1:100"),
+		PESO_VOLUME_150 (150, "PESO_VOLUME_150", "Rapporto 1:150"),
+		PESO_VOLUME_167 (167, "PESO_VOLUME_167", "Rapporto 1:167"),
+		PESO_VOLUME_200 (200, "PESO_VOLUME_200", "Rapporto 1:200"),
+		PESO_VOLUME_250 (250, "PESO_VOLUME_250", "Rapporto 1:250"),
+		PESO_VOLUME_300 (300, "PESO_VOLUME_300", "Rapporto 1:300");
+		
+		private final int rapporto;
+		private final String codifica;
+		private final String nome;
+		
+		private Tipo(int rapporto, String codifica, String nome) {
+			this.rapporto = rapporto;
+			this.codifica = codifica;
+			this.nome = nome;
+		}
+		
+		public int getRapporto() {
+			return rapporto;
+		}
+
+		public String getCodifica() {
+			return codifica;
+		}
+
+		public String getNome() {
+			return nome;
+		}
+
+		public String toString() {
+			return nome;
+		}
+
+	}
+	
+//	private static final HashMap<String, String> nomiTipi = new HashMap<String, String>(8);
+//	private static final HashMap<String, AlgoritmoScaglioniRipetuti> tipi = new HashMap<String, AlgoritmoScaglioniRipetuti>(8);
+//	private static final List<AlgoritmoScaglioniRipetuti> tipiIstanze = new ArrayList<AlgoritmoScaglioniRipetuti>();
+//	
+//	public static final String TIPO_NESSUNO = "NESSUNO";
+//	public static final String TIPO_PESO_VOLUME_100 = "PESO_VOLUME_100";
+//	public static final String TIPO_PESO_VOLUME_150 = "PESO_VOLUME_150";
+//	public static final String TIPO_PESO_VOLUME_167 = "PESO_VOLUME_167";
+//	public static final String TIPO_PESO_VOLUME_200 = "PESO_VOLUME_200";
+//	public static final String TIPO_PESO_VOLUME_250 = "PESO_VOLUME_250";
+//	public static final String TIPO_PESO_VOLUME_300 = "PESO_VOLUME_300";
+//	public static final String TIPO_COLLI = "COLLI";
+//	
+//	public static final String NOME_NESSUNO = "";
+//	public static final String NOME_PESO_VOLUME_100 = "Peso-Volume 1:100";
+//	public static final String NOME_PESO_VOLUME_150 = "Peso-Volume 1:150";
+//	public static final String NOME_PESO_VOLUME_167 = "Peso-Volume 1:167";
+//	public static final String NOME_PESO_VOLUME_200 = "Peso-Volume 1:200";
+//	public static final String NOME_PESO_VOLUME_250 = "Peso-Volume 1:250";
+//	public static final String NOME_PESO_VOLUME_300 = "Peso-Volume 1:300";
+//	public static final String NOME_COLLI = "Colli";
+	
+	private String nome;
+	private Tipo tipo;
+	
+	private AlgoritmoScaglioniRipetuti(Tipo type) {
+		nome = type.getNome();
+		tipo = type;
+	}
+	
+	public static AlgoritmoScaglioniRipetuti getInstance(Tipo tipo) {
+		if (!tipi.containsKey(tipo)) {
+			tipi.put(tipo, new AlgoritmoScaglioniRipetuti(tipo));			
+		}
+		AlgoritmoScaglioniRipetuti algoritmo = tipi.get(tipo);
+		return algoritmo;
+	}
+	
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	public String toString() {
+		String toString = (nome != null && !nome.isEmpty()) ? nome : NOME;
+		return toString;
+	}
+
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		IAmbito ambito = voce.getAmbito();
+		if (ambito.isApplicabile(spedizione)) {
+			double valore = ambito.getValore(spedizione, this);
+			Double intervallo = voce.getIntervallo();
+			Double minimo = voce.getMinimo();
+			if (minimo == null)
+				minimo = 0.0;
+			Double massimo = voce.getMassimo();
+			double valoreCosto = voce.getValore();
+			if (intervallo != null) {
+				if (massimo != null && massimo < valore)
+					valore = massimo;
+				valore = valore - minimo;
+				if (valore < 0)
+					valore = 0.0;
+				double ripetizioni = Math.ceil(valore/intervallo);
+				costo = ripetizioni * valoreCosto;
+			}
+		}
+		return costo;
+	}
+	
+//	public static List<AlgoritmoScaglioniRipetuti> getListaTipi() {
+//		if (tipiIstanze.isEmpty()) {
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_100));
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_150));
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_167));
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_200));
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_250));
+//			tipiIstanze.add(getInstance(TIPO_PESO_VOLUME_300));
+//			tipiIstanze.add(getInstance(TIPO_COLLI));
+//		}
+//		return tipiIstanze;
+//	}
+//
+//	private static String daiNome(String tipo) {
+//		if (nomiTipi.isEmpty()) {
+//			nomiTipi.put(TIPO_COLLI, NOME_COLLI);
+//			nomiTipi.put(TIPO_PESO_VOLUME_100, NOME_PESO_VOLUME_100);
+//			nomiTipi.put(TIPO_PESO_VOLUME_150, NOME_PESO_VOLUME_150);
+//			nomiTipi.put(TIPO_PESO_VOLUME_167, NOME_PESO_VOLUME_167);
+//			nomiTipi.put(TIPO_PESO_VOLUME_200, NOME_PESO_VOLUME_200);
+//			nomiTipi.put(TIPO_PESO_VOLUME_250, NOME_PESO_VOLUME_250);
+//			nomiTipi.put(TIPO_PESO_VOLUME_300, NOME_PESO_VOLUME_300);
+//			nomiTipi.put(TIPO_NESSUNO, NOME_NESSUNO);
+//		}
+//		return nomiTipi.get(tipo);
+//	}
+	
+	public static int getMaxDecimali(Tipo tipo) {
+		int maxDecimali;
+		switch (tipo) {
+			case COLLI : maxDecimali = 0; break;
+			default : maxDecimali = 3;
+		}
+		return maxDecimali;
+		
+	}
+
+	@Override
+	public TipoAlgoritmo getTipoAlgoritmo() {
+		return TipoAlgoritmo.SCAGLIONI_RIPETUTI;
+	}
+
+}

@@ -1,0 +1,184 @@
+package it.ltc.logica.container.controller;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.ui.di.UISynchronize;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.configuration.Database;
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.LogUtente;
+import it.ltc.logica.database.model.Permesso;
+import it.ltc.logica.database.model.Sede;
+import it.ltc.logica.database.model.TipoEventoUtente;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.utilities.json.JSON;
+
+public class ControllerUtente {
+	
+	public static final String URL_AUTH_WS = "http://192.168.0.12:8080/account/ws/login";
+	
+	public static final int STATUS_SUCCESSO = 0;
+	public static final int STATUS_UTENTE_NON_TROVATO = 1;
+	public static final int STATUS_PASSWORD_ERRATA = 2;
+	public static final int STATUS_PROBLEMI_DI_RETE = 3;
+	
+	private static ControllerUtente instance;
+	private final UISynchronize sync;
+	
+	private EntityManager<LogUtente> managerEventi;
+	
+	private Utenza utente;
+	
+	private ControllerUtente(UISynchronize uisync) {
+		sync = uisync;
+	}
+	
+	public static void createInstance(UISynchronize uisync) {
+		instance = new ControllerUtente(uisync);
+	}
+	
+	public static ControllerUtente getInstance() {
+		return instance;
+	}
+	
+	public int login(String username, String password) {
+		int returnCode;
+		try {
+			URL url = new URL(URL_AUTH_WS);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
+			//HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+			//Imposto le proprieta'
+			con.setRequestMethod("POST");
+			con.setDoOutput(true);
+			con.setDoInput(true);
+			con.setConnectTimeout(5000);
+			con.setRequestProperty("Content-Type", "application/json");
+			con.setRequestProperty("Accept", "application/json");
+			//Creo il JSON con le informazioni d'autenticazione
+			JSON auth = new JSON();
+			auth.aggiungiProprieta("username", username);
+			auth.aggiungiProprieta("password", password);
+			//Invio la chiamata
+			OutputStreamWriter wr= new OutputStreamWriter(con.getOutputStream());
+			wr.write(auth.toString());
+			wr.flush();
+			//Leggo la risposta
+			int HttpResult = con.getResponseCode(); 
+			if (HttpResult == HttpURLConnection.HTTP_OK) {
+			    BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+			    String line = br.readLine();
+			    JSON risposta = new JSON();
+			    risposta.parse(line);
+			    int status = risposta.getInt("status");
+			    String message = risposta.getString("message");
+			    System.out.println("Risposta dal server: " + status + ", " + message);
+			    JSON info = risposta.getJSON("oggetto");
+			    String nome = info.getString("nome");
+			    String cognome = info.getString("cognome");
+			    int[] sedi = info.getIntArray("sedi");
+			    int[] permessi = info.getIntArray("permessi");
+			    int[] commesse = info.getIntArray("commesse");
+			    int commessaDefault = info.getInt("commessadefault");
+			    utente = new Utenza();
+			    utente.setUsername(username);
+			    utente.setPassword(password);
+			    utente.setNome(nome);
+			    utente.setCognome(cognome);
+			    LinkedList<Sede> listaSedi = new LinkedList<Sede>();
+			    for (int id : sedi) {
+			    	Sede sede = Sede.getSede(id);
+			    	listaSedi.add(sede);
+			    }
+			    utente.setSedi(listaSedi);
+			    LinkedList<Permesso> listaPermessi = new LinkedList<Permesso>();
+			    for (int id : permessi) {
+			    	Permesso permesso = Permesso.getPermesso(id);
+			    	listaPermessi.add(permesso);
+			    }
+			    utente.setPermessi(listaPermessi);
+			    LinkedList<Commessa> listaCommesse = new LinkedList<Commessa>();
+			    for (int id : commesse) {
+			    	Commessa commessa = Commessa.getCommessa(id);
+			    	listaCommesse.add(commessa);
+			    }
+			    utente.setCommesse(listaCommesse);
+			    utente.setCommessaDefault(Commessa.getCommessa(commessaDefault));
+			    setupDB(utente);
+			    //Todo imposto il sistema con le informazioni recuperate.
+			    returnCode = STATUS_SUCCESSO;
+			} else if (HttpResult == HttpURLConnection.HTTP_UNAUTHORIZED) {
+				returnCode = STATUS_PASSWORD_ERRATA;
+			} else {
+				returnCode = STATUS_PROBLEMI_DI_RETE;
+			    System.out.println(con.getResponseMessage());  
+			}  
+		} catch (IOException e) {
+			returnCode = STATUS_PROBLEMI_DI_RETE;
+		}
+		return returnCode;
+	}
+	
+	private void setupDB(Utenza utente) {
+		if (utente.getPermessi().contains(Permessi.TEST.getPermesso()))
+			ConfigurationManager.setDefault(Database.TEST);
+		managerEventi = new EntityManager<LogUtente>(LogUtente.class, ConfigurationManager.getDefault());
+	}
+	
+	public Utenza getUtente() {
+		return utente;
+	}
+	
+	public boolean isAllowed(Permessi permesso) {
+		boolean allowed = false;
+		Permesso p = permesso.getPermesso();
+		if (utente.getPermessi().contains(Permessi.TEST.getPermesso()))
+			allowed = true;
+		else
+			allowed = utente.getPermessi().contains(p);
+		return allowed;
+	}
+	
+	public boolean inserisciEvento(TipoEventoUtente tipoEvento, String note) {
+		boolean inserimento = false;
+		if (utente != null && tipoEvento != null) {
+			LogUtente evento = new LogUtente();
+			evento.setData(new Date());
+			evento.setEvento(tipoEvento.getCodice());
+			evento.setNote(note);
+			evento.setUtente(utente.getUsername());
+			inserimento = managerEventi.insert(evento);
+		}
+		return inserimento;
+	}
+	
+	public List<LogUtente> getEventi() {
+		List<LogUtente> eventi = null;
+		if (utente != null) {
+			LogUtente filtro = new LogUtente();
+			filtro.setUtente(utente.getUsername());
+			eventi = managerEventi.getEntities(filtro);
+		}
+		return eventi;
+	}
+
+	public UISynchronize getSync() {
+		return sync;
+	}
+	
+	public File getWorkSpaceFolder() {
+		File workspaceDirectory = new File(Platform.getInstanceLocation().getURL().getFile());
+		return workspaceDirectory;
+	}
+
+}

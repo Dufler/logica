@@ -1,0 +1,15 @@
+package it.ltc.logica.database.orm;
+
+/**
+ * Questa enum contiene tutti i possibili tipi di dato.
+ * @author Damiano
+ *
+ */
+public enum Type {
+	STRING,
+	INT,
+	DOUBLE,
+	BOOLEAN,
+	AUTOINCREMENT,
+	DATE;
+}

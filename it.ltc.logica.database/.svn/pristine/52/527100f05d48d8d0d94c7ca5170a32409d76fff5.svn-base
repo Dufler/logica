@@ -1,0 +1,105 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class TipoContrassegno extends Entity {
+
+	@JsonIgnore
+	public static final String NOME_TABELLA = "spedizione_contrassegno_tipo";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	@JsonIgnore
+	private static final EntityManager<TipoContrassegno> manager = new EntityManager<TipoContrassegno>(TipoContrassegno.class, ConfigurationManager.getDefault());
+	@JsonIgnore
+	private static final LinkedList<TipoContrassegno> listaTipiContrassegno = new LinkedList<TipoContrassegno>();
+	
+	private String codice;
+	private String nome;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("codice", "codice", true, false);
+			variabili.addString("nome", "nome");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((codice == null) ? 0 : codice.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TipoContrassegno other = (TipoContrassegno) obj;
+		if (codice == null) {
+			if (other.codice != null)
+				return false;
+		} else if (!codice.equals(other.codice))
+			return false;
+		return true;
+	}
+
+	public String getCodice() {
+		return codice;
+	}
+
+	public void setCodice(String codice) {
+		this.codice = codice;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public static List<TipoContrassegno> getTipiContrassegno() {
+		if (listaTipiContrassegno.isEmpty()) {
+			listaTipiContrassegno.addAll(manager.getEntities());
+		}
+		return listaTipiContrassegno;
+	}
+	
+	public static TipoContrassegno getTipoContrassegno(String codice) {
+		TipoContrassegno tipo = null;
+		for (TipoContrassegno t : getTipiContrassegno()) {
+			if (t.getCodice().equals(codice)) {
+				tipo = t;
+				break;
+			}
+		}
+		return tipo;
+	}
+
+}

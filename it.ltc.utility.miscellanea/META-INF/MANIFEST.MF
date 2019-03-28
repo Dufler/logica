@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Miscellanea
+Bundle-SymbolicName: it.ltc.utility.miscellanea
+Bundle-Version: 1.0.0
+Bundle-ClassPath: miscellanea-1.0.jar
+Bundle-Vendor: LTC
+Export-Package: it.ltc.utility.miscellanea.classes,
+ it.ltc.utility.miscellanea.file,
+ it.ltc.utility.miscellanea.hash,
+ it.ltc.utility.miscellanea.string,
+ it.ltc.utility.miscellanea.string.annotation,
+ it.ltc.utility.miscellanea.time
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: it.ltc.utility.miscellanea
+Require-Bundle: org.apache.commons;bundle-version="1.0.0",
+ org.apache.logging;bundle-version="1.0.0"

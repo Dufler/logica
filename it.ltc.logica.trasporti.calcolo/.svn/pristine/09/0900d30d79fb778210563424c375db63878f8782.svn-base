@@ -1,0 +1,125 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoFisso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class NoloItalia implements IAmbito {
+
+	public static final String ITALIA = "ITA";
+	
+	public static final String CODICE = "NOLO";
+	private static NoloItalia instance;
+	
+	protected NoloItalia() {}
+	
+	public static NoloItalia getInstance() {
+		if (instance == null) {
+			instance = new NoloItalia();
+		}
+		return instance;
+	}
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = ITALIA.equals(destinazione.getNazione());
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		String tipoAlgoritmo = algoritmo.getNome();
+		switch (tipoAlgoritmo) {
+			case AlgoritmoFisso.NOME : valore = 1; break;
+			case AlgoritmoPercentuale.NOME : getValorePercentuale(spedizione, algoritmo); break;
+			case AlgoritmoProporzionale.NOME : valore = getValoreProporzionale(spedizione, algoritmo); break;
+			case AlgoritmoScaglioni.NOME : valore = getValoreScaglioni(spedizione, algoritmo); break;
+			case AlgoritmoScaglioniRipetuti.NOME : valore = getValoreScaglioniRipetuti(spedizione, algoritmo); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	private double getValoreProporzionale(SpedizioneModel model, IAlgoritmo algoritmo) {
+		double valore;
+		AlgoritmoProporzionale ap = (AlgoritmoProporzionale) algoritmo;
+		Spedizione spedizione = model.getSpedizione();
+		AlgoritmoProporzionale.Tipo tipoProporzionale = ap.getTipo();
+		switch (tipoProporzionale) {
+			case COLLI : valore = spedizione.getColli(); break;
+			case PEZZI : valore = spedizione.getPezzi(); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	private double getValorePercentuale(SpedizioneModel model, IAlgoritmo algoritmo) {
+		AlgoritmoPercentuale ap = (AlgoritmoPercentuale) algoritmo;
+		AlgoritmoPercentuale.Scopo scopo = ap.getScopo();
+		double valore;
+		switch (scopo) {
+			case COSTO : valore = model.getCostoNoloPerCosto(); break;
+			case RICAVO : valore = model.getCostoNoloPerRicavo(); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	private double getValoreScaglioni(SpedizioneModel model, IAlgoritmo algoritmo) {
+		double valore;
+		AlgoritmoScaglioni as = (AlgoritmoScaglioni) algoritmo;
+		Spedizione spedizione = model.getSpedizione();
+		AlgoritmoScaglioni.Tipo tipoScaglioni = as.getTipo();
+		switch(tipoScaglioni) {
+			case COLLI : valore = spedizione.getColli(); break;
+			case PESO_VOLUME_100: valore = getRapportoPesoVolume(spedizione, 100); break;
+			case PESO_VOLUME_150: valore = getRapportoPesoVolume(spedizione, 150); break;
+			case PESO_VOLUME_167: valore = getRapportoPesoVolume(spedizione, 167); break;
+			case PESO_VOLUME_200: valore = getRapportoPesoVolume(spedizione, 200); break;
+			case PESO_VOLUME_250: valore = getRapportoPesoVolume(spedizione, 250); break;
+			case PESO_VOLUME_300: valore = getRapportoPesoVolume(spedizione, 300); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	private double getValoreScaglioniRipetuti(SpedizioneModel model, IAlgoritmo algoritmo) {
+		double valore;
+		AlgoritmoScaglioniRipetuti asr = (AlgoritmoScaglioniRipetuti) algoritmo;
+		Spedizione spedizione = model.getSpedizione();
+		AlgoritmoScaglioniRipetuti.Tipo tipoScaglioniRipetuti = asr.getTipo();
+		switch(tipoScaglioniRipetuti) {
+			case COLLI : valore = spedizione.getColli(); break;
+			case PESO_VOLUME_100: valore = getRapportoPesoVolume(spedizione, 100); break;
+			case PESO_VOLUME_150: valore = getRapportoPesoVolume(spedizione, 150); break;
+			case PESO_VOLUME_167: valore = getRapportoPesoVolume(spedizione, 167); break;
+			case PESO_VOLUME_200: valore = getRapportoPesoVolume(spedizione, 200); break;
+			case PESO_VOLUME_250: valore = getRapportoPesoVolume(spedizione, 250); break;
+			case PESO_VOLUME_300: valore = getRapportoPesoVolume(spedizione, 300); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	private double getRapportoPesoVolume(Spedizione spedizione, double rapporto) {
+		double peso = spedizione.getPeso();
+		double volume = spedizione.getVolume();
+		volume = volume * rapporto;
+		double valoreRapporto = (peso > volume) ? peso : volume;
+		return valoreRapporto;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

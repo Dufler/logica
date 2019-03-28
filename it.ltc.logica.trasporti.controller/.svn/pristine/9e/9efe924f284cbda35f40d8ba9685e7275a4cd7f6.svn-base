@@ -1,0 +1,93 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.orm.EntityManager;
+
+public abstract class FatturazioneController {
+	
+	protected static final String TITOLO_ERRORE_CODICE_NON_TROVATO = "Attenzione";
+	protected static final String MESSAGGIO_ERRORE_CODICE_NON_TROVATO = "Il codice cliente [codice] non è stato ancora inserito, le spedizioni ad esso legate non saranno fatturate.";
+	
+	protected final EntityManager<ListinoCommessa> managerListini;
+	protected final EntityManager<DocumentoFattura> managerDocumenti;
+	
+	protected final SimpleDateFormat sdf;
+	protected final SimpleDateFormat meseEAnno;
+	protected final SimpleDateFormat semplice;
+	
+	protected final List<DocumentoFattura> documenti;
+	
+	protected Commessa commessa;
+	protected Date inizio;
+	protected Date fine;
+	
+	protected FatturazioneController() {
+		managerListini = new EntityManager<ListinoCommessa>(ListinoCommessa.class, ConfigurationManager.getDefault());
+		managerDocumenti = new EntityManager<DocumentoFattura>(DocumentoFattura.class, ConfigurationManager.getDefault());
+		sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		meseEAnno = new SimpleDateFormat("MM-yyyy");
+		semplice = new SimpleDateFormat("dd/MM/yyyy");
+		documenti = new LinkedList<DocumentoFattura>();
+	}
+	
+	public void setCommessa(Commessa selectedValue) {
+		commessa = selectedValue;		
+	}
+
+	public void setDataInizio(Date da) {
+		inizio = new Date(da.getTime());
+	}
+
+	public void setDataFine(Date a) {
+		fine = new Date(a.getTime());
+	}
+	
+	public List<DocumentoFattura> getDocumentiFatturazione() {
+		if (documenti.isEmpty()) {
+			documenti.addAll(managerDocumenti.getEntities());
+		}
+		return documenti;
+	}
+	
+	public int getDocumentoFatturazione(int idCommessa, int idAmbito, Date data) {
+		int idDocumento;
+		DocumentoFattura documento = null;
+		//Controllo se ho già inserito un documento per quel tipo di fatturazione, per quel mese, per quella commessa
+		String meseAnno = meseEAnno.format(data);
+		for (DocumentoFattura d : getDocumentiFatturazione()) {
+			if (d.getIdCommessa() == idCommessa && d.getIdAmbito() == idAmbito && d.getMeseAnno().equals(meseAnno)) {
+				documento = d;
+				break;
+			}
+		}
+		//Se non ne ho trovati allora ne inserisco uno
+		if (documento == null) {
+			documento = new DocumentoFattura();
+			documento.setCreatore(ControllerUtente.getInstance().getUtente().getUsername());
+			documento.setDataGenerazione(new Date());
+			documento.setIdCommessa(idCommessa);
+			documento.setIdAmbito(idAmbito);
+			documento.setStato("GEN");
+			documento.setMeseAnno(meseAnno);
+			idDocumento = managerDocumenti.insertAndReturnID(documento);
+			boolean inserimentoDocumento = idDocumento != -1;
+			if (inserimentoDocumento) {
+				documento.setId(idDocumento);
+				documenti.add(documento);
+			}
+		} else {
+			idDocumento = documento.getId();
+		}
+		return idDocumento;
+	}
+
+}

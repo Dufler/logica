@@ -1,0 +1,132 @@
+package it.ltc.logica.amministrazione.calcolo.ambiti;
+
+import it.ltc.logica.amministrazione.calcolo.algoritmi.EventoLogisticaModel;
+import it.ltc.logica.amministrazione.calcolo.algoritmi.LogisticaModel;
+import it.ltc.logica.amministrazione.calcolo.algoritmi.StrategiaPercentualePerAmministrazione;
+import it.ltc.logica.amministrazione.calcolo.algoritmi.StrategiaProporzionalePerAmministrazione;
+import it.ltc.logica.amministrazione.calcolo.algoritmi.StrategiaScaglioniPerAmministrazione;
+import it.ltc.logica.common.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.common.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.common.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.common.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.common.calcolo.algoritmi.IAmbito;
+import it.ltc.logica.common.calcolo.algoritmi.MDettaglioVoce;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino.Scopo;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceFissa;
+import it.ltc.logica.common.calcolo.algoritmi.MVocePercentuale;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceProporzionale;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceScaglioni;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceScaglioniRipetuti;
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+
+public abstract class IAmbitoLogistica extends IAmbito<LogisticaModel> {
+
+	public IAmbitoLogistica(SottoAmbitoFattura ambito) {
+		super(ambito.getId(), ambito.getNome(), ambito.getDescrizione(), ambito.getCategoria());
+	}
+	
+	public enum Tipo {
+		
+		LOGISTICA,
+		EXTRA,
+		
+	}
+	
+	public abstract Tipo getTipo();
+	
+	@Override
+	public boolean isApplicabile(LogisticaModel model) {
+		boolean applicabile = model.isAmbitoApplicabile(this);
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		double valore = 0;
+		TipoAlgoritmo tipoAlgoritmo = getTipoAlgoritmo(voce);
+		switch (tipoAlgoritmo) {
+			case FISSO : valore = getValoreFisso(model, voce); break;
+			case PERCENTUALE : valore = getValorePercentuale(model, voce); break;
+			case PROPORZIONALE : valore = getValoreProporzionale(model, voce); break;
+			case SCAGLIONI : valore = getValoreScaglioni(model, voce); break;
+			case SCAGLIONI_RIPETUTI : valore = getValoreScaglioniRipetuti(model, voce); break;
+			default : valore = 0;
+		}
+		return valore;
+	}
+	
+	protected double getValoreFisso(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		MDettaglioVoce dettagli = voce.getDettagli();
+		MVoceFissa dettaglioFissa = (MVoceFissa) dettagli;
+		double valore = dettaglioFissa.getValore();
+		return valore;
+	}
+	
+	protected double getValorePercentuale(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		MVocePercentuale dettaglioPercentuale = (MVocePercentuale) voce.getDettagli();
+		AlgoritmoPercentuale ap = (AlgoritmoPercentuale) voce.getAlgoritmo();
+		StrategiaPercentualePerAmministrazione strategia = (StrategiaPercentualePerAmministrazione) ap.getStrategia();
+		Scopo scopo = voce.getScopo();
+		double base;
+		switch (strategia) {
+			case TUTTO : base = model.getCostoTotale(scopo);
+			default : base = 0;
+		}
+		double percentuale = dettaglioPercentuale.getValore();
+		Double minimo = dettaglioPercentuale.getMinimo();
+		Double massimo = dettaglioPercentuale.getMassimo();
+		double costo = ap.calcolaCosto(base, percentuale, minimo, massimo);
+		return costo;
+	}
+	
+	public double getValoreProporzionale(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		MVoceProporzionale dettaglioProporzionale = (MVoceProporzionale) voce.getDettagli();
+		AlgoritmoProporzionale ap = (AlgoritmoProporzionale) voce.getAlgoritmo();
+		StrategiaProporzionalePerAmministrazione tipoProporzionale = (StrategiaProporzionalePerAmministrazione) ap.getStrategia();
+		EventoLogisticaModel evento = model.getEvento(voce.getAmbito());
+		double elementi;
+		switch (tipoProporzionale) {
+			case COLLI : elementi = evento.getColli(); break;
+			case PEZZI : elementi = evento.getPezzi(); break;
+			default : elementi = 0;
+		}
+		double valorePerElemento = dettaglioProporzionale.getValore();
+		Double minimo = dettaglioProporzionale.getMinimo();
+		Double massimo = dettaglioProporzionale.getMassimo();
+		double costo = ap.calcolaCosto(valorePerElemento, elementi, minimo, massimo);
+		return costo;
+	}
+	
+	public double getValoreScaglioni(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		MVoceScaglioni dettaglioScaglioni = (MVoceScaglioni) voce.getDettagli();
+		AlgoritmoScaglioni as = (AlgoritmoScaglioni) voce.getAlgoritmo();
+		StrategiaScaglioniPerAmministrazione tipoScaglioni = (StrategiaScaglioniPerAmministrazione) as.getTipo();
+		double valore;
+		switch(tipoScaglioni) {
+			//TODO
+			default : valore = 0;
+		}
+		double costo = as.calcolaCosto(valore, dettaglioScaglioni.getScaglioni());
+		return costo;
+	}
+	
+	public double getValoreScaglioniRipetuti(LogisticaModel model, MVoceDiListino<LogisticaModel> voce) {
+		MVoceScaglioniRipetuti dettaglioScaglioniRipetuti = (MVoceScaglioniRipetuti) voce.getDettagli();
+		AlgoritmoScaglioniRipetuti asr = (AlgoritmoScaglioniRipetuti) voce.getAlgoritmo();
+		StrategiaScaglioniPerAmministrazione tipoScaglioniRipetuti = (StrategiaScaglioniPerAmministrazione) asr.getTipo();
+		double valore;
+		switch(tipoScaglioniRipetuti) {
+			//TODO
+			default : valore = 0;
+		}
+		double intervallo = dettaglioScaglioniRipetuti.getIntervallo();
+		double costoSingoloScaglione = dettaglioScaglioniRipetuti.getValore();
+		Double minimo = dettaglioScaglioniRipetuti.getSogliaMinima();
+		Double massimo = dettaglioScaglioniRipetuti.getSogliaMassima();
+		double costo = asr.calcolaCosto(valore, intervallo, costoSingoloScaglione, minimo, massimo);
+		return costo;
+	}
+
+}

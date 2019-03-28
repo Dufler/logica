@@ -1,0 +1,97 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.AmbitoDiTrasporto;
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeVoceListino extends Gruppo {
+	
+	private static final String titolo = "Propriet\u00E0  - Voce di Listino";
+	
+	public static final int TIPO_CORRIERE = 1;
+	public static final int TIPO_CLIENTE = 2;
+	
+	private TextForString textNome;
+	private TextForString textDescrizione;
+	private Label lblAmbito;
+	private ComboBox<AmbitoDiTrasporto> comboAmbito;
+	
+	public CompositeVoceListino(Composite parent, int style, int type) {
+		super(parent, style, titolo);
+		setAmbiti(type);
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		lblAmbito = new Label(this, SWT.NONE);
+		lblAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAmbito.setText("Ambito: ");
+		
+		comboAmbito = new ComboBox<AmbitoDiTrasporto>(this);
+		comboAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblNome = new Label(this, SWT.NONE);
+		lblNome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNome.setText("Nome: ");
+		
+		textNome = new TextForString(this, SWT.BORDER);
+		textNome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDescrizione = new Label(this, SWT.NONE);
+		lblDescrizione.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizione.setText("Descrizione: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		Label lbl = new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		lbl.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+	}
+	
+	private void setAmbiti(int type) {
+		switch (type) {
+			case TIPO_CORRIERE : comboAmbito.setItems(AmbitoDiTrasporto.getListaAmbitiCorrieri()); break;
+			case TIPO_CLIENTE : comboAmbito.setItems(AmbitoDiTrasporto.getListaAmbitiClienti()); break;
+			default : break;
+		}
+	}
+	
+	public String getNome() {
+		return textNome.getText();
+	}
+	
+	public void setNome(String nome) {
+		textNome.setText(nome);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+	
+	public void setDescrizione(String descrizione) {
+		textDescrizione.setText(descrizione);
+	}
+	
+	public AmbitoDiTrasporto getAmbito() {
+		return comboAmbito.getSelectedValue();
+	}
+	
+	public void setAmbito(AmbitoDiTrasporto ambito) {
+		comboAmbito.setSelectedValue(ambito);
+	}
+
+}

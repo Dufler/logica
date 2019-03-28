@@ -1,0 +1,14 @@
+package it.ltc.logica.ufficio.gui.ingressi.elements;
+
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreIngressi extends Ordinatore<Ingresso> {
+
+	@Override
+	protected int compare(Ingresso t1, Ingresso t2, int property) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+}

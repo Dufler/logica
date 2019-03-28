@@ -1,0 +1,71 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.cliente;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.calcolo.algoritmi.Scaglione;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoScaglioni;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceScaglioni;
+
+public class NuovaVoceListinoCommessaScaglioniWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino cliente - Algoritmo";
+	private static final String descrizione = "Specifica i valori degli scaglioni.";
+	
+	private ListiniClientiController controller;
+	
+	private List<VoceDiListinoScaglioni> vociScaglioni;
+	private ArrayList<Scaglione> listaScaglioni;
+
+	private CompositeVoceScaglioni compositeScaglioni;
+
+	public NuovaVoceListinoCommessaScaglioniWizardPage() {
+		super(titolo, descrizione);
+		controller = ListiniClientiController.getInstance();
+		vociScaglioni = new ArrayList<VoceDiListinoScaglioni>();
+	}
+	
+	@Override
+	public boolean validate() {
+		valid = compositeScaglioni.isValid();
+		if (valid) {
+			listaScaglioni = compositeScaglioni.getScaglioni();
+			copyDataToModel();
+		}
+		setPageComplete(valid);
+		return valid;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeScaglioni = new CompositeVoceScaglioni(container, SWT.NONE);
+		compositeScaglioni.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeScaglioni);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		vociScaglioni.clear();
+		String tipo = compositeScaglioni.getTipo();
+		controller.getNuovaVoceDiListino().setStrategia(tipo);
+		for (Scaglione scaglione : listaScaglioni) {
+			VoceDiListinoScaglioni voce = new VoceDiListinoScaglioni();
+			//voce.setTipo(tipo);
+			voce.setInizio(scaglione.getInizio());
+			voce.setFine(scaglione.getFine());
+			voce.setValore(scaglione.getValore());
+			vociScaglioni.add(voce);
+		}
+		controller.setVociScaglioni(vociScaglioni);
+	}
+
+}

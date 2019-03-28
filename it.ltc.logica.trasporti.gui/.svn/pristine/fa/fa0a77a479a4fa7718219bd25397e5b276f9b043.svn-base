@@ -1,0 +1,80 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import java.util.List;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class TabellaSpedizioniModel extends Tabella<SpedizioneModel> {
+
+	public TabellaSpedizioniModel(Composite parent, List<ListinoCommessa> listiniClienti, List<ListinoCorriere> listiniCorrieri) {
+		super(parent, Tabella.STILE_TABELLE_GRANDI, new OrdinatoreSpedizioniModel());
+		
+		aggiungiColonna("Data", 100, new EtichettatoreSpedizioniModel(), 0);
+		aggiungiColonna("Destinatario", 100, new EtichettatoreSpedizioniModel(), 1);
+		aggiungiColonna("Riferimento", 100, new EtichettatoreSpedizioniModel(), 2);
+		
+		if (listiniClienti != null)
+		for (ListinoCommessa listino : listiniClienti) {
+			aggiungiColonna(listino.getNome(), 100, new EtichettatoreSpedizioniModel(listino), 3);
+		}
+		
+		if (listiniCorrieri != null)
+		for (ListinoCorriere listino : listiniCorrieri) {
+			aggiungiColonna(listino.getNome(), 100, new EtichettatoreSpedizioniModel(listino), 4);
+		}
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });	
+	}
+	
+	private void apriDialogModifica() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			SpedizioneModel selezione = (SpedizioneModel) selectedItem.getData();
+			DialogSpedizioneModel dialog = new DialogSpedizioneModel(selezione);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

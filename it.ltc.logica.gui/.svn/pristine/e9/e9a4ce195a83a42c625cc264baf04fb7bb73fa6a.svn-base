@@ -1,0 +1,26 @@
+package it.ltc.logica.gui.wizard;
+
+import org.eclipse.jface.wizard.Wizard;
+
+/**
+ * Classe astratta che tutti i wizard devono estendere.
+ * Va implementato il metodo <code>finisci()</code> dove devono essere eseguite tutte le operazioni di elaborazione dei dati.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public abstract class WizardConFinale extends Wizard {
+
+	@Override
+	public boolean performFinish() {
+		PaginaWizard ultimaPagina = (PaginaWizard) getContainer().getCurrentPage();
+		ultimaPagina.copyDataToModel();
+		return finisci();
+	}
+	
+	/**
+	 * Metodo astratto da implementare. Qui dentro vanno eseguite tutte le operazioni per il salvataggio/elaborazione dei dati.
+	 * @return true se l'elaborazione è andata a buon fine, false altrimenti.
+	 */
+	public abstract boolean finisci();
+
+}

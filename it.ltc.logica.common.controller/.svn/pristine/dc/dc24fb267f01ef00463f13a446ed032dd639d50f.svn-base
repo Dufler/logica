@@ -1,0 +1,168 @@
+package it.ltc.logica.common.controller.ingressi;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerFornitore {
+	
+	private static ControllerFornitore instance;
+
+	private final HashMap<Integer, Fornitore> fornitori;
+	private final HashMap<Integer, List<Fornitore>> fornitoriPerCommessa;
+	
+	private ControllerFornitore() {
+		fornitori = new HashMap<Integer, Fornitore>();
+		fornitoriPerCommessa = new HashMap<Integer, List<Fornitore>>();
+		caricaDati();
+	}
+
+	public static ControllerFornitore getInstance() {
+		if (instance == null) {
+			instance = new ControllerFornitore();
+		}
+		return instance;
+	}
+	
+	private void caricaDati() {
+		//List<Commessa> commesse = ControllerUtente.getInstance().getUtente().getCommesse();
+		//FIXME - Il caricamento delle commesse deve essere chiamato da fuori quando serve per ogni commessa.
+		List<Commessa> commesse = new LinkedList<>();
+		for (Commessa commessa : commesse) {
+			ricaricaFornitori(commessa);
+		}
+	}
+	
+	public synchronized void ricaricaFornitori(Commessa commessa) {
+		ProcessoCaricamentoFornitoriPerCommessa pcfpc = new ProcessoCaricamentoFornitoriPerCommessa(commessa);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcfpc);
+	}
+	
+	public Fornitore getFornitore(int idFornitore) {
+		return fornitori.get(idFornitore);
+	}
+	
+	public List<Fornitore> getFornitoriPerCommessa(Commessa commessa) {
+		if (!fornitoriPerCommessa.containsKey(commessa.getId()))
+			ricaricaFornitori(commessa);
+		return fornitoriPerCommessa.get(commessa.getId());
+	}
+	
+	public Collection<Fornitore> getFornitori() {
+		return fornitori.values();
+	}
+	
+	public Fornitore insert(Fornitore nuovoFornitore) {
+		Fornitore fornitore;
+		try {
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			String chiamata = mapper.writeValueAsString(nuovoFornitore);
+			WSAnswer wsAnswer = c.post("fornitore", chiamata);
+			if (wsAnswer.getStatus() == 201) {
+				String answer = wsAnswer.getMessage();
+				fornitore = mapper.readValue(answer, Fornitore.class);
+				fornitori.put(fornitore.getId(), fornitore);
+				List<Fornitore> lista = fornitoriPerCommessa.get(fornitore.getIdCommessa());
+				if (lista == null) {
+					lista = new LinkedList<Fornitore>();
+					fornitoriPerCommessa.put(fornitore.getIdCommessa(), lista);
+				}
+				lista.add(fornitore);
+			} else {
+				fornitore = null;
+			}
+		} catch (Exception e) {
+			fornitore = null;
+		}
+		return fornitore;
+	}
+	
+	public boolean update(Fornitore fornitore) {
+		boolean update;
+		try {
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			String chiamata = mapper.writeValueAsString(fornitore);
+			WSAnswer wsAnswer = c.put("fornitore", chiamata);
+			if (wsAnswer.getStatus() == 200) {
+				String answer = wsAnswer.getMessage();
+				fornitore = mapper.readValue(answer, Fornitore.class);
+				update = true;
+			} else {
+				update = false;
+			}
+		}catch (Exception e) {
+			update = false;
+		}
+		return update;
+	}
+	
+	public boolean delete(Fornitore fornitore) {
+		boolean update;
+		try {
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			String chiamata = mapper.writeValueAsString(fornitore);
+			WSAnswer wsAnswer = c.delete("fornitore", chiamata);
+			if (wsAnswer.getStatus() == 200) {
+				update = true;
+				fornitori.remove(fornitore.getId());
+				fornitoriPerCommessa.get(fornitore.getIdCommessa()).remove(fornitore);
+			} else {
+				update = false;
+			}
+		}catch (Exception e) {
+			update = false;
+		}
+		return update;
+	}
+	
+	private class ProcessoCaricamentoFornitoriPerCommessa extends Processo {
+		
+		private static final String title = "Caricamento fornitori: ";
+		
+		private final Commessa commessa;
+
+		public ProcessoCaricamentoFornitoriPerCommessa(Commessa commessa) {
+			super(title + commessa.getNome(), -1);
+			this.commessa = commessa;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			//Preparo la chiamate
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			Fornitore filtro = new Fornitore();
+			filtro.setIdCommessa(commessa.getId());
+			String chiamata = mapper.writeValueAsString(filtro);
+			//Indirizzi
+			WSAnswer wsAnswer = c.post("fornitore/cerca", chiamata);
+			if (wsAnswer.getStatus() == 200) {
+				String answer = wsAnswer.getMessage();
+				List<Fornitore> lista = mapper.readValue(answer, new TypeReference<List<Fornitore>>() {});
+				fornitoriPerCommessa.put(commessa.getId(), lista);
+				for (Fornitore fornitore : lista) {
+					fornitori.put(fornitore.getId(), fornitore);
+				}
+			} else {
+				throw new RuntimeException(wsAnswer.toString());
+			}		
+		}
+		
+	}
+
+}

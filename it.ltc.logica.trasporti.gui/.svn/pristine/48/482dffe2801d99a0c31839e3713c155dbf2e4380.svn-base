@@ -1,0 +1,112 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.gui.elements.spedizionemodel.TabellaPreventivi;
+
+public class CompositeComparazioneCostiRicaviSpedizione extends Composite {
+	
+	private static final String testoMargine = "Margine di guadagno: ";
+	private static final String testoMarginePercentuale = "Margine di guadagno percentuale: ";
+	
+	private TabellaPreventivi tableViewerRicavi;
+	private Table tableRicavi;
+	
+	private TabellaPreventivi tableViewerCosti;
+	private Table tableCosti;
+	
+	private Composite compositeCompara;
+	private Label lblMargineDiGuadagno;
+	private Label lblMargineDiGuadagnoPercentuale;
+
+	public CompositeComparazioneCostiRicaviSpedizione(Composite parent, int style, SpedizioneModel spedizione) {
+		super(parent, style);
+		setLayout(new GridLayout(1, false));
+		
+		Composite compositeTabelle = new Composite(this, SWT.NONE);
+		compositeTabelle.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeTabelle.setBounds(0, 0, 64, 64);
+		compositeTabelle.setLayout(new GridLayout(2, false));
+		
+		Label lblRicavi = new Label(compositeTabelle, SWT.NONE);
+		lblRicavi.setText("Ricavi per ogni listino cliente");
+		
+		Label lblCostiPerOgni = new Label(compositeTabelle, SWT.NONE);
+		lblCostiPerOgni.setSize(152, 15);
+		lblCostiPerOgni.setText("Costi per ogni listino corriere");
+		
+		tableViewerRicavi = new TabellaPreventivi(compositeTabelle, spedizione);
+		tableRicavi = tableViewerRicavi.getTable();
+		tableRicavi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tableRicavi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				comparaCostiRicavi();
+			}
+		});
+		
+		tableViewerCosti = new TabellaPreventivi(compositeTabelle, spedizione);
+		tableCosti = tableViewerCosti.getTable();
+		tableCosti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tableCosti = tableViewerCosti.getTable();
+		tableCosti.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				comparaCostiRicavi();
+			}
+		});
+		
+		compositeCompara = new Composite(this, SWT.NONE);
+		compositeCompara.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		compositeCompara.setBounds(0, 0, 64, 64);
+		compositeCompara.setLayout(new GridLayout(1, false));
+		
+		lblMargineDiGuadagno = new Label(compositeCompara, SWT.NONE);
+		lblMargineDiGuadagno.setText(testoMargine);
+		
+		lblMargineDiGuadagnoPercentuale = new Label(compositeCompara, SWT.NONE);
+		lblMargineDiGuadagnoPercentuale.setText(testoMarginePercentuale);
+		
+		//Aggiungo i risultati delle simulazioni
+		tableViewerRicavi.setInput(spedizione.getPreventiviRicavo());
+		tableViewerCosti.setInput(spedizione.getPreventiviCosto());
+		
+		for (TableColumn colonna : tableRicavi.getColumns()) {
+			colonna.pack();
+		}
+		for (TableColumn colonna : tableCosti.getColumns()) {
+			colonna.pack();
+		}
+	}
+	
+	private void comparaCostiRicavi() {
+		Object itemRicavo = tableViewerRicavi.getStructuredSelection().getFirstElement();
+		Object itemCosto = tableViewerCosti.getStructuredSelection().getFirstElement();
+		if (itemRicavo != null && itemCosto != null) {
+			Calcolo ricavo = (Calcolo) itemRicavo;
+			Calcolo costo = (Calcolo) itemCosto;
+			double margine = ricavo.getTotale() - costo.getTotale();
+			double marginePercentuale = (margine / ricavo.getTotale());
+			lblMargineDiGuadagno.setText(testoMargine + Decorator.getEuroValue(margine));
+			lblMargineDiGuadagnoPercentuale.setText(testoMarginePercentuale + Decorator.getPercentageValue(marginePercentuale));
+			compositeCompara.layout();
+		}
+	}
+
+	@Override
+	protected void checkSubclass() {
+		// Disable the check that prevents subclassing of SWT components
+	}
+
+}

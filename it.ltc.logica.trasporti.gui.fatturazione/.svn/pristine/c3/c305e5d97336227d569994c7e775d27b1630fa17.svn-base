@@ -1,0 +1,92 @@
+package it.ltc.logica.trasporti.gui.fatturazione.elements;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerDocumentiDiFatturazione;
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.container.DialogSelezioneCartella;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaDocumentiFatturazione extends Tabella<DocumentoFattura> {
+	
+	private static final String TITLE_CONFERMA_ELIMINA_DOCUMENTO = "Eliminazione documento di fatturazione";
+	private static final String MESSAGE_CONFERMA_ELIMINA_DOCUMENTO = "Sei sicuro di voler eliminare il documento di fatturazione selezionato?";
+	
+	public TabellaDocumentiFatturazione(Composite parent) {
+		super(parent, new OrdinatoreDocumentiFatturazione());
+		
+		aggiungiColonna("Commessa", 200, new EtichettatoreDocumentiFatturazione(), 0);
+		aggiungiColonna("Tipo", 200, new EtichettatoreDocumentiFatturazione(), 1);
+		aggiungiColonna("Stato", 200, new EtichettatoreDocumentiFatturazione(), 2);
+		aggiungiColonna("Periodo", 120, new EtichettatoreDocumentiFatturazione(), 3);
+		aggiungiColonna("Data Creazione", 200, new EtichettatoreDocumentiFatturazione(), 4);
+		aggiungiColonna("Creata da", 200, new EtichettatoreDocumentiFatturazione(), 5);
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem generate = new MenuItem(menu, SWT.PUSH);
+		generate.setText("Genera Documento");
+		generate.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogDocumento();
+	    	}
+	    });
+		if (ControllerUtente.getInstance().isAllowed(Permessi.FATTURAZIONE_ELIMINA_DOCUMENTO.getID())) {
+			MenuItem delete = new MenuItem(menu, SWT.PUSH);
+			delete.setText("Elimina Documento");
+			delete.addListener(SWT.Selection, new Listener() {
+		    	public void handleEvent(Event event) {
+		    		apriDialogEliminaDocumento();
+		    	}
+		    });
+		}
+	}
+	
+	private void apriDialogDocumento() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			DialogSelezioneCartella dialog = new DialogSelezioneCartella();
+			String path = dialog.open();
+			if (path != null && !path.isEmpty()) {
+				TableItem selectedItem = table.getItem(selectionIndex);
+				DocumentoFattura documento = (DocumentoFattura) selectedItem.getData();
+				ControllerDocumentiDiFatturazione.getInstance().produciDocumentoXLS(path, documento.getId());
+			}
+		}
+	}
+	
+	private void apriDialogEliminaDocumento() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			boolean delete = DialogMessaggio.openConfirm(TITLE_CONFERMA_ELIMINA_DOCUMENTO, MESSAGE_CONFERMA_ELIMINA_DOCUMENTO);
+			if (delete) {
+				TableItem selectedItem = table.getItem(selectionIndex);
+				DocumentoFattura documento = (DocumentoFattura) selectedItem.getData();
+				ControllerDocumentiDiFatturazione.getInstance().eliminaDocumento(documento.getId());
+			}
+		}
+	}
+
+}

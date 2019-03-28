@@ -1,0 +1,122 @@
+package it.ltc.logica.trasporti.gui.spedizioni.wizard;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.gui.common.composite.CompositeIndirizzo;
+import it.ltc.logica.gui.wizard.PaginaWizard;
+import it.ltc.logica.trasporti.gui.elements.indirizzo.DialogSelezioneIndirizzo;
+
+public class InserimentoIndirizziWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Inserisci una nuova spedizione";
+	private static final String descrizione = "Inserisci l'indirizzo del mittente e del destinatario.";
+	
+	private Indirizzo mittente;
+	private Indirizzo destinatario;
+	
+	private CompositeIndirizzo compositeMittente;
+	private CompositeIndirizzo compositeDestinatario;
+	
+	private Button btnInserisciIlMittente;
+	private Button btnInserisciIlDestinatario;
+	
+	private final ControllerIndirizzi controller;
+
+	public InserimentoIndirizziWizardPage() {
+		super(titolo, descrizione);
+		controller = ControllerIndirizzi.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		btnInserisciIlMittente = new Button(container, SWT.NONE);
+		btnInserisciIlMittente.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserisciMittente();
+			}
+		});
+		btnInserisciIlMittente.setText("Inserisci il mittente dalla rubrica");
+		
+		compositeMittente = new CompositeIndirizzo(container, SWT.NONE, CompositeIndirizzo.TipoIndirizzo.MITTENTE);
+		compositeMittente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeMittente.enableInputElements(false);
+		addChild(compositeMittente);
+		
+		btnInserisciIlDestinatario = new Button(container, SWT.NONE);
+		btnInserisciIlDestinatario.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserisciDestinatario();
+			}
+		});
+		btnInserisciIlDestinatario.setText("Inserisci il destinatario dalla rubrica");
+		
+		compositeDestinatario = new CompositeIndirizzo(container, SWT.NONE, CompositeIndirizzo.TipoIndirizzo.DESTINATARIO);
+		compositeDestinatario.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeDestinatario.enableInputElements(false);
+		addChild(compositeDestinatario);
+	}
+	
+	private Indirizzo selezionaIndirizzo() {
+		DialogSelezioneIndirizzo dialog = new DialogSelezioneIndirizzo();
+		Indirizzo indirizzo = dialog.apri();
+		return indirizzo;
+	}
+
+	private void inserisciMittente() {
+		mittente = selezionaIndirizzo();
+		if (mittente != null) {
+			compositeMittente.setRagioneSociale(mittente.getRagioneSociale());
+			compositeMittente.setIndirizzo(mittente.getIndirizzo());
+			compositeMittente.setLocalita(mittente.getLocalita());
+			compositeMittente.setCap(mittente.getCap());
+			compositeMittente.setNazione(controller.getNazione(mittente.getNazione()));
+			compositeMittente.setProvincia(controller.getProvincia(mittente.getProvincia()));
+			compositeMittente.setPiano(mittente.getConsegnaAlPiano());
+			compositeMittente.setGDO(mittente.getConsegnaGdo());
+			compositeMittente.setPrivato(mittente.getConsegnaPrivato());
+			compositeMittente.setAppuntamento(mittente.getConsegnaAppuntamento());
+		}
+	}
+	
+	private void inserisciDestinatario() {
+		destinatario = selezionaIndirizzo();
+		if (destinatario != null) {
+			compositeDestinatario.setRagioneSociale(destinatario.getRagioneSociale());
+			compositeDestinatario.setIndirizzo(destinatario.getIndirizzo());
+			compositeDestinatario.setLocalita(destinatario.getLocalita());
+			compositeDestinatario.setCap(destinatario.getCap());
+			compositeDestinatario.setNazione(controller.getNazione(destinatario.getNazione()));
+			compositeDestinatario.setProvincia(controller.getProvincia(destinatario.getProvincia()));
+			compositeDestinatario.setPiano(destinatario.getConsegnaAlPiano());
+			compositeDestinatario.setGDO(destinatario.getConsegnaGdo());
+			compositeDestinatario.setPrivato(destinatario.getConsegnaPrivato());
+			compositeDestinatario.setAppuntamento(destinatario.getConsegnaAppuntamento());
+		}
+	}
+	
+	public Indirizzo getMittente() {
+		return mittente;
+	}
+	
+	public Indirizzo getDestinatario() {
+		return destinatario;
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// TODO Auto-generated method stub	
+	}
+
+}

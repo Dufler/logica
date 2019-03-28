@@ -1,0 +1,12 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public interface IAmbito {
+
+	public boolean isApplicabile(SpedizioneModel spedizione);
+	
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo);
+	
+}

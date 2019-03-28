@@ -1,0 +1,18 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
+
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+
+public class CapComparator extends ViewerComparator {
+	
+	public int compare(Viewer viewer, Object e1, Object e2) {
+		Cap c1 = (Cap) e1;
+		Cap c2 = (Cap) e2;
+		String l1 = c1.getLocalita();
+		String l2 = c2.getLocalita();
+		return l1.compareToIgnoreCase(l2);
+	}
+
+}

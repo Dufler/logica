@@ -1,0 +1,79 @@
+package it.ltc.logica.trasporti.gui.codicicliente.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.codicicliente.dialogs.DialogCodiceCliente;
+
+public class TabellaCodiciCliente extends Tabella<CodiceClienteCorriere> {
+
+	public TabellaCodiciCliente(Composite parent) {
+		super(parent, new OrdinatoreCodiciCliente());
+		
+		aggiungiColonna("Codice", 100, new EtichettatoreCodiciCliente(), 0);
+		aggiungiColonna("Stato", 100, new EtichettatoreCodiciCliente(), 1);
+		aggiungiColonna("Corriere", 100, new EtichettatoreCodiciCliente(), 2);
+		aggiungiColonna("Listino Corriere", 100, new EtichettatoreCodiciCliente(), 3);
+		aggiungiColonna("Cliente", 100, new EtichettatoreCodiciCliente(), 4);
+		aggiungiColonna("Listino Cliente", 100, new EtichettatoreCodiciCliente(), 5);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreCodiciCliente(), 6);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//Non necessario
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		boolean permessoGestione = ControllerUtente.getInstance().isAllowed(Permessi.CODICI_CLIENTE_GESTIONE.getID());
+		if (permessoGestione) {
+			table.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseDoubleClick(MouseEvent e) {
+					apriDialogModifica();
+				}
+			});
+		}
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		boolean permessoGestione = ControllerUtente.getInstance().isAllowed(Permessi.CODICI_CLIENTE_GESTIONE.getID());
+		if (permessoGestione) {
+			MenuItem modify = new MenuItem(menu, SWT.PUSH);
+		    modify.setText("Modifica");
+		    modify.addListener(SWT.Selection, new Listener() {
+		    	public void handleEvent(Event event) {
+		    		apriDialogModifica();
+		    	}
+		    });	
+		}
+	}
+	
+	private void apriDialogModifica() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			CodiceClienteCorriere codiceSelezionato = (CodiceClienteCorriere) selectedItem.getData();
+			DialogCodiceCliente dialog = new DialogCodiceCliente(codiceSelezionato);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

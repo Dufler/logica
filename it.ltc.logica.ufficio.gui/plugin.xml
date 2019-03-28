@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="it.ltc.logica.ufficio.gui.fragment"
+         name="ufficio"
+         point="org.eclipse.e4.workbench.model">
+      <fragment
+            apply="always"
+            uri="ufficio.gui.fragment.e4xmi">
+      </fragment>
+   </extension>
+
+</plugin>

@@ -1,0 +1,56 @@
+package it.ltc.logica.database.model.centrale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoCorriereFissa extends Entity implements ValidEntity {
+	
+	public static final String NOME_TABELLA = "listino_corriere_voce_fissa";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private Double valore;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_voce", "id", true, false);
+			variabili.addDouble("valore", "valore");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore fisso deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+
+}

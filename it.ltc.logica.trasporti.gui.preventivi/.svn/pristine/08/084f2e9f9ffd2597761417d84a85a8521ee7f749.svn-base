@@ -1,0 +1,58 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti;
+
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+public class PreventivoSpedizioniEsistentiWizard extends Wizard {
+	
+	private final UISynchronize sync;
+	
+	private PreventivoSpedizioneEsistentiSelezioneDatiWizardPage selezionePage;
+	private PreventivoSpedizioniEsistentiSelezioneSpedizioniWizardPage spedizioniPage;
+	private PreventivoSpedizioniEsistentiRisultatoWizardPage risultatoPage;
+
+	public PreventivoSpedizioniEsistentiWizard(UISynchronize s) {
+		setWindowTitle("Preventivo di costo per spedizioni esistenti");
+		sync = s;
+		selezionePage = new PreventivoSpedizioneEsistentiSelezioneDatiWizardPage();
+		spedizioniPage = new PreventivoSpedizioniEsistentiSelezioneSpedizioniWizardPage();
+		risultatoPage = new PreventivoSpedizioniEsistentiRisultatoWizardPage(sync);
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(spedizioniPage);
+		addPage(risultatoPage);
+	}
+
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(selezionePage)) {
+			nextPage = spedizioniPage;
+			spedizioniPage.caricaSpedizioni();
+		} else if (currentPage.equals(spedizioniPage)) {
+			nextPage = risultatoPage;
+			risultatoPage.aggiornaDati();
+		}
+		return nextPage;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = (getContainer().getCurrentPage() == risultatoPage);
+		return finish;
+	}
+
+	public UISynchronize getSync() {
+		return sync;
+	}
+
+}

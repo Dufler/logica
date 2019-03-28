@@ -1,0 +1,44 @@
+package it.ltc.logica.common.controller.fatturazione.documento;
+
+import java.text.DecimalFormat;
+
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura.Iva;
+
+/**
+ * Rappresenta una riga sulla fatturazione.
+ * 1) codice voce
+ * 2) descrizione voce
+ * 3) quantita'
+ * 4) codice IVA
+ * 5) totale voce
+ * 6) imponibile voce
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class TotaleVoceFatturazionePDF {
+	
+	private final DecimalFormat formatEuro;
+	
+	private final String codiceVoce;
+	private final String descrizioneVoce;
+	private final int quantita;
+	private final double totale;
+	private final Iva iva;
+	
+	public TotaleVoceFatturazionePDF(String codiceVoce, String descrizioneVoce, int quantita, double totale, Iva iva) {
+		this.codiceVoce = codiceVoce;
+		this.descrizioneVoce = descrizioneVoce;
+		this.quantita = quantita;
+		this.totale = totale;
+		this.iva = iva;
+		
+		formatEuro = new DecimalFormat();
+		formatEuro.applyPattern("#,##0.000 \u20AC");
+	}
+
+	public String[] getRappresentazione() {
+		String[] riga = {codiceVoce, descrizioneVoce, Integer.toString(quantita), iva.name(), formatEuro.format(totale), formatEuro.format(totale * (1 + iva.getAliquota() / 100))};
+		return riga;
+	}
+
+}

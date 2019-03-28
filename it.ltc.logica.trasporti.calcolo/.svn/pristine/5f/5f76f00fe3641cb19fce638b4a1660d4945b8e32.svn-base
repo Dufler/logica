@@ -1,0 +1,38 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class SupplementoLivigno implements IAmbito {
+	
+	public static final String CAP_LIVIGNO = "23030";
+	
+	public static final String CODICE = "NOLO_LIVIGNO";
+	private static SupplementoLivigno instance;
+	
+	private SupplementoLivigno() {}
+	
+	public static SupplementoLivigno getInstance() {
+		if (instance == null) {
+			instance = new SupplementoLivigno();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = CAP_LIVIGNO.equals(destinazione.getCap());
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+
+}

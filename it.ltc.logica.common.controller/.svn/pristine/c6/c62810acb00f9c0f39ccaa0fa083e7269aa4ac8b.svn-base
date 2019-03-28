@@ -1,0 +1,19 @@
+package it.ltc.logica.common.controller.processi;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.Processo;
+
+public abstract class ProcessoWebService extends Processo {
+	
+	protected final ObjectMapper mapper;
+	protected final WSConsumer consumer;
+
+	public ProcessoWebService(String title, Integer operations) {
+		super(title, operations);
+		mapper = new ObjectMapper();
+		consumer = WSConsumer.getInstance();
+	}
+
+}

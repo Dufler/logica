@@ -1,0 +1,43 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.Cap;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class NoloSud extends NoloItalia {
+	
+	private static final String CALABRIA = "CAL";
+	private static final String SICILIA = "SIC";
+	private static final String SARDEGNA = "SAR";
+	
+	public static final String CODICE = "NOLO_SUD";
+	private static NoloSud instance;
+	
+	private NoloSud() {}
+	
+	public static NoloSud getInstance() {
+		if (instance == null) {
+			instance = new NoloSud();
+		}
+		return instance;
+	}
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel model) {
+		Indirizzo destinazione = model.getDestinazione();
+		String capDestinazione = destinazione.getCap();
+		String localitaDestinazione = destinazione.getLocalita();
+		Cap cap = Cap.getInfoCap(capDestinazione, localitaDestinazione);
+		String regione = (cap != null) ? cap.getRegione() : "";
+		boolean applicabile = (CALABRIA.equals(regione) || SICILIA.equals(regione) || SARDEGNA.equals(regione));
+		if (applicabile)
+			System.out.println(cap);
+		return applicabile;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

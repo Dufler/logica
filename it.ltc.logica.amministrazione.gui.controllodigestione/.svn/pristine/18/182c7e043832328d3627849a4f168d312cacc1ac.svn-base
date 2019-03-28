@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_hZ71wFTEEee-oel8cjpDVg" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_pI5skFTEEee-oel8cjpDVg" elementId="it.ltc.logica.amministrazione.gui.controllodigestione.part.funzionecontrollo" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.controllodigestione/it.ltc.logica.amministrazione.gui.controllodigestione.parts.FunzioneControlloDiGestionePart" label="Funzione - Controllo Di Gestione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi effettuare il controllo di gestione"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_vujVcFTFEee-oel8cjpDVg" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_yRnIEFTFEee-oel8cjpDVg" elementId="it.ltc.logica.amministrazione.gui.controllodigestione.part.controllo" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.controllodigestione/it.ltc.logica.amministrazione.gui.controllodigestione.parts.ControlloDiGestionePart" label="Controllo Di Gestione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi effettuare il controllo di gestione"/>
+  </fragments>
+</fragment:ModelFragments>

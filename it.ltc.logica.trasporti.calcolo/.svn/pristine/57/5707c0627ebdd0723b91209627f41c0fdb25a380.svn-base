@@ -1,0 +1,78 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.ListinoCommessa;
+
+public class CommessaCalcolata {
+	
+	private List<VoceCalcolata> voci;
+	private ListinoCommessa listino;
+	
+	//private VoceCalcolata noloBase;
+	
+	public CommessaCalcolata(ListinoCommessa l) {
+		listino = l;
+		voci = new ArrayList<VoceCalcolata>();
+		//noloBase = null;
+	}
+	
+	public void aggiungiVoce(VoceCalcolata voce) {
+//		AmbitoDiTrasporto ambito = voce.getAmbito();
+//		String tipo = ambito.getTipo();
+//		if (AmbitoDiTrasporto.TIPO_NOLO_BASE.equals(tipo)) {
+//			if (noloBase != null) {
+//				if (!voce.getAmbito().getCodice().equals("NOLO")) {
+//					voci.remove(noloBase);
+//					noloBase = voce;
+//					voci.add(voce);
+//				}
+//			} else {
+//				noloBase = voce;
+//				voci.add(voce);
+//			}
+//		} else {
+//			voci.add(voce);
+//		}
+		voci.add(voce);
+	}
+
+	public List<VoceCalcolata> getVoci() {
+		return voci;
+	}
+
+	public void setVoci(List<VoceCalcolata> voci) {
+		this.voci = voci;
+	}
+
+	public ListinoCommessa getCommessa() {
+		return listino;
+	}
+
+	public void setCommessa(ListinoCommessa listino) {
+		this.listino = listino;
+	}
+	
+	public double getCostoNolo() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			AmbitoDiTrasporto ambito = voce.getAmbito();
+			String tipo = ambito.getTipo();
+			if (AmbitoDiTrasporto.TIPO_NOLO_BASE.equals(tipo) || AmbitoDiTrasporto.TIPO_NOLO_EXTRA.equals(tipo)) {
+				totale += voce.getCosto();
+			}
+		}
+		return totale;
+	}
+	
+	public double getTotale() {
+		double totale = 0;
+		for (VoceCalcolata voce : voci) {
+			totale += voce.getCosto();
+		}
+		return totale;
+	}
+
+}

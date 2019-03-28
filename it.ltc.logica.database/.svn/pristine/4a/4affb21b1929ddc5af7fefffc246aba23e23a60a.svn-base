@@ -1,0 +1,65 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.orm.ColumnList;
+
+public class ContrassegnoStorico extends Contrassegno {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "storico_contrassegno";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+//	@JsonIgnore
+//	private static final HashMap<Integer, ContrassegnoStorico> contrassegni = new HashMap<Integer, ContrassegnoStorico>();
+//	@JsonIgnore
+//	private static final LinkedList<ContrassegnoStorico> listaContrassegni = new LinkedList<ContrassegnoStorico>();
+//	@JsonIgnore
+//	private static final EntityManager<ContrassegnoStorico> manager = new EntityManager<ContrassegnoStorico>(ContrassegnoStorico.class, ConfigurationManager.getDefault());
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_spedizione", "idSpedizione", true, false);
+			variabili.addDouble("valore", "valore");
+			variabili.addString("valuta", "valuta");
+			variabili.addString("tipo", "tipo");
+			variabili.addBoolean("annullato", "annullato", false, true);
+		}
+		return variabili;
+	}
+	
+//	public static List<ContrassegnoStorico> getContrassegni() {
+//		if (listaContrassegni.isEmpty()) {
+//			listaContrassegni.addAll(manager.getEntities());
+//		}
+//		return listaContrassegni;
+//	}
+//	
+//	public static ContrassegnoStorico getContrassegno(Integer id) {
+//		if (!contrassegni.containsKey(id)) {
+//			//Lo inizializzo se non è stato ancora fatto
+//			if (contrassegni.isEmpty()) {
+//				for (ContrassegnoStorico cs : getContrassegni()) {
+//					contrassegni.put(cs.getIdSpedizione(), cs);
+//				}
+//			} else {
+//				ContrassegnoStorico filtro = new ContrassegnoStorico();
+//				filtro.setIdSpedizione(id);
+//				ContrassegnoStorico trovata = manager.getEntity(filtro, true);
+//				if (trovata != null) {
+//					contrassegni.put(id, trovata);
+//				}
+//			}
+//		}
+//		ContrassegnoStorico cs = contrassegni.get(id);
+//		return cs;
+//	}
+}

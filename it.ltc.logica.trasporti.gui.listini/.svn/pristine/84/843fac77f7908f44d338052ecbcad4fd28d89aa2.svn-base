@@ -1,0 +1,49 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.cliente;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoProporzionale;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceProporzionale;
+
+public class NuovaVoceListinoCommessaProporzionaleWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino cliente - Algoritmo";
+	private static final String descrizione = "Specifica il valore proporzionale.";
+	
+	private ListiniClientiController controller;
+	
+	private VoceDiListinoProporzionale voceProporzionale;
+	
+	private CompositeVoceProporzionale compositeProporzionale;
+
+	public NuovaVoceListinoCommessaProporzionaleWizardPage() {
+		super(titolo, descrizione);
+		controller = ListiniClientiController.getInstance();
+		voceProporzionale = new VoceDiListinoProporzionale();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeProporzionale = new CompositeVoceProporzionale(container, SWT.NONE);
+		compositeProporzionale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeProporzionale);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		voceProporzionale.setValore(compositeProporzionale.getValore());
+		voceProporzionale.setMinimo(compositeProporzionale.getMinimo());
+		voceProporzionale.setMassimo(compositeProporzionale.getMassimo());
+		//voceProporzionale.setTipo(compositeProporzionale.getTipo());
+		controller.getNuovaVoceDiListino().setStrategia(compositeProporzionale.getTipo());
+		controller.setVoceProporzionale(voceProporzionale);
+	}
+
+}

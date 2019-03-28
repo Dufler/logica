@@ -1,0 +1,176 @@
+package it.ltc.logica.admin.gui.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.admin.gui.dialogs.DialogSottoAmbito;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.gui.elements.Ordinatore;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaSottoAmbiti extends Tabella<SottoAmbitoFattura> {
+	
+	private FiltroAmbiti filtro;
+
+	public TabellaSottoAmbiti(Composite parent) {
+		super(parent, new OrdinatoreAmbiti());
+
+		aggiungiColonna("ID", 100, new EtichettatoreAmbiti(), 0);
+		aggiungiColonna("Ambito", 100, new EtichettatoreAmbiti(), 1);
+		aggiungiColonna("Nome", 100, new EtichettatoreAmbiti(), 2);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreAmbiti(), 3);
+		aggiungiColonna("Categoria", 100, new EtichettatoreAmbiti(), 4);
+		aggiungiColonna("Valore", 50, new EtichettatoreAmbiti(), 5);
+	}
+	
+	@Override
+	protected void setFiltro() {
+		filtro = new FiltroAmbiti();
+		setFilters(filtro);
+	}
+	
+	public void filtra(AmbitoFattura ambitoSelezionato) {
+		Integer idAmbito = ambitoSelezionato != null ? ambitoSelezionato.getId() : null;
+		filtro.setIdAmbito(idAmbito);
+		refresh();
+		aggiustaLarghezzaColonne();
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//Non è richiesto 
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem nuovo = new MenuItem(menu, SWT.PUSH);
+		nuovo.setText("Nuovo");
+	    nuovo.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogInserimento();
+	    	}
+	    });
+		MenuItem modifica = new MenuItem(menu, SWT.PUSH);
+	    modifica.setText("Modifica");
+	    modifica.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	private void apriDialogInserimento() {
+		DialogSottoAmbito dialog = new DialogSottoAmbito(null);
+		int result = dialog.open();
+		if (result == Dialog.OK) {
+			refresh();
+		}
+	}
+	
+	private void apriDialogModifica() {
+		SottoAmbitoFattura ambito = getSottoAmbitoSelezionato();
+		if (ambito != null) {
+			DialogSottoAmbito dialog = new DialogSottoAmbito(ambito);
+			int result = dialog.open();
+			if (result == Dialog.OK) {
+				refresh();
+			}
+		} else {
+			DialogMessaggio.openError("Nessun Sotto Ambito selezionato", "Bisogna prima selezionare un sotto ambito per poterlo modificare.");
+		}
+	}
+	
+	public SottoAmbitoFattura getSottoAmbitoSelezionato() {
+		SottoAmbitoFattura ambito;
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			ambito = (SottoAmbitoFattura) selectedItem.getData();
+		} else {
+			ambito = null;
+		}
+		return ambito;
+	}
+	
+	private static class EtichettatoreAmbiti extends Etichettatore<SottoAmbitoFattura> {
+
+		@Override
+		public String getTesto(SottoAmbitoFattura oggetto, int colonna) {
+			String testo;
+			switch (colonna) {
+				case 0 : testo = oggetto.getId().toString(); break;
+				case 1 : testo = getAmbito(oggetto); break;
+				case 2 : testo = oggetto.getNome(); break;
+				case 3 : testo = oggetto.getDescrizione() != null ? oggetto.getDescrizione() : ""; break;
+				case 4 : testo = oggetto.getCategoriaAmbito(); break;
+				case 5 : testo = oggetto.getValoreAmmesso() ? "Si" : "No"; break;
+				default : testo = "";
+			}
+			return testo;
+		}
+
+		private String getAmbito(SottoAmbitoFattura oggetto) {
+			AmbitoFattura ambito = ControllerAmbitiFatturazione.getInstance().getAmbito(oggetto.getIdAmbito());
+			String testo = ambito != null ? ambito.getNome() : "-";
+			return testo;
+		}
+
+		@Override
+		public String getTestoTooltip(SottoAmbitoFattura oggetto, int colonna) {
+			return getTesto(oggetto, colonna);
+		}
+
+		@Override
+		public Image getIcona(SottoAmbitoFattura oggetto, int colonna) {
+			return null;
+		}
+		
+	}
+	
+	private static class OrdinatoreAmbiti extends Ordinatore<SottoAmbitoFattura> {
+
+		@Override
+		protected int compare(SottoAmbitoFattura t1, SottoAmbitoFattura t2, int property) {
+			int compare;
+			switch (property) {
+				case 0 : compare = t1.getId().compareTo(t2.getId()); break;
+				case 1 : compare = t1.getCategoriaAmbito().compareTo(t2.getCategoriaAmbito()); break;
+				case 2 : compare = t1.getNome().compareTo(t2.getNome()); break;
+				default : compare = 0;
+			}
+			return compare;
+		}
+		
+	}
+	
+	private static class FiltroAmbiti extends ViewerFilter {
+		
+		private Integer idAmbito;
+
+		@Override
+		public boolean select(Viewer viewer, Object parentElement, Object element) {
+			SottoAmbitoFattura saf = (SottoAmbitoFattura) element;
+			boolean toShow = idAmbito != null ? idAmbito.equals(saf.getIdAmbito()) : false;
+			return toShow;
+		}
+
+		public void setIdAmbito(Integer idAmbito) {
+			this.idAmbito = idAmbito;
+		}
+		
+	}
+
+}

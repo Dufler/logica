@@ -1,0 +1,79 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.TipoContrassegno;
+import it.ltc.logica.database.model.Valuta;
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForMoney;
+
+public class CompositeContrassegno extends Gruppo {
+	
+	private static final String titolo = "Contrassegno";
+	
+	private TextForMoney textValore;
+	private ComboBox<Valuta> comboValuta;
+	private ComboBox<TipoContrassegno> comboTipo;
+
+	public CompositeContrassegno(Composite parent, int style) {
+		super(parent, style, titolo);
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(2, false));
+		
+		Label lblValore = new Label(this, SWT.NONE);
+		lblValore.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblValore.setText("Valore: ");
+		
+		textValore = new TextForMoney(this, SWT.BORDER);
+		textValore.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblValuta = new Label(this, SWT.NONE);
+		lblValuta.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblValuta.setText("Valuta: ");
+		
+		comboValuta = new ComboBox<Valuta>(this);
+		comboValuta.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboValuta.setItems(Valuta.getValute());
+		
+		Label lblTipo = new Label(this, SWT.NONE);
+		lblTipo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblTipo.setText("Tipo: ");
+		
+		comboTipo = new ComboBox<TipoContrassegno>(this);
+		comboTipo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboTipo.setItems(TipoContrassegno.getTipiContrassegno());
+	}
+	
+	public Double getValore() {
+		return textValore.getValue();
+	}
+	
+	public void setValore(Double valore) {
+		textValore.setValue(valore);
+	}
+	
+	public Valuta getValuta() {
+		return comboValuta.getSelectedValue();
+	}
+	
+	public void setValuta(Valuta valuta) {
+		comboValuta.setSelectedValue(valuta);
+	}
+	
+	public TipoContrassegno getTipoContrassegno() {
+		return comboTipo.getSelectedValue();
+	}
+	
+	public void setTipoContrassegno(TipoContrassegno tipo) {
+		comboTipo.setSelectedValue(tipo);
+	}
+
+}

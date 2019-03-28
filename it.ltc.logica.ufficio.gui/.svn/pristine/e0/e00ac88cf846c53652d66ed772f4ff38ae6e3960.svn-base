@@ -1,0 +1,133 @@
+package it.ltc.logica.ufficio.gui.elements.fornitore;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.ingressi.ControllerFornitore;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.gui.dialog.DialogModel;
+
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+
+public class DialogFornitore extends DialogModel<Fornitore> {
+	
+	private static final String title = "Fornitore";
+	
+	private GruppoFornitore compositeFornitore;
+	
+	private final ControllerFornitore controllerFornitori;
+	private final ControllerIndirizzi controllerIndirizzi;
+	private final ControllerCommesse controllerCommesse;
+	
+	private final Indirizzo indirizzoFornitore;
+	private final Commessa commessa;
+
+	public DialogFornitore(Fornitore value) {
+		super(title, value);
+		controllerFornitori = ControllerFornitore.getInstance();
+		controllerCommesse = ControllerCommesse.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		commessa = null;
+		if (value != null)
+			indirizzoFornitore = controllerIndirizzi.getIndirizzo(value.getIdIndirizzo());
+		else
+			indirizzoFornitore = new Indirizzo();
+	}
+	
+	public DialogFornitore(Commessa commessa) {
+		super(title, null);
+		controllerFornitori = ControllerFornitore.getInstance();
+		controllerCommesse = ControllerCommesse.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		indirizzoFornitore = new Indirizzo();
+		this.commessa = commessa;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeFornitore = new GruppoFornitore(container, SWT.NONE);
+		compositeFornitore.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeFornitore);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return compositeFornitore.isDirty();
+	}
+
+	@Override
+	public void loadModel() {
+		compositeFornitore.setRagioneSociale(valore.getNome());
+		compositeFornitore.setNote(valore.getNote());
+		compositeFornitore.setCommessa(controllerCommesse.getCommessa(valore.getIdCommessa()));
+		compositeFornitore.setIndirizzo(indirizzoFornitore.getIndirizzo());
+		compositeFornitore.setLocalita(indirizzoFornitore.getLocalita());
+		compositeFornitore.setCap(indirizzoFornitore.getCap());
+		compositeFornitore.setProvincia(controllerIndirizzi.getProvincia(indirizzoFornitore.getProvincia()));
+		compositeFornitore.setNazione(controllerIndirizzi.getNazione(indirizzoFornitore.getNazione()));
+		compositeFornitore.setTelefono(indirizzoFornitore.getTelefono());
+		compositeFornitore.setEmail(indirizzoFornitore.getEmail());
+		compositeFornitore.setCodice(valore.getRiferimentoCliente());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		valore.setIdCommessa(compositeFornitore.getCommessa().getId());
+		valore.setNome(compositeFornitore.getRagioneSociale());
+		valore.setNote(compositeFornitore.getNote());
+		valore.setRiferimentoCliente(compositeFornitore.getCodice());
+		indirizzoFornitore.setCap(compositeFornitore.getCap());
+		indirizzoFornitore.setConsegnaAppuntamento(false);
+		indirizzoFornitore.setConsegnaGdo(false);
+		indirizzoFornitore.setConsegnaAlPiano(false);
+		indirizzoFornitore.setConsegnaPrivato(false);
+		indirizzoFornitore.setEmail(compositeFornitore.getEmail());
+		indirizzoFornitore.setIndirizzo(compositeFornitore.getIndirizzo());
+		indirizzoFornitore.setLocalita(compositeFornitore.getLocalita());
+		indirizzoFornitore.setNazione(compositeFornitore.getNazione().getCodiceIsoTre());
+		indirizzoFornitore.setProvincia(compositeFornitore.getProvincia().getSigla());
+		indirizzoFornitore.setRagioneSociale(compositeFornitore.getRagioneSociale());
+		indirizzoFornitore.setTelefono(compositeFornitore.getTelefono());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		return controllerFornitori.update(valore);
+	}
+
+	@Override
+	public boolean insertModel() {
+		Integer idIndirizzo = controllerIndirizzi.insert(indirizzoFornitore).getId();
+		valore.setIdIndirizzo(idIndirizzo);
+		Fornitore nuovoFornitore = controllerFornitori.insert(valore);
+		boolean insert = nuovoFornitore != null;
+		return insert;
+	}
+
+	@Override
+	public Fornitore createNewModel() {
+		Fornitore nuovoFornitore = new Fornitore();
+		return nuovoFornitore;
+	}
+	
+	@Override
+	public void prefillModel() {
+		compositeFornitore.setCommessa(commessa);
+	}
+
+}

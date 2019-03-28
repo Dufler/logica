@@ -1,0 +1,27 @@
+package it.ltc.logica.gui.decoration;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+public class SpacerLabel extends Label {
+	
+	public static final String SHORT = " ";
+	public static final String MEDIUM = "	";
+	public static final String LARGE = "		";
+	
+	public SpacerLabel(Composite parent, int style) {
+		super(parent, style);
+		setText(MEDIUM);
+	}
+
+	public SpacerLabel(Composite parent, int style, String spacing) {
+		super(parent, style);
+		setText(spacing);
+		setVisible(false);
+	}
+	
+	public void checkSubclass() {
+		//DO NOTHING!
+	}
+
+}

@@ -1,0 +1,148 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.cliente;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.centrale.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.centrale.VoceDiListino;
+import it.ltc.logica.database.model.centrale.VoceDiListinoScaglioniRipetuti;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceScaglioniRipetuti;
+
+public class ProprietaVoceListinoCommessaScaglioniRipetuti extends DialogModel<VoceDiListino> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino cliente a scaglioni ripetuti";
+	
+	private static ProprietaVoceListinoCommessaScaglioniRipetuti instance;
+	
+	private ListiniClientiController controller;
+	
+	private VoceDiListino voce;
+	//private VoceDiListinoTrasporti voceTrasporti;
+	private VoceDiListinoScaglioniRipetuti voceScaglioni;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceScaglioniRipetuti compositeScaglioni;
+
+	private ProprietaVoceListinoCommessaScaglioniRipetuti(VoceDiListino voceDiListino) {
+		super(titolo, voceDiListino);
+		controller = ListiniClientiController.getInstance();
+		voce = voceDiListino;
+		//voceTrasporti = controller.caricaVoceTrasporti(voce);
+		voceScaglioni = controller.caricaVoceScaglioniRipetuti(voce);
+	}
+	
+	public static ProprietaVoceListinoCommessaScaglioniRipetuti getInstance(VoceDiListino voceDiListino) {
+		instance = new ProprietaVoceListinoCommessaScaglioniRipetuti(voceDiListino);
+		return instance;
+	}	
+
+	@Override
+	protected Point getInitialSize() {
+		return new Point(450, 420);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.TIPO_CLIENTE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeVoce);
+		
+		compositeScaglioni = new CompositeVoceScaglioniRipetuti(container, SWT.NONE);
+		compositeScaglioni.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(compositeScaglioni);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyScaglioni = compositeScaglioni.isDirty();
+		return modifyVoce || modifyScaglioni;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		String descrizione = voce.getDescrizione();
+		String ambito = voce.getSottoAmbito(); //voceTrasporti.getAmbito();
+		compositeVoce.setNome(nome);
+		compositeVoce.setDescrizione(descrizione);
+		AmbitoDiTrasporto ambitoDiTrasporto = AmbitoDiTrasporto.getAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		voceScaglioni = controller.caricaVoceScaglioniRipetuti(voce);
+		String tipo = voceScaglioni.getTipo();
+		Double intervallo = voceScaglioni.getIntervallo();
+		Double valore = voceScaglioni.getValore();
+		Double minimo = voceScaglioni.getMinimo();
+		Double massimo = voceScaglioni.getMassimo();
+		compositeScaglioni.setTipo(tipo);
+		compositeScaglioni.setIntervallo(intervallo);
+		compositeScaglioni.setValore(valore);
+		compositeScaglioni.setMinimo(minimo);
+		compositeScaglioni.setMassimo(massimo);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		String ambito = compositeVoce.getAmbito().getCodice();
+		//voceTrasporti.setAmbito(ambito);
+		voce.setSottoAmbito(ambito);
+		String tipo = compositeScaglioni.getTipo();
+		voceScaglioni.setTipo(tipo);
+		Double intervallo = compositeScaglioni.getIntervallo();
+		voceScaglioni.setIntervallo(intervallo);
+		Double valore = compositeScaglioni.getValore();
+		voceScaglioni.setValore(valore);
+		Double minimo = compositeScaglioni.getMinimo();
+		voceScaglioni.setMinimo(minimo);
+		Double massimo = compositeScaglioni.getMassimo();
+		voceScaglioni.setMassimo(massimo);	
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoScaglioniRipetuti = voceScaglioni.validate();
+		errors.addAll(esitoScaglioniRipetuti.getMessages());
+		return errors;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoceDiListino(voce);
+		//boolean updateTrasporti = controller.aggiornaVoceDiListinoTrasporti(voceTrasporti);
+		boolean updateScaglioni = controller.aggiornaVoceDiListinoScaglioniRipetuti(voceScaglioni);
+		boolean update = updateVoce /*&& updateTrasporti*/ && updateScaglioni;
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public VoceDiListino createNewModel() {
+		VoceDiListino listino = new VoceDiListino();
+		return listino;
+	}
+
+}

@@ -1,0 +1,49 @@
+package it.ltc.logica.common.controller.processi;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.Processo;
+
+public class ProcessoInserimentoDati<T> extends Processo {
+
+	private final String resource;
+	private final Class<T> c;
+	private T object;
+	private boolean esito;
+	
+	@SuppressWarnings("unchecked")
+	public ProcessoInserimentoDati(String title, String resource, T object) {
+		super(title, -1);
+		this.resource = resource;
+		this.object = object;
+		this.c = (Class<T>) object.getClass();
+	}
+	
+	public boolean getEsito() {
+		return esito;
+	}
+
+	public T getObject() {
+		return object;
+	}
+
+
+	@Override
+	public void eseguiOperazioni() throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(object);
+		WSConsumer consumer = WSConsumer.getInstance();
+		WSAnswer wsAnswer = consumer.post(resource, json);
+		if (wsAnswer.getStatus() == 201) {
+			object = mapper.readValue(wsAnswer.getMessage(), c);
+			esito = true;
+		} else {
+			esito = false;
+			throw new RuntimeException("Errore durante l'inserimento dati: '" + wsAnswer.getMessage() + "'");
+		}
+
+	}
+
+}

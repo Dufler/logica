@@ -1,0 +1,235 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.indirizzi.Nazione;
+import it.ltc.logica.database.model.centrale.indirizzi.Provincia;
+import it.ltc.logica.database.model.centrale.indirizzi.Regione;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+/**
+ * Controller adibito alla gestione degli indirizzi.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerIndirizzi {
+	
+	private static ControllerIndirizzi instance;
+	
+	private final HashMap<Integer, Indirizzo> indirizzi;
+	private final HashMap<String, Provincia> province;
+	private final HashMap<String, Nazione> nazioni;
+	private final HashMap<String, Regione> regioni;
+
+	private ControllerIndirizzi() {
+		indirizzi = new HashMap<Integer, Indirizzo>();
+		province = new HashMap<String, Provincia>();
+		nazioni = new HashMap<String, Nazione>();
+		regioni = new HashMap<String, Regione>();
+		caricaDati();
+	}
+
+	public static ControllerIndirizzi getInstance() {
+		if (instance == null) {
+			instance = new ControllerIndirizzi();
+		}
+		return instance;
+	}
+	
+	public Provincia getProvincia(String sigla) {
+		return province.get(sigla);
+	}
+	
+	public Collection<Provincia> getProvince() {
+		return province.values();
+	}
+	
+	public Regione getRegione(String sigla) {
+		return regioni.get(sigla);
+	}
+	
+	public Collection<Regione> getRegioni() {
+		return regioni.values();
+	}
+	
+	public Nazione getNazione(String codice) {
+		return nazioni.get(codice);
+	}
+	
+	public Collection<Nazione> getNazioni() {
+		return nazioni.values();
+	}
+	
+	public Indirizzo getIndirizzo(int idIndirizzo) {
+		return indirizzi.get(idIndirizzo);
+	}
+	
+	public Collection<Indirizzo> getIndirizzi() {
+		return indirizzi.values();
+	}
+	
+	/**
+	 * Tenta di inserire l'indirizzo nel DB. Potrebbe essere restituito un'indirizzo già esistente per evitare l'inserimento di duplicati.
+	 * @param indirizzo l'indirizzo da salvare.
+	 * @return l'indirizzo appena salvato o quello che già esisteva nel DB.
+	 */
+	public Indirizzo insert(Indirizzo indirizzo) {
+		Indirizzo nuovoIndirizzo;
+		try {
+			//Converto l'indirizzo in JSON
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(indirizzo);
+			// Chiamata al WS
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("indirizzo", json);
+			if (wsAnswer.getStatus() == 201) {
+				String answer = wsAnswer.getMessage();
+				nuovoIndirizzo = mapper.readValue(answer, Indirizzo.class);
+				indirizzi.put(nuovoIndirizzo.getId(), nuovoIndirizzo);
+			} else {
+				nuovoIndirizzo = null;
+			}
+		} catch (IOException e) {
+			nuovoIndirizzo = null;
+			e.printStackTrace();
+			DialogMessaggio.openError("Conversione JSON Fallita", "Impossibile convertire in JSON l'indirizzo specificato.");
+		}
+		return nuovoIndirizzo;
+	}
+	
+	/**
+	 * Modifica le informazioni sull'indirizzo passato come argomento salvandole nel DB.
+	 * @param indirizzo l'indirizzo da aggiornare.
+	 * @return l'esito dell'operazione.
+	 */
+	public boolean update(Indirizzo indirizzo) {
+		boolean update;
+		try {
+			//Converto l'indirizzo in JSON
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(indirizzo);
+			// Chiamata al WS
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("indirizzo", json);
+			update = wsAnswer.getStatus() == 200;
+		} catch (IOException e) {
+			update = false;
+			e.printStackTrace();
+			DialogMessaggio.openError("Conversione JSON Fallita", "Impossibile convertire in JSON l'indirizzo specificato.");
+		}
+		return update;
+	}
+	
+	public boolean delete(Indirizzo indirizzo) {
+		boolean delete;
+		try {
+			//Converto l'indirizzo in JSON
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(indirizzo);
+			// Chiamata al WS
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("indirizzo/" + indirizzo.getId(), json);
+			delete = wsAnswer.getStatus() == 200;
+			if (delete) {
+				indirizzi.remove(indirizzo.getId());
+			}
+		} catch (IOException e) {
+			delete = false;
+			e.printStackTrace();
+			DialogMessaggio.openError("Conversione JSON Fallita", "Impossibile convertire in JSON l'indirizzo specificato.");
+		}
+		return delete;
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sugli indirizzi.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoIndirizzi pci = new ProcessoCaricamentoIndirizzi();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pci);
+	}
+	
+	private class ProcessoCaricamentoIndirizzi extends Processo {
+
+		private static final String title = "Caricamento indirizzi";
+		
+		public ProcessoCaricamentoIndirizzi() {
+			super(title, -1);
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			//Preparo la chiamate
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			
+			//Indirizzi
+			WSAnswer wsAnswer = c.get("indirizzo");
+			if (wsAnswer.getStatus() == 200) {
+				String answer = wsAnswer.getMessage();
+				List<Indirizzo> lista = mapper.readValue(answer, new TypeReference<List<Indirizzo>>() {});
+				//Ripulisco i dati e inserisco i nuovi
+				indirizzi.clear();
+				for (Indirizzo indirizzo : lista) {
+					indirizzi.put(indirizzo.getId(), indirizzo);
+				}
+			} else {
+				throw new RuntimeException("Errore durante lo scaricamento degli indirizzi: \r\n" + wsAnswer.toString());
+			}
+			
+			//Province
+			WSAnswer wsAnswerProvince = c.get("provincia");
+			if (wsAnswerProvince.getStatus() == 200) {
+				// Carico tutto quello che trovo
+				String answerProvince = wsAnswerProvince.getMessage();
+				List<Provincia> listaProvince = mapper.readValue(answerProvince, new TypeReference<List<Provincia>>() {});
+				//Ripulisco i dati e inserisco i nuovi
+				province.clear();
+				for (Provincia provincia : listaProvince) {
+					province.put(provincia.getSigla(), provincia);
+				}
+			}
+			
+			//Regioni
+			WSAnswer wsAnswerRegioni = c.get("regione");
+			if (wsAnswerRegioni.getStatus() == 200) {
+				// Carico tutto quello che trovo
+				String answerRegioni = wsAnswerRegioni.getMessage();
+				List<Regione> listaRegioni = mapper.readValue(answerRegioni, new TypeReference<List<Regione>>() {});
+				//Ripulisco i dati e inserisco i nuovi
+				regioni.clear();
+				for (Regione regione : listaRegioni) {
+					regioni.put(regione.getCodice(), regione);
+				}
+			}
+			
+			//Nazioni
+			WSAnswer wsAnswerNazioni = c.get("nazione");
+			if (wsAnswerNazioni.getStatus() == 200) {
+				String answerNazioni = wsAnswerNazioni.getMessage();
+				// Carico tutto quello che trovo
+				List<Nazione> listaNazioni = mapper.readValue(answerNazioni, new TypeReference<List<Nazione>>() {});
+				//Ripulisco i dati e inserisco i nuovi
+				nazioni.clear();
+				for (Nazione nazione : listaNazioni) {
+					nazioni.put(nazione.getCodiceIsoTre(), nazione);
+				}
+			}
+			
+		}
+		
+	}
+
+}

@@ -1,0 +1,127 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.HashMap;
+
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbito;
+
+public class AlgoritmoProporzionale implements IAlgoritmo {
+	
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "Proporzionale";
+	
+	//private static final HashMap<String, String> nomiTipi = new HashMap<String, String>(3);
+	private static final HashMap<Tipo, AlgoritmoProporzionale> tipi = new HashMap<Tipo, AlgoritmoProporzionale>(3);
+	
+	public enum Tipo {
+		
+		COLLI("COLLI", "Ai Colli"),
+		PEZZI("PEZZI", "Ai pezzi");
+		
+		private final String codifica;
+		private final String nome;
+		
+		private Tipo(String codifica, String nome) {
+			this.codifica = codifica;
+			this.nome = nome;
+		}
+		
+		public String toString() {
+			return nome;
+		}
+
+		public String getCodifica() {
+			return codifica;
+		}
+
+		public String getNome() {
+			return nome;
+		}
+	}
+	
+//	public static final String TIPO_NESSUNO = "NESSUNO";
+//	public static final String TIPO_COLLI = "COLLI";
+//	public static final String TIPO_PEZZI = "PEZZI";
+//	
+//	public static final String NOME_NESSUNO = "";
+//	public static final String NOME_COLLI = "Ai Colli";
+//	public static final String NOME_PEZZI = "Ai Pezzi";
+	
+	private String nome;
+	private Tipo tipo;
+	
+	private AlgoritmoProporzionale(String name, Tipo type) {
+		nome = name;
+		tipo = type;
+	}
+	
+	public static AlgoritmoProporzionale getInstance(/*String type*/ Tipo tipo) {
+		//Tipo tipo = Tipo.valueOf(type);
+		if (!tipi.containsKey(tipo)) {
+			tipi.put(tipo, new AlgoritmoProporzionale(tipo.getNome(), tipo));			
+		}
+		AlgoritmoProporzionale algoritmo = tipi.get(tipo);
+		return algoritmo;
+	}
+	
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	public String toString() {
+		String toString = (nome != null && !nome.isEmpty()) ? nome : NOME;
+		return toString;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AlgoritmoProporzionale) {
+			AlgoritmoProporzionale algoritmo = (AlgoritmoProporzionale) o;
+			if (algoritmo.getTipo().equals(tipo))
+				uguali = true;
+		}
+		return uguali;
+	}
+
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		IAmbito ambito = voce.getAmbito();
+		if (ambito.isApplicabile(spedizione)) {
+			double valorePerElemento = voce.getValore();
+			Double minimo = voce.getMinimo();
+			Double massimo = voce.getMassimo();
+			double elementi = ambito.getValore(spedizione, this);
+			costo = valorePerElemento * elementi;
+			if (minimo != null && minimo > costo)
+				costo = minimo;
+			if (massimo != null && massimo < costo)
+				costo = massimo;
+		}
+		return costo;
+	}
+	
+//	private static String daiNome(String tipo) {
+//		if (nomiTipi.isEmpty()) {
+//			nomiTipi.put(TIPO_COLLI, NOME_COLLI);
+//			nomiTipi.put(TIPO_PEZZI, NOME_PEZZI);
+//			nomiTipi.put(TIPO_NESSUNO, NOME_NESSUNO);
+//		}
+//		return nomiTipi.get(tipo);
+//	}
+
+	@Override
+	public TipoAlgoritmo getTipoAlgoritmo() {
+		return TipoAlgoritmo.PROPORZIONALE;
+	}
+
+}

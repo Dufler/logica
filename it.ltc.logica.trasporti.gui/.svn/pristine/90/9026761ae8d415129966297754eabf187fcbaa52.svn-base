@@ -1,0 +1,22 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.Cap;
+import it.ltc.logica.gui.decoration.Immagine;
+
+public class Ore10LabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		return null;
+	}
+	
+	@Override
+	public Image getImage(Object element) {
+		Cap cap = (Cap) element;
+		Image iconToShow = cap.getTntOre10() ? Immagine.SPUNTAVERDE_16X16.getImage() : Immagine.CROCEROSSA_16X16.getImage();
+		return iconToShow;
+	}
+
+}

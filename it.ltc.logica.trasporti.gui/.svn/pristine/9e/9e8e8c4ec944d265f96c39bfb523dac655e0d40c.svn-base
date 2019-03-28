@@ -1,0 +1,98 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import java.util.Collection;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+
+public class IndirizziTableViewer extends TableViewer {
+	
+	private Table table;
+	private TableViewerColumn colonnaRagioneSociale;
+	private TableViewerColumn colonnaIndirizzo;
+	
+	private IndirizziComparator comparator;
+	private FiltroIndirizzi filter;
+
+	public IndirizziTableViewer(Composite parent) {
+		super(parent,SWT.BORDER | SWT.FULL_SELECTION | SWT.VIRTUAL);
+		setContentProvider(ArrayContentProvider.getInstance());
+		setOrdinamento();
+		setFiltro();
+		table = getTable();
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		aggiungiColonne();
+		aggiungiListener();
+	}
+	
+	private void setOrdinamento() {
+		comparator = new IndirizziComparator();
+		setComparator(comparator);
+	}
+	
+	private void setFiltro() {
+		filter = new FiltroIndirizzi();
+		setFilters(filter);
+	}
+	
+	private void aggiungiColonne() {
+		colonnaRagioneSociale = new TableViewerColumn(this, SWT.NONE);
+		colonnaRagioneSociale.setLabelProvider(new RagioneSocialeLabelProvider());
+		
+		TableColumn tblclmnRagioneSociale = colonnaRagioneSociale.getColumn();
+		tblclmnRagioneSociale.setWidth(200);
+		tblclmnRagioneSociale.setText("Ragione Sociale");
+		
+		colonnaIndirizzo = new TableViewerColumn(this, SWT.NONE);
+		colonnaIndirizzo.setLabelProvider(new IndirizzoLabelProvider());
+		
+		TableColumn tblclmnIndirizzo = colonnaIndirizzo.getColumn();
+		tblclmnIndirizzo.setWidth(300);
+		tblclmnIndirizzo.setText("Indirizzo");
+	}
+	
+	private void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModificaIndirizzo();
+			}
+		});
+	}
+	
+	private void apriDialogModificaIndirizzo() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			TableItem selectedItem = table.getItem(selectionIndex);
+			Indirizzo indirizzo = (Indirizzo) selectedItem.getData();
+			DialogIndirizzo dialog = new DialogIndirizzo(indirizzo);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+	public void mostraIndirizzi(Collection<Indirizzo> input) {
+		setInput(input);
+	}
+	
+	public void filtra(String ragioneSociale, String indirizzo) {
+		filter.setRagioneSociale(ragioneSociale);
+		filter.setIndirizzo(indirizzo);
+		refresh();
+	}
+
+}

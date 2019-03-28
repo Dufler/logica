@@ -1,0 +1,125 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.corriere;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.VoceDiListinoCorriere;
+import it.ltc.logica.database.model.VoceDiListinoCorriereFissa;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceFissa;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+
+public class ProprietaVoceListinoCorriereFissa extends DialogModel<VoceDiListinoCorriere> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino corriere fissa";
+
+	private static ProprietaVoceListinoCorriereFissa instance;
+	
+	private ListiniCorrieriController controller;
+	
+	private VoceDiListinoCorriere voce;
+	private VoceDiListinoCorriereFissa voceFissa;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceFissa compositeFissa;
+	
+	public static ProprietaVoceListinoCorriereFissa getInstance(VoceDiListinoCorriere voceDiListino) {
+		instance = new ProprietaVoceListinoCorriereFissa(voceDiListino);
+		return instance;
+	}
+	
+	private ProprietaVoceListinoCorriereFissa(VoceDiListinoCorriere voceDiListino) {
+		super(titolo, voceDiListino);
+		voce = voceDiListino;
+		controller = ListiniCorrieriController.getInstance();
+	}
+	
+	@Override
+	protected Point getInitialSize() {
+		return new Point(450, 400);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.TIPO_CORRIERE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeVoce);
+		
+		compositeFissa = new CompositeVoceFissa(container, SWT.NONE);
+		compositeFissa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(compositeFissa);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyFissa = compositeFissa.isDirty();
+		return modifyVoce || modifyFissa;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		String descrizione = voce.getDescrizione();
+		String ambito = voce.getAmbito();
+		compositeVoce.setNome(nome);
+		compositeVoce.setDescrizione(descrizione);
+		AmbitoDiTrasporto ambitoDiTrasporto = AmbitoDiTrasporto.getAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		voceFissa = controller.caricaVoceFissa(voce);
+		Double valore = voceFissa.getValore();
+		compositeFissa.setValore(valore);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		String ambito = compositeVoce.getAmbito().getCodice();
+		voce.setAmbito(ambito);
+		Double valore = compositeFissa.getValore();
+		voceFissa.setValore(valore);
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoFisso = voceFissa.validate();
+		errors.addAll(esitoFisso.getMessages());
+		return errors;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoceDiListino(voce);
+		boolean updateFissa = controller.aggiornaVoceDiListinoFissa(voceFissa);
+		return updateVoce && updateFissa;
+	}
+
+	@Override
+	public boolean insertModel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public VoceDiListinoCorriere createNewModel() {
+		VoceDiListinoCorriere voce = new VoceDiListinoCorriere();
+		return voce;
+	}
+}

@@ -1,0 +1,96 @@
+package it.ltc.logica.container.controller;
+
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Permesso;
+import it.ltc.logica.database.model.centrale.Sede;
+
+public class Utenza {
+	
+	private String username;
+	private String password;
+	private String nome;
+	private String cognome;
+	private String email;
+	
+	private Commessa commessaDefault;
+	private List<Commessa> commesse;
+	private List<Sede> sedi;
+	private List<Permesso> permessi;
+
+	public Utenza() {}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getCognome() {
+		return cognome;
+	}
+
+	public void setCognome(String cognome) {
+		this.cognome = cognome;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Commessa getCommessaDefault() {
+		return commessaDefault;
+	}
+
+	public void setCommessaDefault(Commessa commessaDefault) {
+		this.commessaDefault = commessaDefault;
+	}
+
+	public List<Commessa> getCommesse() {
+		return commesse;
+	}
+
+	public void setCommesse(List<Commessa> commesse) {
+		this.commesse = commesse;
+	}
+
+	public List<Sede> getSedi() {
+		return sedi;
+	}
+
+	public void setSedi(List<Sede> sedi) {
+		this.sedi = sedi;
+	}
+
+	public List<Permesso> getPermessi() {
+		return permessi;
+	}
+
+	public void setPermessi(List<Permesso> permessi) {
+		this.permessi = permessi;
+	}
+	
+}

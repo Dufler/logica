@@ -1,0 +1,152 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.decoration.Immagine;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class EtichettatoreSpedizioniModel extends Etichettatore<SpedizioneModel> {
+
+	private final ListinoCommessa listinoCliente;
+	private final ListinoCorriere listinoCorriere;
+	
+	private final SimpleDateFormat sdf;
+	private final SpedizioniController controllerSpedizioni;
+	
+	public EtichettatoreSpedizioniModel() {
+		listinoCliente = null;
+		listinoCorriere = null;
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public EtichettatoreSpedizioniModel(ListinoCommessa listino) {
+		listinoCliente = listino;
+		listinoCorriere = null;
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public EtichettatoreSpedizioniModel(ListinoCorriere listino) {
+		listinoCliente = null;
+		listinoCorriere = listino;
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	@Override
+	public String getTesto(SpedizioneModel oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto.getSpedizione()); break;
+			case 1 : testo = getDestinatario(oggetto.getSpedizione()); break;
+			case 2 : testo = getLocalita(oggetto.getSpedizione()); break;
+			case 3 : testo = oggetto.getSpedizione().getRiferimentoCliente(); break;
+			case 4 : testo = getRicavo(oggetto); break;
+			case 5 : testo = getCosto(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(SpedizioneModel oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto.getSpedizione()); break;
+			case 1 : testo = getToolTipDestinatario(oggetto.getSpedizione()); break;
+			case 2 : testo = oggetto.getSpedizione().getRiferimentoCliente(); break;
+			case 3 : testo = getRicavo(oggetto); break;
+			case 4 : testo = getCosto(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public Image getIcona(SpedizioneModel oggetto, int colonna) {
+		Image image = null;
+		if (colonna == 0 && !oggetto.getSpedizione().getDatiCompleti()) {
+			image = Immagine.RED_MARK_12X20.getImage();
+		}
+		return image;
+	}
+	
+	private String getData(Spedizione spedizione) {
+		String testo;
+		Date data = spedizione.getData();
+		if (data != null)
+			testo = sdf.format(data);
+		else
+			testo = "Non ancora partita.";
+		return testo;
+	}
+	
+	public String getDestinatario(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		return ragioneSociale;
+	}
+	
+	public String getLocalita(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia != null && !provincia.isEmpty() && !"XX".equalsIgnoreCase(provincia))
+			localita += " (" + provincia + ")";
+		return localita;
+	}
+	
+	public String getToolTipDestinatario(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		String indirizzo = destinatario.getIndirizzo();
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia.equals("XX"))
+			provincia = " " + destinatario.getNazione();
+		else
+			provincia = " (" + provincia +")";
+		String testo = ragioneSociale + "\r\n" + indirizzo + "\r\n" + localita + provincia;
+		return testo;
+	}
+	
+	private String getRicavo(SpedizioneModel oggetto) {
+		Calcolo ricavo = null;
+		for (Calcolo c : oggetto.getPreventiviRicavo()) {
+			if (c.getIdListino() == listinoCliente.getId()) {
+				ricavo = c;
+				break;
+			}
+		}
+		String testo = Decorator.getEuroValue(ricavo.getTotale());
+		return testo;
+	}
+	
+	private String getCosto(SpedizioneModel oggetto) {
+		Calcolo corriere = null;
+		for (Calcolo c : oggetto.getPreventiviCosto()) {
+			if (c.getIdListino() == listinoCorriere.getId()) {
+				corriere = c;
+				break;
+			}
+		}
+		String testo = Decorator.getEuroValue(corriere.getTotale());
+		return testo;
+	}
+
+}

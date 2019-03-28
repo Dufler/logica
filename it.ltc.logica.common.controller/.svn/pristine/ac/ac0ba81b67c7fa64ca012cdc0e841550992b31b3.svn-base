@@ -1,0 +1,62 @@
+package it.ltc.logica.common.controller.sistema;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerSedi {
+	
+	private static ControllerSedi instance;
+	
+	private final HashMap<Integer, Sede> sedi;
+
+	private ControllerSedi() {
+		sedi = new HashMap<Integer, Sede>();
+		caricaDati();
+	}
+
+	public static ControllerSedi getInstance() {
+		if (instance == null) {
+			instance = new ControllerSedi();
+		}
+		return instance;
+	}
+	
+	public Sede getSede(int idSede) {
+		return sedi.get(idSede);
+	}
+	
+	public Collection<Sede> getSedi() {
+		return sedi.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle commesse.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoSedi pcc = new ProcessoCaricamentoSedi();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			sedi.clear();
+			for (Sede sede : pcc.getLista()) {
+				sedi.put(sede.getId(), sede);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoSedi extends ProcessoCaricamentoDati<Sede> {
+
+		private static final String title = "Caricamento sedi";
+		private static final String resource = "sede";
+		
+		public ProcessoCaricamentoSedi() {
+			super(title, resource, Sede.class);
+		}
+		
+	}
+
+}

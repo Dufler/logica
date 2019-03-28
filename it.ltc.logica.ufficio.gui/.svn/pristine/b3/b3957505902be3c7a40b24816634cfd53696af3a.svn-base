@@ -1,0 +1,63 @@
+package it.ltc.logica.ufficio.gui.elements.fornitore;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaFornitori extends Tabella<Fornitore> {
+	
+	private String filterString;
+	private ViewerFilter filter;
+
+	public TabellaFornitori(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreFornitori());
+		
+		aggiungiColonna("Ragione sociale", 100, new EtichettatoreFornitori(), 0);
+		aggiungiColonna("Note", 200, new EtichettatoreFornitori(), 1);
+	}
+	
+	/**
+	 * Imposta la stringa passata come argomento come criterio di filtraggio sulla ragione sociale.
+	 * @param searchString
+	 */
+	public void setFiltro(String searchString) {
+		if (searchString == null)
+			searchString = "";
+		filterString = searchString.toUpperCase();
+		refresh();
+	}
+
+	@Override
+	protected void setFiltro() {
+		filterString = "";
+		filter = new ViewerFilter() {
+
+			@Override
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				Fornitore fornitore = (Fornitore) element;
+				String ragioneSociale = fornitore.getNome() != null ? fornitore.getNome().toUpperCase() : "";
+				boolean select = ragioneSociale.contains(filterString);
+				return select;
+			}
+			
+		};
+		setFilters(filter);		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

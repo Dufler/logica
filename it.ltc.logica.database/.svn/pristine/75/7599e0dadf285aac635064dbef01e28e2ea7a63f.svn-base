@@ -1,0 +1,100 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.orm.ColumnList;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+public class SpedizioneStorica extends Spedizione implements Comparable<SpedizioneStorica> {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "storico_spedizione";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	//private static final LinkedList<SpedizioneStorica> spedizioni = new LinkedList<SpedizioneStorica>();
+	//private static final EntityManager<SpedizioneStorica> manager = new EntityManager<SpedizioneStorica>(SpedizioneStorica.class, ConfigurationManager.getDefault());
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("id", "id");
+			variabili.addInt("id_ordine", "idOrdine");
+			variabili.addInt("id_corriere", "idCorriere");
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addDate("data_partenza", "dataPartenza");
+			variabili.addInt("indirizzo_partenza", "indirizzoPartenza");
+			variabili.addInt("indirizzo_destinazione", "indirizzoDestinazione");		
+			variabili.addInt("colli", "colli");
+			variabili.addDouble("peso", "peso");
+			variabili.addDouble("volume", "volume");
+			variabili.addInt("pezzi", "pezzi");
+			variabili.addString("servizio", "servizio");
+			variabili.addBoolean("contrassegno", "contrassegno");
+			//variabili.addBoolean("assicurazione", "assicurazione");
+			variabili.addString("stato", "stato");
+			variabili.addBoolean("giacenza", "giacenza", false, true);
+			variabili.addString("lettera_di_vettura", "letteraDiVettura");
+			variabili.addDouble("valore_merce_dichiarato", "valoreMerceDichiarato");
+			//variabili.addBoolean("particolarita", "particolarita");
+			variabili.addString("codice_cliente", "codiceCliente");
+			variabili.addString("riferimento_cliente", "riferimentoCliente");
+			variabili.addString("riferimento_mittente", "riferimentoMittente");
+			//variabili.addString("note", "note");
+			variabili.addBoolean("in_ritardo", "inRitardo", false, true);
+			variabili.addBoolean("dati_completi", "datiCompleti", false, true);
+			variabili.addInt("fatturazione", "fatturazione", false, true);
+			variabili.addDouble("costo", "costo");
+			variabili.addDouble("ricavo", "ricavo");
+		}
+		return variabili;
+	}
+
+	@Override
+	public int compareTo(SpedizioneStorica ss) {
+		int compare;
+		if (ss != null) {
+			Date dNull = new Date();
+			Date d1 = getDataPartenza() != null ? getDataPartenza() : dNull;
+			Date d2 = ss.getDataPartenza() != null ? ss.getDataPartenza() : dNull;
+			compare = d1.compareTo(d2);
+		} else {
+			compare = -1;
+		}
+		return compare;
+	}
+	
+//	public static List<SpedizioneStorica> geSpedizioni() {
+//		if (spedizioni.isEmpty()) {
+//			spedizioni.addAll(scaricaSpedizioni());
+//		}
+//		return spedizioni;
+//	}
+//	
+//	private static List<SpedizioneStorica> scaricaSpedizioni() {
+//		List<SpedizioneStorica> lista = null;
+//		
+//		WSConsumer c = WSConsumer.getInstance();
+//		WSAnswer wsAnswer = c.get("storicospedizioni");
+//		String answer = wsAnswer.getAnswer();
+//		
+//		ObjectMapper mapper = new ObjectMapper();
+//		try {
+//			//SpedizioneStorica ss = mapper.readValue(answer, SpedizioneStorica.class);
+//			lista = mapper.readValue(answer, new TypeReference<List<SpedizioneStorica>>(){});
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return lista;
+//	}
+
+}

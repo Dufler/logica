@@ -1,0 +1,86 @@
+ 
+package it.ltc.logica.trasporti.gui.preventivi.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.e4.ui.di.UISynchronize;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti.PreventivoSpedizioniEsistentiWizard;
+import it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia.PreventivoSpedizioneFittiziaWizard;
+
+public class PreventiviPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.preventivi.part.preventivi";
+	
+	private static final int iconHeight = 200;
+	private static final int iconWidth = 200;
+	
+	@Inject UISynchronize sync;
+	
+	@Inject
+	public PreventiviPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(3, false));
+		
+		Canvas canvasSpedizioneFittizia = new Canvas(parent, SWT.NONE);
+		canvasSpedizioneFittizia.setBackgroundImage(SWTResourceManager.getImage(PreventiviPart.class, "/resources/spedizione_preventivo_200x200.png"));
+		canvasSpedizioneFittizia.setToolTipText("Calcola il preventivo di costo inserendo i dati della spedizione.");
+		GridData gd_canvasFittizia = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
+		gd_canvasFittizia.widthHint = iconWidth;
+		gd_canvasFittizia.heightHint = iconHeight;
+		canvasSpedizioneFittizia.setLayoutData(gd_canvasFittizia);
+		canvasSpedizioneFittizia.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				DialogWizard wizard = new DialogWizard(new PreventivoSpedizioneFittiziaWizard(), DialogWizard.WIZARD_PREVENTIVO);
+				int esito = wizard.open();
+				if (esito == WizardDialog.OK) {
+					//Se serve fail qualcosa.
+				}
+			}
+		});
+		canvasSpedizioneFittizia.setLayout(new GridLayout(1, false));
+		
+		new SpacerLabel(parent, SWT.NONE);
+		
+		Canvas canvasSpedizioneEsistente = new Canvas(parent, SWT.NONE);
+		canvasSpedizioneEsistente.setBackgroundImage(SWTResourceManager.getImage(PreventiviPart.class, "/resources/spedizioni_fatte_200x200.png"));
+		canvasSpedizioneEsistente.setToolTipText("Calcola il costo di una spedizione gi\u00E0 effettuata e comparalo con il costo effettivo.");
+		GridData gd_canvasEsistente = new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1);
+		gd_canvasEsistente.widthHint = iconWidth;
+		gd_canvasEsistente.heightHint = iconHeight;
+		canvasSpedizioneEsistente.setLayoutData(gd_canvasEsistente);
+		canvasSpedizioneEsistente.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				DialogWizard wizard = new DialogWizard(new PreventivoSpedizioniEsistentiWizard(sync), DialogWizard.WIZARD_PREVENTIVO);
+				int esito = wizard.open();
+				if (esito == WizardDialog.OK) {
+					//Se serve fail qualcosa.
+				}
+			}
+		});
+		canvasSpedizioneEsistente.setLayout(new GridLayout(1, false));
+		
+	}
+	
+	
+	
+	
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/Trasporti_1.0.1.qualifier.jar" id="Trasporti" version="1.0.1.qualifier">
+      <category name="trasporti"/>
+   </feature>
+   <category-def name="trasporti" label="Trasporti"/>
+</site>

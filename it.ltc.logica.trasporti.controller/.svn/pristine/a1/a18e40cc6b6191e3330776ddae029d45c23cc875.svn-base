@@ -1,0 +1,355 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.MVoceDiListino.Scopo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.common.controller.fatturazione.FatturazioneController;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.common.controller.trasporti.ControllerCodiciClienteCorriere;
+import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione.TipoSpedizione;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.CalcolatoreTrasporti;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.calcolo.algoritmi.VoceDiListinoTrasporti;
+import it.ltc.logica.trasporti.calcolo.ambiti.trasporti.FactoryAmbitiTrasporti;
+import it.ltc.logica.utilities.excel.FileExcel;
+
+public class FatturazioneSpedizioniController extends FatturazioneController {
+	
+	private static FatturazioneSpedizioniController instance;
+	
+	private final ControllerSpedizioni controllerSpedizioni;
+	
+	private final HashMap<String, ListinoCommessa> listiniTrasporti;
+	private final HashMap<String, List<SpedizioneModel>> modelTrasporti;
+	
+	private FatturazioneSpedizioniController() {
+		controllerSpedizioni = ControllerSpedizioni.getInstance();
+		listiniTrasporti = new HashMap<String, ListinoCommessa>();
+		modelTrasporti = new HashMap<String, List<SpedizioneModel>>();
+	}
+
+	public static FatturazioneSpedizioniController getInstance() {
+		if (instance == null) {
+			instance = new FatturazioneSpedizioniController();
+		}
+		return instance;
+	}
+	
+	public HashMap<String, List<SpedizioneModel>> getSpedizioniFatturate() {
+		return modelTrasporti;
+	}
+	
+	public List<ListinoCommessa> getListiniTrasportiUtilizzati() {
+		List<ListinoCommessa> listiniUtilizzati = new ArrayList<ListinoCommessa>();
+		for (String codice : listiniTrasporti.keySet()) {
+			ListinoCommessa listino = listiniTrasporti.get(codice);
+			listiniUtilizzati.add(listino);
+		}
+		return listiniUtilizzati;
+	}
+	
+	private List<Spedizione> getSpedizioni() {
+		List<Spedizione> listaSpedizioni = new LinkedList<>();
+		for (Spedizione spedizione : controllerSpedizioni.getSpedizioni()) {
+			boolean fatturabile = Spedizione.Fatturazione.FATTURABILE == spedizione.getFatturazione();
+			if (fatturabile) {
+				fatturabile = spedizione.getIdCommessa().equals(commessa.getId());
+				if (fatturabile) {
+					Date data = spedizione.getDataPartenza();
+					fatturabile = data.after(inizio) && data.before(fine);
+					if (fatturabile) {
+						fatturabile = TipoSpedizione.ITALIA == spedizione.getTipo();
+					}
+				}
+			}
+			//Se ha superato tutti i controlli la aggiungo
+			if (fatturabile) {
+				listaSpedizioni.add(spedizione);
+			}
+		}
+		return listaSpedizioni;
+	}
+	
+	private ListinoCommessa getListinoTrasporti(String codiceCliente) {
+		if (!listiniTrasporti.containsKey(codiceCliente)) {
+			CodiceClienteCorriere codice = ControllerCodiciClienteCorriere.getInstance().getCodiceCliente(codiceCliente);
+			if (codice != null) {
+				ListinoCommessa listino = controllerListini.getListinoPerAmbitoECliente(AmbitoFattura.ID_SPEDIZIONI, codice.getCommessa());
+				if (listino != null)
+					listiniTrasporti.put(codiceCliente, listino);
+			} else {
+				String messaggio = MESSAGGIO_ERRORE_CODICE_NON_TROVATO.replace("[codice]", codiceCliente);
+				DialogMessaggio.openError(TITOLO_ERRORE_CODICE_NON_TROVATO, messaggio);
+			}
+		}
+		return listiniTrasporti.get(codiceCliente);
+	}
+	
+	private List<SpedizioneModel> getListaSpedizioniTrasporti(String codiceCliente) {
+		if (!modelTrasporti.containsKey(codiceCliente)) {
+			ArrayList<SpedizioneModel> lista = new ArrayList<SpedizioneModel>();
+			modelTrasporti.put(codiceCliente, lista);
+		}
+		return modelTrasporti.get(codiceCliente);
+	}
+	
+	public void ricalcolaSpedizione(SpedizioneModel spedizione) {
+		spedizione.resettaCalcoli();
+		String codiceCliente = spedizione.getSpedizione().getCodiceCliente();
+		ListinoCommessa listinoCommessa = getListinoTrasporti(codiceCliente);
+		CalcolatoreTrasporti.getInstance().calcolaRicavo(spedizione, listinoCommessa);
+	}
+
+	public void calcolaFatturazioneTrasporti() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				CalcolatoreTrasporti calcolatore = CalcolatoreTrasporti.getInstance();
+				listiniTrasporti.clear();
+				modelTrasporti.clear();
+				List<Spedizione> spedizioni = getSpedizioni();
+				monitor.beginTask("Calcolo della fatturazione trasporti", spedizioni.size());
+				for (Spedizione spedizione : spedizioni) {
+					String codiceCliente = spedizione.getCodiceCliente();
+					ListinoCommessa listinoCommessa = getListinoTrasporti(codiceCliente);
+					if (listinoCommessa == null) {
+						throwListinoMancanteException(codiceCliente);
+					}
+					List<SpedizioneModel> listaModel = getListaSpedizioniTrasporti(codiceCliente);
+					SpedizioneModel model = SpedizioneModel.caricaSpedizione(spedizione);
+					calcolatore.calcolaRicavo(model, listinoCommessa);
+					listaModel.add(model);
+					monitor.worked(1);
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException e) {
+			DialogMessaggio.openError(e.getCause().getMessage(), e.getMessage());
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Crea e lancia una eccezione per mostrare all'utente il fatto che manchi un listino appropriato alla fatturazione.
+	 * @param codiceCliente il codice cliente per cui non è ancora stato inserito un listino.
+	 * @throws InvocationTargetException L'eccezione incaricata di mostrare il messaggio.
+	 */
+	private void throwListinoMancanteException(String codiceCliente) throws InvocationTargetException {
+		String message = "Inserire ad associare un listino per il codice cliente: " + codiceCliente;
+		RuntimeException re = new RuntimeException("Listino Mancante");
+		InvocationTargetException ite = new InvocationTargetException(re, message);
+		throw ite;
+	}
+	
+	private String getNomeFile(String path) {
+		String tipoFile = "Fatturazione";
+		String nomeCommessa = commessa.getNome();
+		String periodo = meseEAnno.format(inizio);
+		String estensione = ".xls";
+		String nomeFile = path  + "\\"  + tipoFile + " " + nomeCommessa + " " + periodo + estensione;
+		return nomeFile;
+	}
+	
+	public boolean salvaDatiTrasporti() {
+		boolean salvataggio;
+		//Preparo le entity da salvare
+		int idDocumento = getDocumentoFatturazione(commessa.getId(), AmbitoFattura.ID_SPEDIZIONI, inizio);
+		if (idDocumento != -1) {
+			List<ElementoFatturazioneJSON> elementi = new LinkedList<>();
+			for (String codice : modelTrasporti.keySet()) {
+				List<SpedizioneModel> spedizioni = modelTrasporti.get(codice);
+				for(SpedizioneModel spedizione : spedizioni) {
+					int idSpedizione = spedizione.getSpedizione().getId();
+					Calcolo preventivo = spedizione.getPreventivoRicavo();
+					List<VoceFattura> voci = new LinkedList<>();
+					for (VoceCalcolata voce : preventivo.getVoci()) {
+						//Voce di fatturazione
+						VoceFattura nuovaVoce = new VoceFattura();
+						nuovaVoce.setIdAmbito(AmbitoFattura.ID_SPEDIZIONI);
+						nuovaVoce.setIdSottoAmbito(voce.getIdAmbito());
+						nuovaVoce.setIdCommessa(commessa.getId());
+						nuovaVoce.setIdDocumento(idDocumento);
+						nuovaVoce.setIdListino(preventivo.getIdListino());
+						nuovaVoce.setIdRiferimento(idSpedizione);
+						nuovaVoce.setIdVoce(voce.getIdVoce());
+						nuovaVoce.setImporto(voce.getCosto());
+						voci.add(nuovaVoce);
+					}
+					ElementoFatturazioneJSON elemento = new ElementoFatturazioneJSON();
+					elemento.setAmbito(AmbitoFattura.ID_SPEDIZIONI);
+					elemento.setRiferimento(idSpedizione);
+					elemento.setTotale(preventivo.getTotale());
+					elemento.setVoci(voci);
+					elementi.add(elemento);
+				}
+			}
+			//Chiamo il ws per inserire tutti gli elementi di fatturazione
+			ProcessoInserimentoElementiFatturazione processo = new ProcessoInserimentoElementiFatturazione(elementi);
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.esegui(processo);
+			salvataggio = processo.getEsito();
+		} else {
+			salvataggio = false;
+		}
+		return salvataggio;
+	}
+
+	public void esportaDatiTrasporti_excel(String path) {
+		CalcolatoreTrasporti calcolatore = CalcolatoreTrasporti.getInstance();
+		String nomeFile = getNomeFile(path);
+		FileExcel workbook = FileExcel.getFileExcel(nomeFile);
+		boolean successo = false;
+		if (workbook != null && !modelTrasporti.isEmpty()) {
+			for (String codice : modelTrasporti.keySet()) {
+				workbook.creaFoglio(codice);
+				//Titolo - riga 1
+				workbook.aggiungiTitolo(codice, 0, 0, commessa.getNome() + " - " + codice);
+				//Sotto titoli - riga 2
+				int colonnaSottoTitoli = 0;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Data");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Riferimento");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Destinatario");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Localita'");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Provincia");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Colli");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Pezzi");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Peso");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Volume");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Contrassegno");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Totale");
+				colonnaSottoTitoli += 1;
+				workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, "Nolo");
+				//colonnaSottoTitoli += 1;
+				ListinoCommessa listinoCommessa = getListinoTrasporti(codice);
+				List<VoceDiListinoTrasporti> voci = calcolatore.getTutteLeVociDiListino(listinoCommessa.getId());
+				HashMap<Integer, Integer> colonneVoci = new HashMap<Integer, Integer>();
+				for (VoceDiListinoTrasporti voce : voci) {
+					if (!(FactoryAmbitiTrasporti.getInstance().isAmbitoNoloBase(voce.getAmbito().getId()))) {
+						colonnaSottoTitoli += 1;
+						workbook.aggiungiSottoTitolo(codice, colonnaSottoTitoli, 1, voce.getNome());
+						colonneVoci.put(voce.getIdVoce(), colonnaSottoTitoli);
+					}
+				}
+				//Spedizioni - righe successive
+				int riga = 1;
+				List<SpedizioneModel> spedizioni = modelTrasporti.get(codice);
+				for(SpedizioneModel spedizione : spedizioni) {
+					riga += 1;
+					workbook.aggiungiTesto(codice, 0, riga, semplice.format(spedizione.getSpedizione().getDataPartenza()));
+					workbook.aggiungiTesto(codice, 1, riga, spedizione.getSpedizione().getRiferimentoCliente());
+					workbook.aggiungiTesto(codice, 2, riga, spedizione.getDestinazione().getRagioneSociale());
+					workbook.aggiungiTesto(codice, 3, riga, spedizione.getDestinazione().getLocalita());
+					workbook.aggiungiTesto(codice, 4, riga, spedizione.getDestinazione().getProvincia());
+					workbook.aggiungiInteger(codice, 5, riga, spedizione.getSpedizione().getColli());
+					workbook.aggiungiInteger(codice, 6, riga, spedizione.getSpedizione().getPezzi());
+					workbook.aggiungiDouble(codice, 7, riga, spedizione.getSpedizione().getPeso());
+					workbook.aggiungiDouble(codice, 8, riga, spedizione.getSpedizione().getVolume());
+					if (spedizione.getContrassegno() != null) {
+						workbook.aggiungiValutaDueCifre(codice, 9, riga, spedizione.getContrassegno().getValore());
+					} else {
+						//workbook.aggiungiTesto(codice, 7, riga, "-");
+					}
+					Calcolo preventivo = spedizione.getPreventivoRicavo();
+					workbook.aggiungiValutaTreCifre(codice, 10, riga, preventivo.getTotale());
+					workbook.aggiungiValutaTreCifre(codice, 11, riga, spedizione.getCostoNoloBase(Scopo.RICAVO));
+					for (VoceCalcolata voce : preventivo.getVoci()) {
+						Integer colonna = colonneVoci.get(voce.getIdVoce());
+						if (colonna != null)
+							workbook.aggiungiValutaTreCifre(codice, colonna, riga, voce.getCosto());
+					}
+				}
+			}		
+			successo = workbook.salvaEChiudi();
+		}
+		if (successo) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file:\r\n" + nomeFile);
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+	
+	private class ProcessoInserimentoElementiFatturazione extends ProcessoInserimentoDati<List<ElementoFatturazioneJSON>> {
+		
+		private final static String title = "Salvataggio dati fatturazione";
+		private final static String resource = "vocifatturazione/salvafattura";
+
+		public ProcessoInserimentoElementiFatturazione(List<ElementoFatturazioneJSON> object) {
+			super(title, resource, object, false);
+		}
+		
+	}
+	
+//	private class ElementoFatturazioneJSON {
+//		
+//		private int ambito;
+//		private int riferimento;
+//		private double totale;
+//		private List<VoceFattura> voci;
+//		
+//		public ElementoFatturazioneJSON() {}
+//
+//		public void setAmbito(int ambito) {
+//			this.ambito = ambito;
+//		}
+//
+//		public int getRiferimento() {
+//			return riferimento;
+//		}
+//
+//		public void setRiferimento(int riferimento) {
+//			this.riferimento = riferimento;
+//		}
+//
+//		public double getTotale() {
+//			return totale;
+//		}
+//
+//		public void setTotale(double totale) {
+//			this.totale = totale;
+//		}
+//
+//		public List<VoceFattura> getVoci() {
+//			return voci;
+//		}
+//
+//		public void setVoci(List<VoceFattura> voci) {
+//			this.voci = voci;
+//		}
+//
+//	}
+	
+}

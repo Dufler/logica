@@ -1,0 +1,37 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+public class FactoryAmbiti {
+	
+	public static IAmbito getAmbito(String codice) {
+		IAmbito ambito;
+		switch (codice) {
+			case ConsegnaAlPiano.CODICE : ambito = ConsegnaAlPiano.getInstance(); break;
+			case ConsegnaAiPrivati.CODICE : ambito = ConsegnaAiPrivati.getInstance(); break;
+			case ConsegnaAGDO.CODICE : ambito = ConsegnaAGDO.getInstance(); break;
+			case ConsegnaOre10.CODICE : ambito = ConsegnaOre10.getInstance(); break;
+			case ConsegnaOre12.CODICE : ambito = ConsegnaOre12.getInstance(); break;
+			case ConsegnaSuAppuntamento.CODICE : ambito = ConsegnaSuAppuntamento.getInstance(); break;
+			case AmbitoContrassegno.CODICE : ambito = AmbitoContrassegno.getInstance(); break;
+			case Fuel.CODICE_FISSO : ambito = Fuel.getInstance(); break;
+			case Fuel.CODICE_VARIABILE : ambito = Fuel.getInstance(); break;
+			case Istat.CODICE : ambito = Istat.getInstance(); break;
+			case NoloItalia.CODICE : ambito = NoloItalia.getInstance(); break;
+			case SupplementoCampioneItalia.CODICE : ambito = SupplementoCampioneItalia.getInstance(); break;
+			case NoloDisagiate.CODICE : ambito = NoloDisagiate.getInstance(); break;
+			case SupplementoElba.CODICE : ambito = SupplementoElba.getInstance(); break;
+			case NoloEstero.CODICE : ambito = NoloEstero.getInstance(); break;
+			case SupplementoIsoleMinori.CODICE : ambito = SupplementoIsoleMinori.getInstance(); break;
+			case SupplementoIsoleVenezia.CODICE : ambito = SupplementoIsoleVenezia.getInstance(); break;
+			case SupplementoLivigno.CODICE : ambito = SupplementoLivigno.getInstance(); break;
+			case NoloSud.CODICE : ambito = NoloSud.getInstance(); break;
+			case OltreCinqueColli.CODICE : ambito = OltreCinqueColli.getInstance(); break;
+			case PriorityMonocollo.CODICE : ambito = PriorityMonocollo.getInstance(); break;
+			case ProvaDiConsegna.CODICE : ambito = ProvaDiConsegna.getInstance(); break;
+			case AnnullamentoContrassegno.CODICE : ambito = AnnullamentoContrassegno.getInstance(); break;
+			case ContrassegnoFinoACinquemilaEuro.CODICE : ambito = ContrassegnoFinoACinquemilaEuro.getInstance(); break;
+			default : ambito = null;
+		}
+		return ambito;
+	}
+
+}

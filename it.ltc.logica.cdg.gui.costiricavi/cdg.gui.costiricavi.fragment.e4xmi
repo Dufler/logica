@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_GwcKgPUpEeewl_N9fvK9Zw" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_IYqskPUpEeewl_N9fvK9Zw" elementId="it.ltc.logica.cdg.gui.costiricavi.part.funzionecostiricavi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.costiricavi/it.ltc.logica.cdg.gui.costiricavi.parts.FunzioneCostiRicaviPart" label="Funzione - Costi e Ricavi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/monete_16x16.png" tooltip="Qui puoi gestire i costi e i ricavi legati alle gestione di un pezzo"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Xk7bYPUpEeewl_N9fvK9Zw" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Y-OwoPUpEeewl_N9fvK9Zw" elementId="it.ltc.logica.cdg.gui.costiricavi.part.costiricavi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.costiricavi/it.ltc.logica.cdg.gui.costiricavi.parts.CostiRicaviPart" label="Costi e Ricavi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/monete_16x16.png" tooltip="Qui puoi gestire i costi e i ricavi legati alle gestione di un pezzo"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_4ClJEEbkEeibCoL5f6615w" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_7EVC0EbkEeibCoL5f6615w" elementId="it.ltc.logica.cdg.gui.costiricavi.part.funzionebudget" contributionURI="bundleclass://it.ltc.logica.cdg.gui.costiricavi/it.ltc.logica.cdg.gui.costiricavi.parts.FunzioneBudgetPart" label="Funzione - Budget" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/monete_16x16.png" tooltip="Qui puoi gestire i budget"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_I0pYEEblEeibCoL5f6615w" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_LcpVEEblEeibCoL5f6615w" elementId="it.ltc.logica.cdg.gui.costiricavi.part.budget" contributionURI="bundleclass://it.ltc.logica.cdg.gui.costiricavi/it.ltc.logica.cdg.gui.costiricavi.parts.BudgetPart" label="Budget" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/monete_16x16.png" tooltip="Qui puoi gestire i budget"/>
+  </fragments>
+</fragment:ModelFragments>

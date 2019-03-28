@@ -1,0 +1,157 @@
+ 
+package it.ltc.logica.trasporti.gui.fatturazione.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.common.controller.listini.ListiniCorrieriController;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.container.DialogSelezioneFile;
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.trasporti.controller.FatturazioneBRTController;
+import it.ltc.logica.trasporti.controller.FatturazioneSpedizioniController;
+import it.ltc.logica.trasporti.controller.FatturazioneTNTController;
+import it.ltc.logica.trasporti.gui.fatturazione.elements.TabellaDocumentiFatturazione;
+import it.ltc.logica.trasporti.gui.fatturazione.wizards.giacenze.FatturazioneGiacenzeWizard;
+import it.ltc.logica.trasporti.gui.fatturazione.wizards.spedizioni.FatturazioneSpedizioniWizard;
+
+public class FatturazionePart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.fatturazione.part.fatturazione";
+	
+	private TabellaDocumentiFatturazione tabellaDocumenti;
+	private Table table;
+	
+	@Inject
+	public FatturazionePart() {
+		ListiniClientiController.getInstance();
+		ListiniCorrieriController.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnFattura = new Button(parent, SWT.NONE);
+		btnFattura.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneSpedizioni();
+			}
+		});
+		btnFattura.setText("Spedizioni");
+		
+		Button btnFatturaGiacenze = new Button(parent, SWT.NONE);
+		btnFatturaGiacenze.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneGiacenze();
+			}
+		});
+		btnFatturaGiacenze.setText("Giacenze");
+		
+		Button btnImportaFatturaCorriere = new Button(parent, SWT.NONE);
+		btnImportaFatturaCorriere.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				importaDatiFatturazioneTNT();
+			}
+		});
+		btnImportaFatturaCorriere.setText("Importa Fattura TNT");
+		
+		Button btnImportaFatturaBrt = new Button(parent, SWT.NONE);
+		btnImportaFatturaBrt.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				importaDatiFatturazioneBRT();
+			}
+		});
+		btnImportaFatturaBrt.setText("Importa Fattura BRT");
+		
+		Button btnScaricaListini = new Button(parent, SWT.NONE);
+		btnScaricaListini.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				//TODO
+			}
+		});
+		btnScaricaListini.setText("scarica listini");
+		
+		Composite compositeDocumenti = new Composite(parent, SWT.NONE);
+		compositeDocumenti.setLayout(new GridLayout(1, false));
+		compositeDocumenti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		Label lblDocumentiDiFatturazione = new Label(compositeDocumenti, SWT.NONE);
+		lblDocumentiDiFatturazione.setText("Documenti di Fatturazione: ");
+		
+		tabellaDocumenti = new TabellaDocumentiFatturazione(compositeDocumenti);
+		table = tabellaDocumenti.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		aggiornaTabellaDocumenti();
+	}
+	
+	public void aggiornaTabellaDocumenti() {
+		tabellaDocumenti.setInput(FatturazioneSpedizioniController.getInstance().getDocumentiFatturazione());
+		for (TableColumn tc : table.getColumns()) {
+			tc.pack();
+		}
+	}
+	
+	private void avviaFatturazioneSpedizioni() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneSpedizioniWizard(this), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}
+	
+	private void avviaFatturazioneGiacenze() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneGiacenzeWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}
+	
+	private void importaDatiFatturazioneTNT() {
+		DialogSelezioneFile dialog = new DialogSelezioneFile();
+		String path = dialog.open();
+		if (path != null && !path.isEmpty()) {
+			int[] esito = FatturazioneTNTController.getInstance().importaXLSFatturazione(path);
+			String titolo = "Esito Importazione";
+			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
+			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
+			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
+			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
+			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
+			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
+			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
+			DialogMessaggio.openInformation(titolo, messaggio);
+		}
+	}
+	
+	private void importaDatiFatturazioneBRT() {
+		DialogSelezioneFile dialog = new DialogSelezioneFile();
+		String path = dialog.open();
+		if (path != null && !path.isEmpty()) {
+			int[] esito = FatturazioneBRTController.getInstance().importaDocumentoFatturazione(path);
+			String titolo = "Esito Importazione";
+			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
+			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
+			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
+			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
+			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
+			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
+			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
+			DialogMessaggio.openInformation(titolo, messaggio);
+		}
+	}
+	
+}

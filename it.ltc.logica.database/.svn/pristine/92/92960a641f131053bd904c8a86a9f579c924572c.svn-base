@@ -1,0 +1,9 @@
+package it.ltc.logica.database.configuration;
+
+public enum DBMSType {
+	
+	JTDS,
+	MYSQL,
+	MYSQLDS;
+
+}

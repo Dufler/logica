@@ -1,0 +1,116 @@
+package it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo;
+
+import java.text.SimpleDateFormat;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.ingressi.ControllerFornitore;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso.TipoIngresso;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+
+public class PaginaRiepilogo extends PaginaWizardRisultati {
+	
+	private static final String title = "Nuovo Carico";
+	private static final String description = "Verifica e conferma le informazioni inserite.";
+	
+	private final Ingresso ingresso;
+	
+	private final SimpleDateFormat sdf;
+	
+	private Text textCommessa;
+	private Text textFornitore;
+	private Text textTipo;
+	private Text textDocumento;
+	private Text textDataArrivo;
+
+	protected PaginaRiepilogo(Ingresso ingresso) {
+		super(title, description, true);
+		this.ingresso = ingresso;
+		this.sdf = new SimpleDateFormat("dd/MM/yyyy");
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblCommessa = new Label(container, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		textCommessa = new Text(container, SWT.BORDER);
+		textCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textCommessa.setEditable(false);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblFornitore = new Label(container, SWT.NONE);
+		lblFornitore.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblFornitore.setText("Fornitore: ");
+		
+		textFornitore = new Text(container, SWT.BORDER);
+		textFornitore.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFornitore.setEditable(false);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblTipo = new Label(container, SWT.NONE);
+		lblTipo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblTipo.setText("Tipo: ");
+		
+		textTipo = new Text(container, SWT.BORDER);
+		textTipo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textTipo.setEditable(false);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDocumento = new Label(container, SWT.NONE);
+		lblDocumento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDocumento.setText("Documento: ");
+		
+		textDocumento = new Text(container, SWT.BORDER);
+		textDocumento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textDocumento.setEditable(false);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDataArrivo = new Label(container, SWT.NONE);
+		lblDataArrivo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDataArrivo.setText("Data arrivo: ");
+		
+		textDataArrivo = new Text(container, SWT.BORDER);
+		textDataArrivo.setEditable(false);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+
+	}
+
+	@Override
+	public void mostraRisultato() {
+		//Preparo i dati necessari
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(ingresso.getIdCommessa());
+		Fornitore fornitore = ControllerFornitore.getInstance().getFornitore(ingresso.getIdFornitore());
+		TipoIngresso tipo = TipoIngresso.valueOf(ingresso.getTipo());
+		//Imposto la UI
+		textCommessa.setText(commessa.getNome());
+		textFornitore.setText(fornitore.getNome());
+		textTipo.setText(tipo.toString());
+		textDocumento.setText(ingresso.getRiferimentoCliente());
+		textDataArrivo.setText(sdf.format(ingresso.getDataArrivo()));
+	}
+	
+	@Override
+	public void copyDataToModel() {
+		//DO NOTHING!		
+	}
+
+}

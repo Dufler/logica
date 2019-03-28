@@ -1,0 +1,23 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.trasporti;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.ambiti.common.NoloSud;
+
+public class NoloSUDTrasporti extends NoloSud {
+	
+	public static final int ID = 30;
+	
+	private static NoloSUDTrasporti instance;
+
+	private NoloSUDTrasporti(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static NoloSUDTrasporti getInstance(SottoAmbitoFattura ambito) {
+		if (instance == null) {
+			instance = new NoloSUDTrasporti(ambito);
+		}
+		return instance;
+	}
+
+}

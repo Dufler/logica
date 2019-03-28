@@ -1,0 +1,110 @@
+package it.ltc.logica.database.model.centrale.indirizzi;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Provincia extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "provincia";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	//@JsonIgnore
+	//private static final LinkedList<Provincia> listaProvince = new LinkedList<Provincia>();
+	//@JsonIgnore
+	//private static final EntityManager<Provincia> manager = new EntityManager<Provincia>(Provincia.class, ConfigurationManager.getDefault());
+	
+	private String nome;
+	private String sigla;
+	private String regione;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("sigla", "sigla", true, false);
+			variabili.addString("nome", "nome");
+			variabili.addString("regione", "regione");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return sigla + " - " + nome;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((sigla == null) ? 0 : sigla.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Provincia other = (Provincia) obj;
+		if (sigla == null) {
+			if (other.sigla != null)
+				return false;
+		} else if (!sigla.equals(other.sigla))
+			return false;
+		return true;
+	}
+
+//	public static List<Provincia> getProvince() {
+//		if (listaProvince.isEmpty()) {
+//			listaProvince.addAll(manager.getEntities());
+//		}
+//		return listaProvince;
+//	}
+//	
+//	public static Provincia getProvincia(String sigla) {
+//		Provincia provincia = null;
+//		for (Provincia p : getProvince()) {
+//			if (p.getSigla().equalsIgnoreCase(sigla)) {
+//				provincia = p;
+//				break;
+//			}
+//		}
+//		return provincia;
+//	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getSigla() {
+		return sigla;
+	}
+
+	public void setSigla(String sigla) {
+		this.sigla = sigla;
+	}
+
+	public String getRegione() {
+		return regione;
+	}
+
+	public void setRegione(String regione) {
+		this.regione = regione;
+	}
+
+}

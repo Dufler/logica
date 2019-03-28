@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Calcolo
+Bundle-SymbolicName: it.ltc.logica.trasporti.calcolo
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: it.ltc.logica.database;bundle-version="1.0.0"
+Export-Package: it.ltc.logica.trasporti.calcolo.algoritmi

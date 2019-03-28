@@ -1,0 +1,89 @@
+package it.ltc.logica.trasporti.gui.listini.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.listini.ListinoCorriere;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.listini.dialogs.corriere.ProprietaListinoCorriere;
+
+public class TabellaListiniCorriere extends Tabella<ListinoCorriere> {
+
+	private String filtroListini;
+
+	public TabellaListiniCorriere(Composite parent) {
+		super(parent, new OrdinatoreListiniCorrieri());
+		
+		aggiungiColonna("Nome", 100, new EtichettatoreListiniCorrieri(), 0);
+		aggiungiColonna("Tipo", 100, new EtichettatoreListiniCorrieri(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreListiniCorrieri(), 2);
+	}
+
+	public void setFiltro(String filtro) {
+		filtroListini = filtro;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				ListinoCorriere listino = (ListinoCorriere) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroListini != null)
+					toShow = nome.contains(filtroListini);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING!
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	private void apriDialogModifica() {
+		ListinoCorriere corriereSelezionato = getListinoSelezionato();
+		if (corriereSelezionato != null) {
+			int idPermesso = corriereSelezionato.isSimulazione() ? Permessi.LISTINI_CORRIERI_SIMULAZIONE_MODIFICA.getID() : Permessi.LISTINI_CORRIERI_FATTURAZIONE_MODIFICA.getID();
+			boolean permessoGestione = ControllerUtente.getInstance().isAllowed(idPermesso);
+			ProprietaListinoCorriere proprieta = new ProprietaListinoCorriere(corriereSelezionato, permessoGestione);
+			int esito = proprieta.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+	public ListinoCorriere getListinoSelezionato() {
+		ListinoCorriere listinoSelezionato = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			listinoSelezionato = (ListinoCorriere) selectedItem.getData();
+		}
+		return listinoSelezionato;
+	}
+
+}

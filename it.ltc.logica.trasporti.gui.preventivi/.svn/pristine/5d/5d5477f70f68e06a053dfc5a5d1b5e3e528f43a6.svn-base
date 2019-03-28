@@ -1,0 +1,48 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia;
+
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+public class PreventivoSpedizioneFittiziaWizard extends Wizard {
+	
+	private PreventivoSpedizioneFittiziaSelezioneWizardPage selezionePage;
+	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
+	private PreventivoSpedizioneFittiziaRisultatoWizardPage risultatoPage;
+
+	public PreventivoSpedizioneFittiziaWizard() {
+		setWindowTitle("Preventivo di costo per una spedizione fittizia");
+		selezionePage = new PreventivoSpedizioneFittiziaSelezioneWizardPage();
+		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
+		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(datiPage);
+		addPage(risultatoPage);
+	}
+
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(selezionePage)) {
+			nextPage = datiPage;
+		} else if (currentPage.equals(datiPage)) {
+			nextPage = risultatoPage;
+		}
+		return nextPage;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = (getContainer().getCurrentPage() == risultatoPage);
+		return finish;
+	}
+
+}

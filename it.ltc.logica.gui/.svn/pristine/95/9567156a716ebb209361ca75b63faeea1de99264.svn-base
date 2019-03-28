@@ -1,0 +1,51 @@
+package it.ltc.logica.gui.elements;
+
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.swt.graphics.Image;
+
+/**
+ * Classe astratta da implementare per lo specifico albero che gestisce i tipi T.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ * @param <T> il tipo da gestire.
+ */
+@SuppressWarnings("unchecked")
+public abstract class AlberoEtichettatore<T> extends LabelProvider implements IStyledLabelProvider {
+	
+	private int columnIndex;
+
+	@Override
+	public StyledString getStyledText(Object element) {
+		T oggetto = (T) element;
+		return getTestoConStile(oggetto, columnIndex);
+	}
+	
+	/**
+	 * Metodo astratto da implementare che restituisce il testo che descrive la proprieta' dell'ggetto nella specifica colonna.
+	 * @param oggetto l'ggetto da descrivere.
+	 * @param indiceColonna la colonna da riempire.
+	 * @return una stringa con stile.
+	 */
+	protected abstract StyledString getTestoConStile(T oggetto, int indiceColonna);
+	
+	@Override
+    public Image getImage(Object element) {
+		T oggetto = (T) element;
+		return getImmagine(oggetto, columnIndex);
+	}
+	
+	/**
+	 * Metodo astratto da implementare che restituisce l'immagine da piazzare nella cella individuata dell'oggetto e dalla colonna. 
+	 * @param oggetto l'oggetto da descrivere.
+	 * @param indiceColonna la colonna da riempire.
+	 * @return un immagine che verrà posizionata nella cella.
+	 */
+	protected abstract Image getImmagine(T oggetto, int indiceColonna);
+
+	protected void setColumnIndex(int indiceColonna) {
+		columnIndex = indiceColonna;	
+	}
+
+}

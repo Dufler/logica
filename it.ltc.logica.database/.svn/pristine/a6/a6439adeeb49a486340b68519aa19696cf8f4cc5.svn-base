@@ -1,0 +1,63 @@
+package it.ltc.logica.database.model.centrale.utenti;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class UtentePermessiJoin extends Entity {
+
+	public static final String NOME_TABELLA = "utente_permessi_join";
+	private static final ColumnList variabili = new ColumnList();
+	private static final EntityManager<UtentePermessiJoin> manager = new EntityManager<UtentePermessiJoin>(UtentePermessiJoin.class, ConfigurationManager.getDefault());
+	
+	private String utente;
+	private Integer idPermesso;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("utente", "utente", true, false);
+			variabili.addInt("id_permesso", "idPermesso", true, false);
+		}
+		return variabili;
+	}
+	
+	public static List<Permesso> getPermessi(String username) {
+		UtentePermessiJoin filtro = new UtentePermessiJoin();
+		filtro.setUtente(username);
+		List<UtentePermessiJoin> listaPermessi = manager.getEntities(filtro);
+		List<Permesso> permessi = new LinkedList<Permesso>();
+		for (UtentePermessiJoin upj : listaPermessi) {
+			Permesso permesso = Permesso.getPermesso(upj.getIdPermesso());
+			if (permesso != null)
+				permessi.add(permesso);
+		}
+		return permessi;
+	}
+
+	public String getUtente() {
+		return utente;
+	}
+
+	public void setUtente(String utente) {
+		this.utente = utente;
+	}
+
+	public Integer getIdPermesso() {
+		return idPermesso;
+	}
+
+	public void setIdPermesso(Integer idPermesso) {
+		this.idPermesso = idPermesso;
+	}
+
+}

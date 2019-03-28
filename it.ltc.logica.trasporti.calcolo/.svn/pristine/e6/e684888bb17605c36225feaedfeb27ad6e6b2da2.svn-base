@@ -1,0 +1,45 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Cap;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class SupplementoIsoleMinori extends IAmbitoTrasporto {
+	
+	public SupplementoIsoleMinori(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	private static final List<Cap> listaCap = new ArrayList<Cap>();
+	
+	public static final String CODICE = "NOLO_ISOLE_MINORI";
+
+	public static final int ID = 25;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		Cap cap = new Cap();
+		cap.setCap(destinazione.getCap());
+		cap.setLocalita(destinazione.getLocalita());
+		boolean applicabile = getListaCapIsoleMinori().contains(cap);
+		return applicabile;
+	}
+	
+	public static List<Cap> getListaCapIsoleMinori() {
+		if (listaCap.isEmpty()) {
+			listaCap.addAll(Cap.getIsole());
+		}
+		return listaCap;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+
+}

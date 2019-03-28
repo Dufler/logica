@@ -1,0 +1,38 @@
+package it.ltc.logica.trasporti.gui.codicicliente.wizard;
+
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.database.model.centrale.CodiceClienteCorriere;
+import it.ltc.logica.trasporti.controller.CodiciClienteController;
+
+public class NuovoCodiceClienteWizard extends Wizard {
+	
+	private CodiciClienteController controller;
+	
+	private NuovoCodiceClienteWizardPage page;
+
+	public NuovoCodiceClienteWizard() {
+		setWindowTitle("Nuovo Codice Cliente per Corriere");
+		page = new NuovoCodiceClienteWizardPage();
+		controller = CodiciClienteController.getInstance();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(page);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		return null;
+	}
+
+	@Override
+	public boolean performFinish() {
+		CodiceClienteCorriere nuovoCodice = page.getNuovoCodice();
+		boolean inserimento = controller.inserisci(nuovoCodice);
+		return inserimento;
+	}
+
+}

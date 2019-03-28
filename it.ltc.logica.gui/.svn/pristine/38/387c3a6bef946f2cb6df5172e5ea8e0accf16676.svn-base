@@ -1,0 +1,38 @@
+package it.ltc.logica.gui.container;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
+
+public abstract class WizardConRisultati extends Wizard {
+
+	public abstract LinkedList<PaginaWizardRisultati> getPaginaRisultati();
+
+	protected void aggiungiListener(Button nextButton) {
+		nextButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				for (PaginaWizardRisultati pagina : getPaginaRisultati()) {
+					if (getContainer().getCurrentPage().equals(pagina)) {
+						pagina.mostraRisultato();
+					}
+				}
+			}
+		});
+	}
+	
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = (getContainer().getCurrentPage().equals(getPaginaRisultati().getLast()));
+		return finish;
+	}
+
+}

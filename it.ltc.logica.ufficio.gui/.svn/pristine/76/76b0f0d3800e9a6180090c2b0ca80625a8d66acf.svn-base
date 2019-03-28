@@ -1,0 +1,36 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+
+import it.ltc.logica.database.model.centrale.ingressi.IngressoColloDettaglio;
+import it.ltc.logica.gui.elements.Ordinatore;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaColloConProdotti extends Tabella<IngressoColloDettaglio> {
+
+	public TabellaColloConProdotti(Composite parent, Ordinatore<IngressoColloDettaglio> ordinatore) {
+		super(parent, ordinatore);
+		
+		
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

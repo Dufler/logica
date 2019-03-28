@@ -1,0 +1,91 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.corriere;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.database.model.ListinoCorriere;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoFisso;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoPercentuale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoProporzionale;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioni;
+import it.ltc.logica.trasporti.calcolo.algoritmi.AlgoritmoScaglioniRipetuti;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+
+public class NuovaVoceListinoCorriereWizard extends Wizard {
+	
+	private ListiniCorrieriController controller;
+	
+	private NuovaVoceListinoCorriereProprietaWizardPage paginaIniziale;
+	private NuovaVoceListinoCorriereFissoWizardPage paginaFisso;
+	private NuovaVoceListinoCorriereProporzionaleWizardPage paginaProporzionale;
+	private NuovaVoceListinoCorriereScaglioniWizardPage paginaScaglioni;
+	private NuovaVoceListinoCorriereScaglioniRipetutiWizardPage paginaScaglioniRipetuti;
+	private NuovaVoceListinoCorrierePercentualeWizardPage paginaPercentuale;
+	private NuovaVoceListinoCorriereRiepilogoWizardPage paginaRiepilogo;
+	
+	private IWizardPage algoritmoSelezionato;
+
+	public NuovaVoceListinoCorriereWizard(ListinoCorriere listino) {
+		setWindowTitle("Nuova voce di listino");
+		controller = ListiniCorrieriController.getInstance();
+		paginaIniziale = new NuovaVoceListinoCorriereProprietaWizardPage(listino);
+		paginaFisso = new NuovaVoceListinoCorriereFissoWizardPage();
+		paginaProporzionale = new NuovaVoceListinoCorriereProporzionaleWizardPage();
+		paginaScaglioni = new NuovaVoceListinoCorriereScaglioniWizardPage();
+		paginaPercentuale = new NuovaVoceListinoCorrierePercentualeWizardPage();
+		paginaRiepilogo = new NuovaVoceListinoCorriereRiepilogoWizardPage();
+		paginaScaglioniRipetuti = new NuovaVoceListinoCorriereScaglioniRipetutiWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaIniziale);
+		addPage(paginaFisso);
+		addPage(paginaProporzionale);
+		addPage(paginaScaglioni);
+		addPage(paginaScaglioniRipetuti);
+		addPage(paginaPercentuale);
+		addPage(paginaRiepilogo);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(paginaIniziale)) {
+			IAlgoritmo tipoAlgoritmo = paginaIniziale.getTipoAlgoritmoSelezionato();
+			switch (tipoAlgoritmo.getNome()) {
+				case AlgoritmoFisso.NOME : {nextPage = paginaFisso; break;}
+				case AlgoritmoProporzionale.NOME : {nextPage = paginaProporzionale; break;}
+				case AlgoritmoScaglioni.NOME : {nextPage = paginaScaglioni; break;}
+				case AlgoritmoScaglioniRipetuti.NOME : {nextPage = paginaScaglioniRipetuti; break;}
+				case AlgoritmoPercentuale.NOME : {nextPage = paginaPercentuale; break;}
+				default : break;
+			}
+			algoritmoSelezionato = nextPage;
+		} else if (currentPage.equals(algoritmoSelezionato)) {
+			nextPage = paginaRiepilogo;
+			paginaRiepilogo.setValues();
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean performFinish() {
+		boolean finish = controller.creaNuovaVoceDiListino();
+		if (!finish) {
+			MessageDialog.openError(null, "Errore", "Ci sono stati problemi con l'inserimento.");
+		}
+		return finish;
+	}
+	
+	@Override
+	public boolean canFinish() {
+		boolean finish = false;
+		if(getContainer().getCurrentPage() == paginaRiepilogo)
+			finish = true;
+		return finish;
+	}
+
+}

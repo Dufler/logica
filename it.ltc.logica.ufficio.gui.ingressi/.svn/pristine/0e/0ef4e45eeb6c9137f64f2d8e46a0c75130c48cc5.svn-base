@@ -1,0 +1,72 @@
+ 
+package it.ltc.logica.ufficio.gui.ingressi.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ingressi.ControllerIngressi;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.gui.input.TextForSelection;
+import it.ltc.logica.gui.wizard.DialogWizard;
+import it.ltc.logica.ufficio.gui.ingressi.elements.TabellaIngressi;
+import it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo.WizardNuovoIngresso;
+
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class IngressiPart {
+	
+	private TabellaIngressi viewerIngressi;
+	
+	@Inject
+	public IngressiPart() {}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		TextForSelection<Ingresso> text = new TextForSelection<>(parent);
+		text.setMessage("Ricerca");
+		
+		Button btnNuovoIngresso = new Button(parent, SWT.NONE);
+		btnNuovoIngresso.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				DialogWizard dialog = new DialogWizard(new WizardNuovoIngresso());
+				int esito = dialog.open();
+				if (esito == Dialog.OK) {
+					viewerIngressi.refresh();
+				}
+			}
+		});
+		btnNuovoIngresso.setText("Nuovo Ingresso");
+		
+		Button btnRicaricaIngressi = new Button(parent, SWT.NONE);
+		btnRicaricaIngressi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ControllerIngressi.getInstance().caricaDati();
+			}
+		});
+		btnRicaricaIngressi.setText("Ricarica Ingressi");
+		
+		Label lblIngressi = new Label(parent, SWT.NONE);
+		lblIngressi.setText("Ingressi: ");
+		
+		viewerIngressi = new TabellaIngressi(parent);
+		Table table = viewerIngressi.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		viewerIngressi.setInput(ControllerIngressi.getInstance().getIngressi());
+		viewerIngressi.aggiustaLarghezzaColonne();
+	}
+	
+}

@@ -1,0 +1,50 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.simulazione;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.ambiti.FactoryAmbiti;
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbitoTrasporto;
+
+/**
+ * Classe che si occupa di istanziare gli ambiti di simulazione.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class FactoryAmbitiSimulazione extends FactoryAmbiti {
+	
+	private static FactoryAmbitiSimulazione instance;
+
+	private FactoryAmbitiSimulazione() {
+	}
+
+	public static FactoryAmbitiSimulazione getInstance() {
+		if (instance == null) {
+			instance = new FactoryAmbitiSimulazione();
+		}
+		return instance;
+	}
+	
+	public IAmbitoTrasporto getAmbito(Integer id, String valore) {
+		SottoAmbitoFattura ambitoTrasporto = ControllerAmbitiFatturazione.getInstance().getSottoAmbito(id);
+		IAmbitoTrasporto ambito;
+		switch (id) {
+			case SpedizioneConMoltiColliSimulazione.ID : ambito = new SpedizioneConMoltiColliSimulazione(ambitoTrasporto, valore); break;
+			case FuelSimulazione.ID : ambito = FuelSimulazione.getInstance(ambitoTrasporto); break;
+			case IstatSimulazione.ID : ambito = IstatSimulazione.getInstance(ambitoTrasporto); break;
+			case ContrassegnoSimulazione.ID : ambito = ContrassegnoSimulazione.getInstance(ambitoTrasporto); break;
+			case ContrassegnoInferioreASimulazione.ID : ambito = new ContrassegnoInferioreASimulazione(ambitoTrasporto, valore); break;
+			case ContrassegnoSuperioreASimulazione.ID : ambito = new ContrassegnoSuperioreASimulazione(ambitoTrasporto, valore); break;
+			case NoloSimulazione.ID : ambito = NoloSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloEsteroSimulazione.ID : ambito = NoloEsteroSimulazione.getInstance(ambitoTrasporto); break;
+			case PrioritySimulazione.ID : ambito = PrioritySimulazione.getInstance(ambitoTrasporto); break;
+			case SupplementoIsoleSimulazione.ID : ambito = SupplementoIsoleSimulazione.getInstance(ambitoTrasporto); break;
+			case SupplementoZoneDisagiateSimulazione.ID : ambito = SupplementoZoneDisagiateSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloRegioniSpecificheSimulazione.ID : ambito = new NoloRegioniSpecificheSimulazione(ambitoTrasporto, valore); break;
+			case SupplementoLivignoSimulazione.ID : ambito = SupplementoLivignoSimulazione.getInstance(ambitoTrasporto); break;
+			case NoloLightSimulazione.ID : ambito = NoloLightSimulazione.getInstance(ambitoTrasporto); break;
+			default : throw new IllegalArgumentException("L'ID specificato per l'ambito di simulazione non esiste.");
+		}
+		return ambito;
+	}
+
+}

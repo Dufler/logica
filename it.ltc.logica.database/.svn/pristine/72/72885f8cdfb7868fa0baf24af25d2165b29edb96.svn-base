@@ -1,0 +1,113 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class CodificaStatoCorriereTracking extends Entity {
+
+	@JsonIgnore
+	public static final String NOME_TABELLA = "tracking_stato_codifica_corriere";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	@JsonIgnore
+	private static List<CodificaStatoCorriereTracking> lista = new LinkedList<CodificaStatoCorriereTracking>();
+	@JsonIgnore
+	private static final EntityManager<CodificaStatoCorriereTracking> manager = new EntityManager<CodificaStatoCorriereTracking>(CodificaStatoCorriereTracking.class, ConfigurationManager.getDefault());
+
+	private Integer idCorriere;
+	private String codificaCorriere;
+	private String stato;
+	private String descrizione;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_corriere", "idCorriere", true, false);
+			variabili.addString("codifica_corriere", "codificaCorriere", true, false);
+			variabili.addString("stato", "stato");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+
+	public static List<CodificaStatoCorriereTracking> getLista() {
+		if (lista.isEmpty()) {
+			lista.addAll(manager.getEntities());
+		}
+		return lista;
+	}
+	
+	public static List<CodificaStatoCorriereTracking> getListaPerCorriere(int idCorriere) {
+		List<CodificaStatoCorriereTracking> listaPerCorriere = new LinkedList<CodificaStatoCorriereTracking>();
+		for (CodificaStatoCorriereTracking elemento : getLista()) {
+			if (elemento.getIdCorriere() == idCorriere) 
+				listaPerCorriere.add(elemento);
+		}
+		return listaPerCorriere;
+	}
+	
+	public static CodificaStatoCorriereTracking getCodifica(int idCorriere, String stato) {
+		CodificaStatoCorriereTracking codifica = null;
+		for (CodificaStatoCorriereTracking c : getLista()) {
+			if (c.getIdCorriere() == idCorriere && c.getCodificaCorriere().equals(stato)) {
+				codifica = c;
+				break;
+			}
+		}
+		return codifica;
+	}
+	
+	public boolean isFinale() {
+		boolean consegnato = "S03".equals(stato);
+		boolean consegnatoInRitardo = "S04".equals(stato);
+		boolean annullato = "C06".equals(stato);
+		boolean finale = consegnato || consegnatoInRitardo || annullato;
+		return finale;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public String getCodificaCorriere() {
+		return codificaCorriere;
+	}
+
+	public void setCodificaCorriere(String codificaCorriere) {
+		this.codificaCorriere = codificaCorriere;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+}

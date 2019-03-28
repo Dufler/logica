@@ -1,0 +1,84 @@
+package it.ltc.logica.ufficio.gui.uscite.elements;
+
+import java.util.Date;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.sistema.ControllerStatoTracking;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.model.centrale.Ordine.TipoOrdine;
+import it.ltc.logica.database.model.centrale.StatoOrdine;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreOrdini extends Ordinatore<Ordine> {
+
+	@Override
+	protected int compare(Ordine t1, Ordine t2, int property) {
+		int compare;
+		switch (property) {
+			case 0 : compare = compareCommessa(t1, t2); break;
+			case 1 : compare = compareData(t1, t2); break;
+			case 2 : compare = compareRiferimentoCliente(t1, t2); break;
+			case 3 : compare = compareRiferimentoInterno(t1, t2); break;
+			case 4 : compare = comparePezzi(t1, t2); break;
+			case 5 : compare = compareTipo(t1, t2); break;
+			case 6 : compare = compareStato(t1, t2); break;
+			default : compare = 0;
+		}
+		return compare;
+	}
+
+	private int compareStato(Ordine t1, Ordine t2) {
+		StatoOrdine so1 = ControllerStatoTracking.getInstance().getStato(t1.getStato());
+		StatoOrdine so2 = ControllerStatoTracking.getInstance().getStato(t2.getStato());
+		String s1 = so1 != null ? so1.getNome() : "";
+		String s2 = so2 != null ? so2.getNome() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+	private int compareTipo(Ordine t1, Ordine t2) {
+		TipoOrdine to1 = TipoOrdine.valueOf(t1.getTipo());
+		TipoOrdine to2 = TipoOrdine.valueOf(t2.getTipo());
+		int compare = to1.compareTo(to2);
+		return compare;
+	}
+
+	private int comparePezzi(Ordine t1, Ordine t2) {
+		Integer p1 = t1.getPezzi() != null ? t1.getPezzi() : 0;
+		Integer p2 = t2.getPezzi() != null ? t2.getPezzi() : 0;
+		int compare = p1.compareTo(p2);
+		return compare;
+	}
+
+	private int compareRiferimentoInterno(Ordine t1, Ordine t2) {
+		String s1 = t1.getRiferimentoInterno() != null? t1.getRiferimentoInterno() : "";
+		String s2 = t2.getRiferimentoInterno() != null? t2.getRiferimentoInterno() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+	private int compareRiferimentoCliente(Ordine t1, Ordine t2) {
+		String s1 = t1.getRiferimentoCliente() != null? t1.getRiferimentoCliente() : "";
+		String s2 = t2.getRiferimentoCliente() != null? t2.getRiferimentoCliente() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+	private int compareData(Ordine t1, Ordine t2) {
+		Date d1 = t1.getDataRicezione() != null ? t1.getDataRicezione() : new Date();
+		Date d2 = t2.getDataRicezione() != null ? t2.getDataRicezione() : new Date();
+		int compare = d1.compareTo(d2);
+		return compare;
+	}
+
+	private int compareCommessa(Ordine t1, Ordine t2) {
+		Commessa c1 = ControllerCommesse.getInstance().getCommessa(t1.getIdCommessa());
+		Commessa c2 = ControllerCommesse.getInstance().getCommessa(t2.getIdCommessa());
+		String s1 = c1 != null? c1.getNome() : "";
+		String s2 = c2 != null? c2.getNome() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+}

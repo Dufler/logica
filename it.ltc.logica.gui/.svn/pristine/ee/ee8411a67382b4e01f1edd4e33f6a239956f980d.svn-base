@@ -1,0 +1,258 @@
+package it.ltc.logica.gui.container;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+/**
+ * Questa classe viene estesa da tutte le Dialog che devono inserire o modificare entities.
+ * La classe prevede che debbano essere implementati gli specifici metodi per la validazione di tali entities.
+ * @author Damiano
+ *
+ * @param <T> Il tipo d'oggetto che deve essere manipolato
+ */
+public abstract class DialogModel<T> extends Dialog implements ParentValidationHandler {
+	
+	public static final String OK_LABEL = "Ok";
+	public static final String CANCEL_LABEL = "Annulla";
+	public static final String TITLE_ERROR_IN_MODEL_VALIDATION = "Errore nella validazione";
+	public static final String TITLE_CONFIRM_CANCEL = "Conferma chiusura";
+	public static final String MESSAGE_CONFIRM_CANCEL = "Ci sono dei dati non salvati, sei sicuro di voler chiudere?";
+	
+	protected boolean valid;
+	private final LinkedHashSet<ValidationHandler> children;
+
+	private String titolo;
+	private Composite container;
+	
+	private final boolean modify;
+	protected final T valore;
+	
+	private Button okButton;
+	private Button cancelButton;
+	
+	public DialogModel(String title, T value) {
+		super(Display.getDefault().getActiveShell());
+		titolo = title;
+		setDefaultImage(Decorator.getImage(Decorator.IMPOSTAZIONI_16X16));
+		children = new LinkedHashSet<ValidationHandler>();
+		modify = (value != null);
+		if (!modify) {
+			value = createNewModel();
+		}
+		valore = value;
+	}
+	
+	@Override
+    protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(titolo);
+    }
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(1, false));
+		
+		aggiungiElementiGrafici(container);
+		
+		if (modify)
+			loadModel();
+
+		return container;
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		okButton = createButton(parent, IDialogConstants.OK_ID, OK_LABEL, false);
+		cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, CANCEL_LABEL, true);
+		aggiungiAltriBottoni(parent);
+	}
+	
+	/**
+	 * Questo metodo va sovrascritto dalle classi che intendono aggiungere più bottoni.
+	 */
+	public void aggiungiAltriBottoni(Composite parent) {
+		//DO NOTHING!
+	}
+	
+	public void enableOkButton(boolean enable) {
+		if (okButton != null)
+			okButton.setEnabled(enable);
+	}
+	
+	@Override
+	protected void okPressed() {
+		if (isDirty()) {
+			if (validation())
+				super.okPressed();
+		} else {
+			super.okPressed();
+		}
+	}
+	
+	public void enableCancelButton(boolean enable) {
+		if (cancelButton != null)
+			cancelButton.setEnabled(enable);
+	}
+	
+	@Override
+	protected void cancelPressed() {
+		if (isDirty()) {
+			boolean chiudi = mostraMessaggio(TITLE_CONFIRM_CANCEL, MESSAGE_CONFIRM_CANCEL);
+			if (chiudi)
+				super.cancelPressed();
+		} else {
+			super.cancelPressed();
+		}
+	}
+	
+	private boolean validation() {
+		validate();
+		if (valid) {
+			copyDataToModel();
+			List<String> errors = validateModel();
+			if (errors == null || errors.isEmpty()) {
+				if (modify)
+					valid = updateModel();
+				else
+					valid = insertModel();
+			} else {
+				valid = false;
+				showValidationError(errors);
+			}
+		}
+		return valid;
+	}
+	
+	/**
+	 * Aggiungere qui gli elementi grafici che compongono la dialog.
+	 * @param container
+	 */
+	public abstract void aggiungiElementiGrafici(Composite container);
+	
+	/**
+	 * Specifica se l'utente ha fatto cambiamenti sui valori.
+	 * @return
+	 */
+	public abstract boolean isDirty();
+	
+	/**
+	 * Carica i dati contenuti nel model passato al costruttore
+	 */
+	public abstract void loadModel();
+	
+	/**
+	 * Risporta le modifiche fatte dall'utente sull'UI al model.
+	 */
+	public abstract void copyDataToModel();
+	
+	/**
+	 * Valida i model e restituisce una lista di stringhe, eventualmente vuota, contenente gli errori riscontrati.
+	 * @return la lista di stringhe con gli errori.
+	 */
+	public abstract List<String> validateModel();
+	
+	/**
+	 * Valida il model come <code>ValidEntity</code> e lo aggiorna sul DB.
+	 * @return true se è stato aggiornato, false altrimenti.
+	 */
+	public abstract boolean updateModel();
+	
+	/**
+	 * Valida il model come <code>ValidEntity</code> e lo inserisce sul DB.
+	 * @return true se è stato inserito, false altrimenti.
+	 */
+	public abstract boolean insertModel();
+	
+	/**
+	 * Crea un nuovo model e lo restituisce.
+	 * @return una nuova instanza, solitamente vuota.
+	 */
+	public abstract T createNewModel();
+	
+	
+	public T getValore() {
+		return valore;
+	}
+	
+	public T apri() {
+		T selectedValue = null;
+		int returnCode = open();
+		if (returnCode == Dialog.OK) 
+			selectedValue = getValore();
+		return selectedValue;
+	}
+	
+	private void showValidationError(List<String> errors) {
+		String errorMessage = "Errori riscontrati nella validazione dei dati:";
+		for (String error : errors) {
+			errorMessage += "\r\n" + error;
+		}
+		mostraErrore(TITLE_ERROR_IN_MODEL_VALIDATION, errorMessage);
+	}
+	
+	/**
+	 * Mostra il messaggio di notifica specificato in una finestra con il titolo specificato.
+	 * @param title il titolo da mostrare.
+	 * @param message il messaggio da mostrare.
+	 */
+	protected boolean mostraMessaggio(String title, String message) {
+		return DialogMessaggio.openConfirm(title, message);
+	}
+	
+	/**
+	 * Mostra il messaggio d'errore specificato in una finestra con il titolo specificato.
+	 * @param title il titolo da mostrare.
+	 * @param message il messaggio da mostrare.
+	 */
+	protected void mostraErrore(String title, String message) {
+		DialogMessaggio.openError(title, message);
+	}
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public boolean validate() {
+		valid = true;
+		for (ValidationHandler child : children) {
+			valid = child.isValid();
+			if (!valid)
+				break;
+		}
+		enableOkButton(valid);
+		return valid;
+	}
+	
+	@Override
+	public void addChild(ValidationHandler child) {
+		child.setParent(this);
+		children.add(child);
+	}
+	
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		//DO NOTHING!		
+	}
+
+	@Override
+	public void forwardValidation() {
+		//DO NOTHING!
+	}
+
+}

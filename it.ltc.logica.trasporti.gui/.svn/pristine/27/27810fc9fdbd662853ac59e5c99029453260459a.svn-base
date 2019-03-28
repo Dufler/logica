@@ -1,0 +1,157 @@
+package it.ltc.logica.trasporti.gui.dialog;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.database.model.centrale.indirizzi.Nazione;
+import it.ltc.logica.gui.dialog.DialogSemplice;
+import it.ltc.logica.gui.input.ComboBox;
+
+public class DialogSelezioneNazioni extends DialogSemplice {
+
+	private static final String title = "Selezione Nazioni";
+	
+	public static final String SEPARATORE = "-";
+	public static final char SEPARATORE_C = '-';
+	
+	private ComboBox<Nazione> comboNazioni;
+	private List listaNazioni;
+	private final Set<Nazione> nazioniSelezionate;
+	
+	private final ControllerIndirizzi controller;
+	
+	private String selezionePrecedente;
+
+	public DialogSelezioneNazioni(String selezionePrecedente) {
+		super(title);
+		controller = ControllerIndirizzi.getInstance();
+		nazioniSelezionate = new HashSet<Nazione>();
+		this.selezionePrecedente = selezionePrecedente;
+	}
+	
+	@Override
+	public void aggiungiAltriBottoni(Composite parent) {
+		checkSelezione();
+	}
+	
+	/**
+	 * Abilita o disabilita il bottone di 'Ok' in base alla selezione dell'utente.
+	 * E' necessario inserire almeno una regione per poter confermare la selezione.
+	 */
+	private void checkSelezione() {
+		boolean selezioneCorretta = !nazioniSelezionate.isEmpty();
+		okButton.setEnabled(selezioneCorretta);
+	}
+	
+	private void aggiungiNazione() {
+		Nazione regioneSelezionata = comboNazioni.getSelectedValue();
+		if (regioneSelezionata != null) {
+			if (!nazioniSelezionate.contains(regioneSelezionata)) {
+				nazioniSelezionate.add(regioneSelezionata);
+				listaNazioni.add(regioneSelezionata.getNome());
+			}
+		}
+		checkSelezione();
+	}
+	
+	private void eliminaNazione(int selectionIndex) {
+		String regione = listaNazioni.getItem(selectionIndex);
+		for (Nazione r : nazioniSelezionate) {
+			if (r.getNome().equals(regione)) {
+				nazioniSelezionate.remove(r);
+				listaNazioni.remove(selectionIndex);
+				break;
+			}
+		}
+		checkSelezione();
+	}
+	
+	public String apri() {
+		String regioni = "";
+		if (open() == Dialog.OK) {
+			for (Nazione r :nazioniSelezionate) {
+				regioni += r.getCodiceIsoTre() + SEPARATORE;
+			}
+			int truncationIndex = regioni.lastIndexOf(SEPARATORE_C);
+			if (truncationIndex != -1);
+			regioni = regioni.substring(0, truncationIndex);
+		} else {
+			regioni = selezionePrecedente;
+		}
+		return regioni;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		Composite compositeControlli = new Composite(container, SWT.NONE);
+		compositeControlli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeControlli.setLayout(new GridLayout(3, false));
+		
+		Label lblRegioni = new Label(compositeControlli, SWT.NONE);
+		lblRegioni.setText("Nazioni: ");
+		
+		comboNazioni = new ComboBox<Nazione>(compositeControlli);
+		comboNazioni.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboNazioni.setItems(controller.getNazioni());
+		
+		Button btnAggiungi = new Button(compositeControlli, SWT.NONE);
+		btnAggiungi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				aggiungiNazione();
+			}
+		});
+		btnAggiungi.setText("Aggiungi");
+		
+		
+		
+		listaNazioni = new List(container, SWT.BORDER | SWT.H_SCROLL);
+		listaNazioni.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+		
+		
+		Menu menuPopup = new Menu(listaNazioni);
+		MenuItem delete = new MenuItem(menuPopup, SWT.PUSH);
+		delete.setText("Elimina");
+		delete.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		int selectionIndex = listaNazioni.getSelectionIndex();
+	    		if (selectionIndex != -1) {
+	    			eliminaNazione(selectionIndex);
+	    		}
+	    	}
+	    });	
+		listaNazioni.setMenu(menuPopup);		
+	}
+
+	@Override
+	public void checkElementiGrafici() {
+		//Se avevo già delle regioni precedentemente inserite le riporto.
+		if (selezionePrecedente != null && !selezionePrecedente.isEmpty()) {
+			String[] regioniPrecedenti = selezionePrecedente.split(SEPARATORE);
+			for (String sigla : regioniPrecedenti) {
+				Nazione regione = controller.getNazione(sigla);
+				if (regione != null) {
+					nazioniSelezionate.add(regione);
+					listaNazioni.add(regione.getNome());
+				}
+			}
+		}
+	}
+
+}

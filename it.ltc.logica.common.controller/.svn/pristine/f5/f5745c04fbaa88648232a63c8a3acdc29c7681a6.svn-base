@@ -1,0 +1,112 @@
+package it.ltc.logica.common.controller.uscite;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.model.centrale.utenti.TipoEventoUtente;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogProgresso;
+
+public class OrdiniController {
+	
+	private static OrdiniController instance;
+	
+	private final ControllerUtente utente;
+	
+	private final EntityManager<Ordine> managerOrdini;
+	
+	private final List<Ordine> listaOrdini;
+	private final HashMap<Integer, Ordine> ordini;
+	
+	private OrdiniController() {
+		utente = ControllerUtente.getInstance();
+		managerOrdini = new EntityManager<Ordine>(Ordine.class, ConfigurationManager.getDefault());
+		listaOrdini = new ArrayList<Ordine>();
+		ordini = new HashMap<Integer, Ordine>();
+		caricaDati();
+	}
+	
+	public static OrdiniController getInstance() {
+		if (instance == null) {
+			instance = new OrdiniController();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		caricaOrdini();
+	}
+	
+	private void caricaOrdini() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento degli ordini", -1);
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				ordini.clear();
+				listaOrdini.clear();
+				//Carico tutto quello che trovo
+				List<Ordine> lista = managerOrdini.getEntities();
+				for (Ordine ordine : lista) {
+					if (!ordini.containsKey(ordine.getId())) {
+						ordini.put(ordine.getId(), ordine);
+						listaOrdini.add(ordine);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Ordine> getOrdini() {
+		return listaOrdini;
+	}
+	
+	public List<Ordine> getListaOrdini(Commessa commessaSelezionata) {
+		List<Ordine> ordiniCliente = new ArrayList<Ordine>();
+		if (commessaSelezionata != null) {
+			Integer idCommessa = commessaSelezionata.getId();
+			for (Ordine ordine : listaOrdini) {
+				if (idCommessa.equals(ordine.getIdCommessa()))
+					ordiniCliente.add(ordine);
+			}
+		}
+		return ordiniCliente;
+	}
+
+	public int inserisciNuovoOrdine(Ordine ordine) {
+		int id = managerOrdini.insertAndReturnID(ordine);
+		boolean inserimento = (id != -1);
+		if (inserimento) {
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("O01");
+			utente.inserisciEvento(tipoEvento, ordine.toString());
+		}
+		return id;
+	}
+
+	public boolean aggiornaOrdine(Ordine ordine) {
+		boolean update = managerOrdini.update(ordine);
+		if (update) {
+			TipoEventoUtente tipoEvento = TipoEventoUtente.getTipoEvento("O02");
+			utente.inserisciEvento(tipoEvento, ordine.toString());
+		}
+		return update;
+	}
+	
+}

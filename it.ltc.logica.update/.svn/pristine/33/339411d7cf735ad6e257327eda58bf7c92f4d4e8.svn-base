@@ -1,0 +1,249 @@
+package it.ltc.logica.update;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import it.ltc.logica.gui.container.Processo;
+import it.ltc.logica.update.model.feature.Feature;
+import it.ltc.logica.update.model.feature.Site;
+import it.ltc.logica.update.model.plugin.Plugin;
+
+public class CheckForUpdatesProcess extends Processo {
+
+	private static final String titolo = "Controllo aggiornamenti";
+	private static final int operazioni = 100;
+
+	private static final String featureListFile = "site.xml";
+
+	private final UpdateController controller;
+	private final File updateFolder;
+	private final File featuresFolder;
+	private final File pluginsFolder;
+
+	private final LinkedHashSet<String> featureNames;
+	private final HashMap<String, File> filesToDelete;
+
+	public CheckForUpdatesProcess(LinkedHashSet<String> names) {
+		super(titolo, operazioni);
+		controller = UpdateController.getInstance();
+		updateFolder = controller.getUpdateFolder();
+		featuresFolder = controller.getFeaturesFolder();
+		pluginsFolder = controller.getPluginsFolder();
+		featureNames = names;
+		filesToDelete = new HashMap<String, File>();
+	}
+
+	@Override
+	public void eseguiOperazioni(IProgressMonitor monitor) {
+		if (monitor != null)
+			monitor.beginTask(titolo, 100);
+		int featuresUpdated = 0;
+		File featureList = getFeatureListFile();
+		if (monitor != null)
+			monitor.worked(20);
+		List<Feature> features = getFeatures(featureList);
+		if (monitor != null)
+			monitor.worked(10);
+		LinkedList<Feature> featureToUpdate = new LinkedList<Feature>();
+		for (String name : featureNames) {
+			for (Feature feature : features) {
+				if (feature.getId().equals(name)) {
+					boolean update = checkVersion(feature);
+					if (update)
+						featureToUpdate.add(feature);
+				}
+			}
+			if (monitor != null)
+				monitor.worked(1);
+		}
+		// Aggiorno le feature necessarie
+		for (Feature feature : featureToUpdate) {
+			boolean update = updateFeature(feature);
+			if (update)
+				featuresUpdated += 1;
+			if (monitor != null)
+				monitor.worked(1);
+		}
+		// cancello i files vecchi e inutilizzati
+		if (featuresUpdated > 0) {
+			File workbenchFile = controller.getWorkbenchFile();
+			if (workbenchFile.exists())
+				filesToDelete.put("workbench", workbenchFile);
+		}
+		for (File file : filesToDelete.values()) {
+			if (file.isDirectory()) {
+				for (File f : file.listFiles())
+					f.delete();
+			}
+			boolean delete = file.delete();
+			System.out.println("Cancellazione '" + file.getName() + "', esito: " + delete);
+			if (!delete) {
+				controller.addResourceToDeleteList(file.getName());
+			}
+			if (monitor != null)
+				monitor.worked(1);
+		}
+		//Se ho eseguito correttamente almeno un aggiornamento riavvio il programma.
+		if (featuresUpdated > 0) {
+			controller.restart(featuresUpdated);
+		}
+		if (monitor != null)
+			monitor.done();
+	}
+
+	private File getFeatureListFile() {
+		File file = new File(updateFolder.getPath() + System.getProperty("file.separator") + featureListFile);
+		boolean success = controller.download(file.getPath(), featureListFile);
+		if (!success) {
+			System.out.println("Impossibile scaricare il file con la lista degli aggiornamenti.");
+		}
+		return file;
+	}
+
+	private List<Feature> getFeatures(File featureList) {
+		List<Feature> features;
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(Site.class);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			Site site = (Site) jaxbUnmarshaller.unmarshal(featureList);
+			features = site.getFeature();
+		} catch (JAXBException e) {
+			features = new LinkedList<Feature>();
+			e.printStackTrace();
+		}
+		return features;
+	}
+
+	private boolean checkVersion(Feature feature) {
+		boolean update = false;
+		// Recupero id e versione della feature
+		String id = feature.getId();
+		String version = feature.getVersion();
+		// Controllo la versione della feature locale
+		if (featuresFolder.isDirectory()) {
+			File featureFolder = findFeatureFolder(id, featuresFolder);
+			if (featureFolder != null) {
+				String[] featureData = featureFolder.getName().split("_");
+				if (featureData.length == 2 && featureData[0].equals(id)) {
+					int compare = featureData[1].compareTo(version);
+					if (compare < 0) {
+						// Segno la cartella attuale come da eliminare
+						filesToDelete.put(id, featureFolder);
+						update = true;
+					}
+				}
+			} else {
+				update = true;
+			}
+		}
+		return update;
+	}
+
+	private File findFeatureFolder(String id, File featuresFolder) {
+		File folder = null;
+		for (File f : featuresFolder.listFiles()) {
+			if (f.isDirectory() && f.getName().startsWith(id)) {
+				folder = f;
+				break;
+			}
+		}
+		return folder;
+	}
+	
+	private boolean updateFeature(Feature feature) {
+		//Download del jar contenente la feature
+		String url = feature.getUrl();
+		String local = updateFolder.getPath() + System.getProperty("file.separator") + feature.getId();
+		controller.download(local, url);
+		File download = new File(local);
+		//Creo la nuova cartella per la feature
+		File folder = new File(featuresFolder + System.getProperty("file.separator") + feature.getId() + "_" + feature.getVersion());
+		if (!folder.exists())
+			folder.mkdir();
+		//Scompatto il jar e ne copio il contenuto nella nuova cartella per la feature
+		boolean copy = true;
+		try {
+			JarFile jar = new JarFile(download);
+			Enumeration<JarEntry> enumEntries = jar.entries();
+			while (enumEntries.hasMoreElements()) {
+			    JarEntry file = enumEntries.nextElement();
+			    File f = new File(folder + System.getProperty("file.separator") + file.getName());
+			    if (file.isDirectory()) { //Se e' una cartella la creo
+			        f.mkdir();
+			        continue;
+			    }
+			    InputStream is = jar.getInputStream(file); //Altrimenti se e' un file lo copio
+			    FileOutputStream fos = new FileOutputStream(f);
+			    while (is.available() > 0) {
+			        fos.write(is.read());
+			    }
+			    fos.flush();
+			    fos.close();
+			    is.close();
+			}
+			jar.close();
+		} catch (Exception e) {
+			copy = false;
+			e.printStackTrace();
+		}
+		if (copy) //Se l'aggiornamento è andato a buon fine aggiorno i relativi plugin
+			updatePlugins(folder);
+		else //altrimenti tolgo la cartella della feature dalla lista di quelle da eliminare
+			filesToDelete.remove(feature.getId());
+		return copy;
+	}
+	
+	private void updatePlugins(File folder) {
+		try {
+			File featureFile = new File(folder + System.getProperty("file.separator") + "feature.xml");
+			JAXBContext jaxbContext = JAXBContext.newInstance(it.ltc.logica.update.model.plugin.Feature.class);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			it.ltc.logica.update.model.plugin.Feature feature = (it.ltc.logica.update.model.plugin.Feature) jaxbUnmarshaller.unmarshal(featureFile);
+			List<Plugin> plugins = feature.getPlugin();
+			for (Plugin plugin : plugins) {
+				updatePlugin(plugin);
+			}
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void updatePlugin(Plugin plugin) {
+		//Recupero id e versione del plugin
+		String id = plugin.getId();
+		String version = plugin.getVersion();
+		String pluginName = id + "_" + version + ".jar";
+		File pluginJar = new File(pluginsFolder.getPath() + System.getProperty("file.separator") + pluginName);
+		if (!pluginJar.exists()) {
+			//Scarico il nuovo plugin
+			boolean download = controller.download(pluginJar.getPath(), "plugins/" + pluginName);
+			if (download) {
+				//Segno come da cancellare il vecchio plugin, se presente
+				for (File pluginFile : pluginsFolder.listFiles()) {
+					String[] pluginData = pluginFile.getName().split("_");
+					if (pluginData.length == 2 && pluginData[0].equals(id)) {
+						String v = pluginData[1].replace(".jar", "");
+						if (v.compareTo(version) < 0) {
+							filesToDelete.put(id, pluginFile);
+						}
+					}
+				}
+			}
+		}
+	}
+
+}

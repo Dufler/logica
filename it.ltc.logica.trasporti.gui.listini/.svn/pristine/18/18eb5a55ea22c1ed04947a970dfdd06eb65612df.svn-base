@@ -1,0 +1,108 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.cliente;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.Commessa;
+import it.ltc.logica.database.model.ListinoCommessa;
+import it.ltc.logica.database.model.TipoListino;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeProprietaListinoCliente;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+
+public class ProprietaListinoCommessa extends DialogModel<ListinoCommessa> {
+	
+	private static final String titolo = "Propriet\u00E0 - Listino cliente";
+
+	private static ProprietaListinoCommessa instance;
+	
+	private ListiniClientiController controller;
+	
+	private ListinoCommessa listino;
+	
+	private CompositeProprietaListinoCliente compositeProprieta;
+	
+	private ProprietaListinoCommessa(ListinoCommessa listinoCommessa) {
+		super(titolo, listinoCommessa);
+		listino = listinoCommessa;
+		controller = ListiniClientiController.getInstance();
+	}
+	
+	public static ProprietaListinoCommessa getInstance(ListinoCommessa listinoCommessa) {
+		instance = new ProprietaListinoCommessa(listinoCommessa);
+		return instance;
+	}
+	
+	@Override
+	protected Point getInitialSize() {
+		return new Point(450, 300);
+	}
+	
+	public void copyDataToModel() {
+		String nome = compositeProprieta.getNome();
+		listino.setNome(nome);
+		String tipo = compositeProprieta.getTipo().getCodice();
+		listino.setTipo(tipo);
+		String descrizione = compositeProprieta.getDescrizione();
+		listino.setDescrizione(descrizione);
+		Integer idCommessa = compositeProprieta.getCommessa().getId();
+		listino.setIdCommessa(idCommessa);
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = listino.getNome();
+		compositeProprieta.setNome(nome);
+		String descrizione = listino.getDescrizione();
+		compositeProprieta.setDescrizione(descrizione);
+		Integer idCommessa = listino.getIdCommessa();
+		Commessa commessa = Commessa.getCommessa(idCommessa);
+		compositeProprieta.setCommessa(commessa);
+		String codiceTipo = listino.getTipo();
+		TipoListino tipo = TipoListino.getTipo(codiceTipo);
+		compositeProprieta.setTipo(tipo);
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controller.aggiornaListinoCliente(listino);
+		return update;
+	}
+	
+	@Override
+	public boolean insertModel() {
+		boolean inserimento = controller.creaNuovoListino(listino);
+		return inserimento;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeProprieta = new CompositeProprietaListinoCliente(container, SWT.NONE);
+		compositeProprieta.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeProprieta);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modificato = compositeProprieta.isDirty();
+		return modificato;
+	}
+
+	@Override
+	public ListinoCommessa createNewModel() {
+		ListinoCommessa listino = new ListinoCommessa();
+		return listino;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ValidationResult esito = listino.validate();
+		return esito.getMessages();
+	}
+
+}

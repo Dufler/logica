@@ -1,0 +1,206 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class CompositeCodiceCliente extends Gruppo {
+	
+	private static final String titolo = "Codice Cliente";
+	
+	private ListiniCorrieriController controllerCorriere;
+	private ListiniClientiController controllerCliente;
+	
+	private TextForString textCodice;
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<Corriere> comboCorriere;
+	private Label lblDescrizione;
+	private TextForString textDescrizione;
+	private Label lblListinoCliente;
+	private ComboBox<ListinoCommessa> comboListinoCliente;
+	private Label lblListinoCorriere;
+	private ComboBox<ListinoCorriere> comboListinoCorriere;
+	
+
+	public CompositeCodiceCliente(Composite parent, int style) {
+		super(parent, style, titolo);
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		controllerCorriere = ListiniCorrieriController.getInstance();
+		controllerCliente = ListiniClientiController.getInstance();
+		
+		Label lblCodice = new Label(this, SWT.NONE);
+		lblCodice.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCodice.setText("Codice: ");
+		
+		textCodice = new TextForString(this, SWT.BORDER);
+		textCodice.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblCliente = new Label(this, SWT.NONE);
+		lblCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCliente.setText("Cliente: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+				if (commessaSelezionata != null) {
+					setListiniCliente(commessaSelezionata);
+				}
+			}
+		});
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(Commessa.getCommesse());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblListinoCliente = new Label(this, SWT.NONE);
+		lblListinoCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblListinoCliente.setText("Listino Cliente: ");
+		
+		comboListinoCliente = new ComboBox<ListinoCommessa>(this);
+		comboListinoCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboListinoCliente.setEnabled(false);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblCorriere = new Label(this, SWT.NONE);
+		lblCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCorriere.setText("Corriere: ");
+		
+		comboCorriere = new ComboBox<Corriere>(this);
+		comboCorriere.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Corriere corriereSelezionato = comboCorriere.getSelectedValue();
+				if (corriereSelezionato != null) {
+					setListiniCorriere(corriereSelezionato);
+				}
+			}
+		});
+		comboCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCorriere.setItems(Corriere.getCorrieri());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblListinoCorriere = new Label(this, SWT.NONE);
+		lblListinoCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblListinoCorriere.setText("Listino Corriere: ");
+		
+		comboListinoCorriere = new ComboBox<ListinoCorriere>(this);
+		comboListinoCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboListinoCorriere.setEnabled(false);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblDescrizione = new Label(this, SWT.NONE);
+		lblDescrizione.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizione.setText("Descrizione: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER | SWT.MULTI);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		textDescrizione.setRequired(false);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	public String getCodiceCliente() {
+		return textCodice.getText();
+	}
+	
+	public void setCodiceCliente(String value) {
+		textCodice.setText(value);
+	}
+	
+	public Commessa getCommessa() {
+		return comboCommessa.getSelectedValue();
+	}
+	
+	public void setCommessa(Commessa value) {
+		comboCommessa.setSelectedValue(value);
+		setListiniCliente(value);
+	}
+	
+	public Corriere getCorriere() {
+		return comboCorriere.getSelectedValue();
+	}
+	
+	public void setCorriere(Corriere value) {
+		comboCorriere.setSelectedValue(value);
+		setListiniCorriere(value);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+	
+	public void setDescrizione(String value) {
+		textDescrizione.setText(value);
+	}
+	
+	public ListinoCorriere getListinoCorriere() {
+		return comboListinoCorriere.getSelectedValue();
+	}
+	
+	public void setListinoCorriere(ListinoCorriere value) {
+		comboListinoCorriere.setSelectedValue(value);
+	}
+	
+	public ListinoCommessa getListinoCliente() {
+		return comboListinoCliente.getSelectedValue();
+	}
+	
+	public void setListinoCliente(ListinoCommessa value) {
+		comboListinoCliente.setSelectedValue(value);
+	}
+	
+	private void setListiniCorriere(Corriere corriere) {
+		List<ListinoCorriere> listini = controllerCorriere.getListiniCorrieri();
+		List<ListinoCorriere> listiniDaMostrare = new ArrayList<ListinoCorriere>();
+		for (ListinoCorriere listino : listini) {
+			if (listino.getIdCorriere().equals(corriere.getId())) {
+				listiniDaMostrare.add(listino);
+			}
+		}
+		comboListinoCorriere.setItems(listiniDaMostrare);
+		comboListinoCorriere.setEnabled(true);
+	}
+	
+	private void setListiniCliente(Commessa commessa) {
+		List<ListinoCommessa> listini = controllerCliente.getListiniClienti();
+		List<ListinoCommessa> listiniDaMostrare = new ArrayList<ListinoCommessa>();
+		for (ListinoCommessa listino : listini) {
+			if (listino.getIdCommessa().equals(commessa.getId())) {
+				listiniDaMostrare.add(listino);
+			}
+		}
+		comboListinoCliente.setItems(listiniDaMostrare);
+		comboListinoCliente.setEnabled(true);
+	}
+
+}

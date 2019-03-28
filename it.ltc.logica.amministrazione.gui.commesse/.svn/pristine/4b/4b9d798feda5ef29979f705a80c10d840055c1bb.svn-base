@@ -1,0 +1,60 @@
+package it.ltc.logica.amministrazione.gui.commesse.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.amministrazione.gui.commesse.dialogs.DialogCliente;
+import it.ltc.logica.database.model.centrale.Cliente;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaClienti extends Tabella<Cliente> {
+
+	public TabellaClienti(Composite parent) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatoreClienti());
+
+		aggiungiColonna("Ragione sociale", 200, new EtichettatoreClienti(), 0);
+		aggiungiColonna("P.IVA / C.F.", 150, new EtichettatoreClienti(), 1);
+	}
+
+	@Override
+	protected void setFiltro() {}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+
+	protected void apriDialogModifica() {
+		Cliente cliente = getRigaSelezionata();
+		if (cliente != null) {
+			DialogCliente dialog = new DialogCliente(cliente);
+			if (dialog.open() == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+}

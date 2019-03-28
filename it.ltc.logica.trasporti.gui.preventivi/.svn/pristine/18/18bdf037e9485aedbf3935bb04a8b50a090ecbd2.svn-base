@@ -1,0 +1,120 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.TextForDouble;
+import it.ltc.logica.gui.input.TextForInteger;
+import it.ltc.logica.gui.input.TextForMoney;
+import it.ltc.logica.trasporti.controller.PreventivoFittiziaController;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class PreventivoSpedizioneFittiziaDatiWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Preventivo di costo e fatturazione per una spedizione";
+	private static final String descrizione = "Inserisci i dati sulla spedizione tipo.";
+	
+	private PreventivoFittiziaController controllerPreventivo;
+	
+	private TextForInteger textPezzi;
+	private TextForDouble textPeso;
+	private TextForDouble textVolume;
+	//private TextForDouble textPercentualeContrassegno;
+	private TextForMoney textValoreContrassegno;
+	private Button btnSi;
+	private Button btnNo;
+
+	public PreventivoSpedizioneFittiziaDatiWizardPage() {
+		super(titolo, descrizione);
+		controllerPreventivo = PreventivoFittiziaController.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblMediaPezzi = new Label(container, SWT.NONE);
+		lblMediaPezzi.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMediaPezzi.setText("Media Pezzi per Collo: ");
+		
+		textPezzi = new TextForInteger(container, SWT.BORDER);
+		textPezzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(textPezzi);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblMediaPesoCollo = new Label(container, SWT.NONE);
+		lblMediaPesoCollo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMediaPesoCollo.setText("Media Peso Collo: ");
+		
+		textPeso = new TextForDouble(container, SWT.BORDER);
+		textPeso.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(textPeso);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblMediaVolumeCollo = new Label(container, SWT.NONE);
+		lblMediaVolumeCollo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMediaVolumeCollo.setText("Media Volume Collo: ");
+		
+		textVolume = new TextForDouble(container, SWT.BORDER);
+		textVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(textVolume);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblContrassegno = new Label(container, SWT.NONE);
+		lblContrassegno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblContrassegno.setText("Contrassegno: ");
+		
+		Composite compositeContrassegno = new Composite(container, SWT.NONE);
+		compositeContrassegno.setLayout(new GridLayout(2, false));
+		
+		btnSi = new Button(compositeContrassegno, SWT.RADIO);
+		btnSi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean contrassegno = btnSi.getSelection();
+				textValoreContrassegno.setRequired(contrassegno);
+				textValoreContrassegno.setEnabled(contrassegno);
+			}
+		});
+		btnSi.setText("Si");
+		btnSi.setSelection(false);
+		
+		btnNo = new Button(compositeContrassegno, SWT.RADIO);
+		btnNo.setText("No");
+		new Label(container, SWT.NONE);
+		btnNo.setSelection(true);
+		
+		Label lblMediaValoreContrassegno = new Label(container, SWT.NONE);
+		lblMediaValoreContrassegno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblMediaValoreContrassegno.setText("Media Valore Contrassegno: ");
+		
+		textValoreContrassegno = new TextForMoney(container, SWT.BORDER);
+		textValoreContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textValoreContrassegno.setRequired(false);
+		textValoreContrassegno.setEnabled(false);
+		addChild(textValoreContrassegno);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		controllerPreventivo.setPezzi(textPezzi.getValue());
+		controllerPreventivo.setPeso(textPeso.getValue());
+		controllerPreventivo.setVolume(textVolume.getValue());
+		boolean contrassegno = btnSi.getSelection();
+		controllerPreventivo.setContrassegno(contrassegno);
+		if (contrassegno)
+			controllerPreventivo.setValoreContrassegno(textValoreContrassegno.getValue());
+	}
+}

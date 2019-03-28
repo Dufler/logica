@@ -1,0 +1,35 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.gui.container.DialogMessaggio;
+import it.ltc.logica.gui.container.DialogProgresso;
+
+public class ControllerDocumentiDiFatturazione {
+	
+	private static ControllerDocumentiDiFatturazione instance;
+	
+	private ControllerDocumentiDiFatturazione() {}
+	
+	public static ControllerDocumentiDiFatturazione getInstance() {
+		if (instance == null) {
+			instance = new ControllerDocumentiDiFatturazione();
+		}
+		return instance;
+	}
+	
+	public void produciDocumentoXLS(String path, int idDocumento) {
+		ProcessoCaricamentoDatiFatturazione processo = new ProcessoCaricamentoDatiFatturazione(path, idDocumento);
+		DialogProgresso dialog = new DialogProgresso("Generazione Fattura", false);
+		boolean esito = dialog.esegui(processo);
+		if (esito) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file nel percorso selezionato");
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+	
+	public RealizzatoreDocumentoDiFatturazione getRealizzatore(AmbitoFattura modello) {
+		return new TrasportiExcel();
+	}
+
+}

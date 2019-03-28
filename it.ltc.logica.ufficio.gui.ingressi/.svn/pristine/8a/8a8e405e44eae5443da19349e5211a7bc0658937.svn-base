@@ -1,0 +1,97 @@
+package it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
+import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
+import it.ltc.logica.ufficio.gui.elements.prodotto.AlberoProdotti;
+
+public class PaginaDettaglio extends PaginaWizardRisultati {
+	
+	private static final String title = "Nuovo Carico";
+	private static final String description = "Inserisci le informazioni sulla composizione del carico.";
+	private static final String filterHint = "Filtra i prodotti per modello...";
+
+	private final Ingresso ingresso;
+	private final List<IngressoDettaglio> dettagli;
+	
+	//private TabellaProdottiPerModello viewer;
+	//private Table table;
+	private AlberoProdotti albero;
+	private Tree tree;
+	private Text textFiltro;
+	
+	protected PaginaDettaglio(Ingresso ingresso, List<IngressoDettaglio> dettagli) {
+		super(title, description, false);
+		this.ingresso = ingresso;
+		this.dettagli = dettagli;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblFiltraPerModello = new Label(container, SWT.NONE);
+		lblFiltraPerModello.setText("Filtra per modello: ");
+		
+		textFiltro = new Text(container, SWT.BORDER);
+		textFiltro.addModifyListener(new ModifyListener() {
+			public void modifyText(ModifyEvent e) {
+				//viewer.filtra(textFiltro.getText());
+				albero.filtra(textFiltro.getText());
+			}
+		});
+		textFiltro.setToolTipText(filterHint);
+		textFiltro.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFiltro.setMessage(filterHint);
+		
+//		viewer = new TabellaProdottiPerModello(container);
+//		table = viewer.getTable();
+//		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		albero = new AlberoProdotti(container);
+		tree = albero.getTree();
+		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+	}
+
+	@Override
+	public void copyDataToModel() {
+		dettagli.clear();
+		int totaleProdottiSelezionati = 0;
+		HashMap<Prodotto, Integer> prodottiSelezionati = albero.getProdottiSelezionati(); //viewer.getProdottiSelezionati();
+		for (Prodotto prodotto : prodottiSelezionati.keySet()) {
+			int quantita = prodottiSelezionati.get(prodotto);
+			totaleProdottiSelezionati += quantita;
+			IngressoDettaglio dettaglio = new IngressoDettaglio();
+			dettaglio.setIdProdotto(prodotto.getId());
+			dettaglio.setQuantitaLetta(0);
+			dettaglio.setQuantitaPrevista(quantita);
+			dettagli.add(dettaglio);
+		}
+		ingresso.setPezziStimati(totaleProdottiSelezionati);
+	}
+
+	@Override
+	public void mostraRisultato() {
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(ingresso.getIdCommessa());
+		//viewer.setElementi(ControllerProdotti.getInstance().getProdottiPerModello(commessa.getIdCliente()));
+		albero.setProdotti(ControllerProdotti.getInstance().getProdottiPerModello(commessa.getIdCliente()));
+	}
+
+}

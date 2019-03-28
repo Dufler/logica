@@ -1,0 +1,34 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.Cap;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class NoloDisagiate extends NoloItalia {
+	
+	public NoloDisagiate(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODICE = "NOLO_DISAGIATE";
+	public static final int ID = 22;
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel model) {
+		Indirizzo destinazione = model.getDestinazione();
+		String capDestinazione = destinazione.getCap();
+		String localitaDestinazione = destinazione.getLocalita();
+		Cap cap = Cap.getInfoCap(capDestinazione, localitaDestinazione);
+		boolean applicabile = (cap != null) ? cap.getBrtDisagiate() : false;
+		if (applicabile)
+			System.out.println(cap);
+		return applicabile;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+
+}

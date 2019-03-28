@@ -1,0 +1,136 @@
+package it.ltc.logica.database.configuration;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class ControllerLocalDB {
+
+	private static String pathFile = System.getProperty("user.dir") + System.getProperty("file.separator") + "DB";
+	
+
+	private static ControllerLocalDB instance;
+	
+	private ControllerLocalDB() {}
+	
+	public static ControllerLocalDB getInstance() {
+		if (instance == null) {
+			instance = new ControllerLocalDB();
+		}
+		return instance;
+	}
+	
+	
+	public void createDatabase() {
+		SQLite sqlite = new SQLite(Database.SQLITE);
+		
+        try (Connection conn = sqlite.getConnection()) {
+            if (conn != null) {
+                DatabaseMetaData meta = conn.getMetaData();
+                //System.out.println("DataBase creato.");
+            }
+            conn.close();
+ 
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+	
+	public void createTableUtente() {
+		SQLite sqlite = new SQLite(Database.SQLITE);
+		
+        String sql = "CREATE TABLE IF NOT EXISTS utente (\n"
+                + "	id integer PRIMARY KEY,\n"
+                + "	name text NOT NULL,\n"
+                + "	password text NOT NULL\n"
+                + ");";
+        
+        try (Connection conn = sqlite.getConnection()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                stmt.execute(sql);
+                //System.out.println("Tabella utente creata.");
+            }
+            conn.close();
+ 
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        
+    }
+	
+	public void newRecordIntoTableUtente(String userName, String password) {
+		SQLite sqlite = new SQLite(Database.SQLITE);
+		
+        String sql = "insert into utente (\n"
+                + "	name,\n"
+                + "	password\n"
+                + ") values"
+                + "("
+                + "'" + userName + "',\n"
+                + "'" + password + "'\n"
+                + ");";
+        
+        try (Connection conn = sqlite.getConnection()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                stmt.execute(sql);
+                //System.out.println("Nuovo record aggiunto.");
+            }
+            conn.commit();
+            conn.close();
+ 
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        
+    }
+	
+	public String getLastUtente() {
+		String lastUtente = "";
+		
+		SQLite sqlite = new SQLite(Database.SQLITE);
+		
+        String sql = "select name from utente order by id desc limit 1;";
+                
+        try (Connection conn = sqlite.getConnection()) {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+               
+                ResultSet rs =  stmt.executeQuery(sql);
+                while ( rs.next() ) {
+                   lastUtente = rs.getString("name");
+                }
+            }
+            conn.close();
+ 
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        
+        return lastUtente;
+    }
+	
+	
+	public String getPathFile() {
+		//System.out.println(pathFile);
+		
+		File path = new File(pathFile);
+		if (!path.exists())
+			path.mkdirs();
+	
+		pathFile = pathFile.replace('\\', '/') + '/';
+		return pathFile;
+	}
+	
+	public void InitLocalDB()
+	{
+		createDatabase();
+		createTableUtente();
+		
+	}
+	
+}

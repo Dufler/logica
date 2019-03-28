@@ -1,0 +1,150 @@
+package it.ltc.logica.database.model.centrale.fatturazione;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class AmbitoFattura extends Entity {
+	
+	public static final int ID_SPEDIZIONI = 1;
+	public static final int ID_GIACENZE = 2;
+	public static final int ID_SIMULAZIONI = 4;
+	
+	public enum Categoria {
+		
+		TRASPORTI,
+		LOGISTICA,
+		EXTRA,
+		SIMULAZIONE,
+		CORRIERI;
+		
+	}
+	
+	public static final String NOME_TABELLA = "fattura_ambito";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static final EntityManager<AmbitoFattura> manager = new EntityManager<AmbitoFattura>(AmbitoFattura.class, ConfigurationManager.getDefault());
+	private static final LinkedList<AmbitoFattura> lista = new LinkedList<AmbitoFattura>();
+	
+	private Integer id;
+	private String categoria;
+	private String nome;
+	private String descrizione;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addString("categoria", "categoria");
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+	
+	public static List<AmbitoFattura> getAmbiti() {
+		if (lista.isEmpty()) {
+			lista.addAll(manager.getEntities());
+		}
+		return lista;
+	}
+	
+	public static List<AmbitoFattura> getAmbitiPerCategoria(Categoria categoria) {
+		List<AmbitoFattura> listaPerCategoria = new LinkedList<AmbitoFattura>();
+		for (AmbitoFattura ambito : getAmbiti()) {
+			if (ambito.getCategoria().equals(categoria.name()))
+				listaPerCategoria.add(ambito);
+		}
+		return listaPerCategoria;
+	}
+	
+	public static AmbitoFattura getAmbito(int id) {
+		AmbitoFattura ambito = null;
+		for (AmbitoFattura a : getAmbiti()) {
+			if (a.getId() == id) {
+				ambito = a;
+				break;
+			}
+		}
+		return ambito;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getCategoria() {
+		return categoria;
+	}
+	
+	public Categoria getECategoria() {
+		Categoria c = null;
+		if (categoria != null && !categoria.isEmpty())
+			c = Categoria.valueOf(categoria);
+		return c;
+	}
+
+	public void setCategoria(String categoria) {
+		this.categoria = categoria;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	@Override
+	public String toString() {
+		return nome;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AmbitoFattura other = (AmbitoFattura) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+}

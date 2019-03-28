@@ -1,0 +1,59 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoFissa extends Entity implements ValidEntity {
+	
+	public static final String NOME_TABELLA = "listino_commessa_voce_fissa";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+
+	private Integer id;
+	private Double valore;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id_voce", Column.INT, "id", true, false));
+			variabili.add(new Column("valore", Column.DOUBLE, "valore"));
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore fisso deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+
+}

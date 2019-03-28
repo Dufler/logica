@@ -1,0 +1,232 @@
+package it.ltc.logica.database.model.centrale.storico;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class SpedizioneStorica extends Spedizione {
+	
+	public static final String NOME_TABELLA = "storico_spedizione";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static final LinkedList<SpedizioneStorica> spedizioni = new LinkedList<SpedizioneStorica>();
+	private static final EntityManager<SpedizioneStorica> manager = new EntityManager<SpedizioneStorica>(SpedizioneStorica.class, ConfigurationManager.getDefault());
+	
+//	private Integer id;
+//	private Integer idOrdine;
+//	private Integer idCorriere;
+//	private Integer idCommessa;
+//	private Date data;
+//	private Integer idIndirizzoPartenza;
+//	private Integer idIndirizzoDestinazione;
+//	private Integer pezzi;
+//	private Integer colli;
+//	private Double peso;
+//	private Double volume;
+//	private Double contrassegno;
+//	private String servizio;
+//	private String stato;
+//	private String codiceCliente;
+//	private Boolean giacenza;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+	
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("id", "id");
+			variabili.addInt("id_ordine", "idOrdine");
+			variabili.addInt("id_corriere", "idCorriere");
+			variabili.addInt("id_commessa", "idCommessa");
+			variabili.addDate("data_partenza", "data");
+			variabili.addInt("indirizzo_partenza", "idIndirizzoPartenza");
+			variabili.addInt("indirizzo_destinazione", "idIndirizzoDestinazione");		
+			variabili.addInt("colli", "colli");
+			variabili.addDouble("peso", "peso");
+			variabili.addDouble("volume", "volume");
+			variabili.addInt("pezzi", "pezzi");
+			variabili.addString("servizio", "servizio");
+			variabili.addBoolean("contrassegno", "contrassegno");
+			//variabili.addBoolean("assicurazione", "assicurazione");
+			variabili.addString("stato", "stato");
+			variabili.addBoolean("giacenza", "giacenza", false, true);
+			variabili.addString("lettera_di_vettura", "letteraDiVettura");
+			variabili.addDouble("valore_merce_dichiarato", "valoreMerce");
+			//variabili.addBoolean("particolarita", "particolarita");
+			variabili.addString("codice_cliente", "codiceCliente");
+			variabili.addString("riferimento_cliente", "riferimentoCliente");
+			variabili.addString("riferimento_mittente", "riferimentoMittente");
+			//variabili.addString("note", "note");
+			variabili.addBoolean("in_ritardo", "inRitardo", false, true);
+			variabili.addBoolean("dati_completi", "datiCompleti", false, true);
+			variabili.addInt("fatturazione", "fatturazione", false, true);
+		}
+		return variabili;
+	}
+
+//	@Override
+//	public ColumnList getVariabili() {
+//		if (variabili.isEmpty()) {
+//			variabili.addInt("id", "id", true, false);
+//			variabili.addInt("id_ordine", "idOrdine");
+//			variabili.addInt("id_corriere", "idCorriere");
+//			variabili.addInt("id_commessa", "idCommessa");
+//			variabili.addDate("data_partenza", "data");
+//			variabili.addInt("indirizzo_partenza", "idIndirizzoPartenza");
+//			variabili.addInt("indirizzo_destinazione", "idIndirizzoDestinazione");
+//			variabili.addInt("pezzi", "pezzi");
+//			variabili.addInt("colli", "colli");
+//			variabili.addDouble("peso", "peso");
+//			variabili.addDouble("volume", "volume");
+//			variabili.addDouble("contrassegno", "contrassegno");
+//			variabili.addString("servizio", "servizio");
+//			variabili.addString("stato", "stato");
+//			variabili.addString("codice_cliente", "codiceCliente");
+//			variabili.addBoolean("giacenza", "giacenza", false, true);
+//		}
+//		return variabili;
+//	}
+	
+	public static List<SpedizioneStorica> geSpedizioni() {
+		if (spedizioni.isEmpty()) {
+			spedizioni.addAll(manager.getEntities());
+		}
+		return spedizioni;
+	}
+
+//	public Integer getId() {
+//		return id;
+//	}
+//
+//	public void setId(Integer id) {
+//		this.id = id;
+//	}
+//
+//	public Integer getIdOrdine() {
+//		return idOrdine;
+//	}
+//
+//	public void setIdOrdine(Integer idOrdine) {
+//		this.idOrdine = idOrdine;
+//	}
+//
+//	public Integer getIdCorriere() {
+//		return idCorriere;
+//	}
+//
+//	public void setIdCorriere(Integer idCorriere) {
+//		this.idCorriere = idCorriere;
+//	}
+//
+//	public Integer getIdCommessa() {
+//		return idCommessa;
+//	}
+//
+//	public void setIdCommessa(Integer idCommessa) {
+//		this.idCommessa = idCommessa;
+//	}
+//
+//	public Date getData() {
+//		return data;
+//	}
+//
+//	public void setData(Date data) {
+//		this.data = data;
+//	}
+//
+//	public Integer getIdIndirizzoPartenza() {
+//		return idIndirizzoPartenza;
+//	}
+//
+//	public void setIdIndirizzoPartenza(Integer idIndirizzoPartenza) {
+//		this.idIndirizzoPartenza = idIndirizzoPartenza;
+//	}
+//
+//	public Integer getIdIndirizzoDestinazione() {
+//		return idIndirizzoDestinazione;
+//	}
+//
+//	public void setIdIndirizzoDestinazione(Integer idIndirizzoDestinazione) {
+//		this.idIndirizzoDestinazione = idIndirizzoDestinazione;
+//	}
+//
+//	public Integer getPezzi() {
+//		return pezzi;
+//	}
+//
+//	public void setPezzi(Integer pezzi) {
+//		this.pezzi = pezzi;
+//	}
+//
+//	public Integer getColli() {
+//		return colli;
+//	}
+//
+//	public void setColli(Integer colli) {
+//		this.colli = colli;
+//	}
+//
+//	public Double getPeso() {
+//		return peso;
+//	}
+//
+//	public void setPeso(Double peso) {
+//		this.peso = peso;
+//	}
+//
+//	public Double getVolume() {
+//		return volume;
+//	}
+//
+//	public void setVolume(Double volume) {
+//		this.volume = volume;
+//	}
+//
+//	public Double getContrassegno() {
+//		return contrassegno;
+//	}
+//
+//	public void setContrassegno(Double contrassegno) {
+//		this.contrassegno = contrassegno;
+//	}
+//
+//	public String getServizio() {
+//		return servizio;
+//	}
+//
+//	public void setServizio(String servizio) {
+//		this.servizio = servizio;
+//	}
+//
+//	public String getStato() {
+//		return stato;
+//	}
+//
+//	public void setStato(String stato) {
+//		this.stato = stato;
+//	}
+//
+//	public String getCodiceCliente() {
+//		return codiceCliente;
+//	}
+//
+//	public void setCodiceCliente(String codiceCliente) {
+//		this.codiceCliente = codiceCliente;
+//	}
+//
+//	public Boolean getGiacenza() {
+//		return giacenza;
+//	}
+//
+//	public void setGiacenza(Boolean giacenza) {
+//		this.giacenza = giacenza;
+//	}
+
+}

@@ -1,0 +1,57 @@
+package it.ltc.logica.utilities.pdf.parti;
+
+import java.io.IOException;
+
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+
+import it.ltc.logica.utilities.pdf.ElementoPDF;
+import it.ltc.logica.utilities.pdf.elementi.TestoMultilineaPDF;
+import it.ltc.logica.utilities.pdf.elementi.TestoSemplicePDF;
+import it.ltc.logica.utilities.pdf.stili.StileTestoPDF;
+
+public class RigaTabellaFattura extends ElementoPDF {
+	
+	private final TestoSemplicePDF codice;
+	private final TestoMultilineaPDF descrizione;
+	private final TestoSemplicePDF quantita;
+	private final TestoSemplicePDF iva;
+	private final TestoSemplicePDF prezzo;
+	private final TestoSemplicePDF importo;
+	
+	private static final float margine = 7;
+	private static final float margineEsterno = 25;
+	private static final float gap = 15;
+	
+	private static final float xColonna1 = 80;
+	private static final float xColonna2 = 360;
+	private static final float xColonna3 = 395;
+	private static final float xColonna4 = 430;
+	private static final float xColonna5 = 505;
+	
+	private final float altezzaRiga;
+	
+	public RigaTabellaFattura(float y, String testoCodice, String testoDescrizione, String testoQuantita, String testoIva, String testoPrezzo, String testoImporto, StileTestoPDF stile) {
+		this.codice = new TestoSemplicePDF(testoCodice, margineEsterno + margine, y, stile);
+		this.descrizione = new TestoMultilineaPDF(testoDescrizione, xColonna1 + margine, y, xColonna2 - xColonna1, gap, stile);
+		this.altezzaRiga = descrizione.getAltezza();
+		this.quantita = new TestoSemplicePDF(testoQuantita, xColonna2 + margine, y, stile);
+		this.iva = new TestoSemplicePDF(testoIva, xColonna3 + margine, y, stile);
+		this.prezzo = new TestoSemplicePDF(testoPrezzo, xColonna4 + margine, y, stile);
+		this.importo = new TestoSemplicePDF(testoImporto, xColonna5 + margine, y, stile);
+	}
+
+	@Override
+	public void aggiungi(PDPageContentStream stream) throws IOException {
+		codice.aggiungi(stream);
+		descrizione.aggiungi(stream);
+		quantita.aggiungi(stream);
+		iva.aggiungi(stream);
+		prezzo.aggiungi(stream);
+		importo.aggiungi(stream);
+	}
+
+	public float getAltezzaRiga() {
+		return altezzaRiga;
+	}
+
+}

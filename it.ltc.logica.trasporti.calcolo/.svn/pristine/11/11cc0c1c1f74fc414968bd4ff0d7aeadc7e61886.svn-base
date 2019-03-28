@@ -1,0 +1,140 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolatore;
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.common.controller.listini.ListiniCorrieriController;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.VoceDiListino;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriere;
+import it.ltc.logica.trasporti.calcolo.ambiti.IAmbitoTrasporto;
+
+public class CalcolatoreTrasporti extends Calcolatore<SpedizioneModel, VoceDiListinoTrasporti> {
+
+	private static final Integer NOLO_PRIORITY_10 = 28;
+	private static final Integer NOLO_PRIORITY_12 = 29;
+	private static final Integer NOLO_SUD = 30;
+	private static final Integer NOLO_ESTERO = 24;
+	private static final Integer NOLO_BASE = 20;
+	
+	private static CalcolatoreTrasporti instance;
+
+	private final ListiniClientiController controllerListini;
+	private final ListiniCorrieriController controllerListiniCorrieri;
+
+	private CalcolatoreTrasporti() {
+		controllerListini = ListiniClientiController.getInstance();
+		controllerListiniCorrieri = ListiniCorrieriController.getInstance();
+	}
+
+
+	public static CalcolatoreTrasporti getInstance() {
+		if (instance == null) {
+			instance = new CalcolatoreTrasporti();
+		}
+		return instance;
+	}
+
+
+	private VoceDiListinoTrasporti getVoceModel(VoceDiListinoCorriere voce) {
+		VoceDiListinoTrasporti vt = VoceDiListinoTrasporti.getVoceCorriere(voce);
+		return vt;
+	}
+
+	// TODO - metodo da revisionare
+	public static Integer getNoloDaUsare(Set<Integer> vociNoloBase) {
+		Integer nolo;
+		if (vociNoloBase.contains(NOLO_PRIORITY_10))
+			nolo = NOLO_PRIORITY_10;
+		else if (vociNoloBase.contains(NOLO_PRIORITY_12))
+			nolo = NOLO_PRIORITY_12;
+		else if (vociNoloBase.contains(NOLO_SUD))
+			nolo = NOLO_SUD;
+		else if (vociNoloBase.contains(NOLO_ESTERO))
+			nolo = NOLO_ESTERO;
+		else
+			nolo = NOLO_BASE;
+		return nolo;
+	}
+
+	public List<VoceDiListinoTrasporti> getTutteLeVociDiListino(Integer idListino) {
+		List<VoceDiListino> vociCaricate = controllerListini.getVociDiListino(idListino);
+		LinkedList<VoceDiListinoTrasporti> voci = new LinkedList<VoceDiListinoTrasporti>();
+		for (VoceDiListino voce : vociCaricate) {
+			VoceDiListinoTrasporti voceModel = getVoceModel(voce);
+			voci.add(voceModel);
+		}
+		voci.sort(null);
+		return voci;
+	}
+	
+	public List<VoceDiListinoTrasporti> getTutteLeVociDiListinoCorriere(Integer idListino) {
+		List<VoceDiListinoCorriere> vociCaricate = controllerListiniCorrieri.getVociDiListino(idListino);
+		LinkedList<VoceDiListinoTrasporti> voci = new LinkedList<VoceDiListinoTrasporti>();
+		for (VoceDiListinoCorriere voce : vociCaricate) {
+			VoceDiListinoTrasporti voceModel = getVoceModel(voce);
+			voci.add(voceModel);
+		}
+		voci.sort(null);
+		return voci;
+	}
+
+	private VoceDiListinoTrasporti getVoceModel(VoceDiListino voce) {
+		VoceDiListinoTrasporti vt = VoceDiListinoTrasporti.getVoceCliente(voce);
+		return vt;
+	}
+
+	public List<VoceDiListinoTrasporti> getVociDiListinoUsabili(Calcolo computo, SpedizioneModel model) {
+		List<VoceDiListinoTrasporti> vociApplicabili = new ArrayList<VoceDiListinoTrasporti>();
+		Set<Integer> vociNoloBase = new HashSet<Integer>();
+		List<VoceDiListinoTrasporti> voci;
+		voci = computo.getTipo() == Calcolo.Tipo.RICAVO ? getTutteLeVociDiListino(computo.getIdListino()) : getTutteLeVociDiListinoCorriere(computo.getIdListino());
+		for (VoceDiListinoTrasporti voce : voci) {
+			IAmbitoTrasporto ambito = voce.getAmbito();
+			if (ambito.isApplicabile(model)) {
+				vociApplicabili.add(voce);
+				// Inoltre se è una voce nolo base la aggiungo alla lista delle
+				// sole voci nolo base
+				if (ambito.getTipo() == IAmbitoTrasporto.Tipo.NOLO_BASE) {
+					vociNoloBase.add(ambito.getId());
+				}
+			}
+		}
+		// Controllo se ne ho più tipi
+		boolean tipiNoloBaseDiversi = vociNoloBase.size() > 1;
+		// Se è così elimino il nolo base italia
+		if (tipiNoloBaseDiversi) {
+			int noloDaUsare = getNoloDaUsare(vociNoloBase);
+			ListIterator<VoceDiListinoTrasporti> iterator = vociApplicabili.listIterator();
+			while (iterator.hasNext()) {
+				VoceDiListinoTrasporti voce = iterator.next();
+				IAmbitoTrasporto ambitoTrasporto = voce.getAmbito();
+				if (ambitoTrasporto.getTipo() == IAmbitoTrasporto.Tipo.NOLO_BASE) {
+					if (ambitoTrasporto.getId() != noloDaUsare)
+						iterator.remove();
+				}
+			}
+		}
+		return vociApplicabili;
+	}
+
+	public void calcolaCosto(SpedizioneModel model, ListinoCorriere listino) {
+		Calcolo preventivoCosto = new Calcolo(listino.getNome(), listino.getId(), Calcolo.Tipo.COSTO);
+		calcola(preventivoCosto, model);
+	}
+
+
+	public void calcolaRicavo(SpedizioneModel model, ListinoCommessa listino) {
+		Calcolo preventivoRicavo = new Calcolo(listino.getNome(), listino.getId(), Calcolo.Tipo.RICAVO);
+		calcola(preventivoRicavo, model);
+	}
+
+}

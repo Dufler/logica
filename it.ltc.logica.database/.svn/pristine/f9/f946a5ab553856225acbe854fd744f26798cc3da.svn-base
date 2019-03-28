@@ -1,0 +1,104 @@
+package it.ltc.logica.database.model.centrale.ingressi;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class IngressoDettaglio extends Entity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "ingresso_dettaglio";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer idIngresso;
+	private Integer idProdotto;
+	private Integer quantitaPrevista;
+	private Integer quantitaLetta;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_ingresso", "idIngresso", true, false);
+			variabili.addInt("id_prodotto", "idProdotto", true, false);
+			variabili.addInt("quantita_prevista", "quantitaPrevista");
+			variabili.addInt("quantita_letta", "quantitaLetta");
+		}
+		return variabili;
+	}
+
+	@Override
+	public String toString() {
+		return "DettaglioIngresso [idIngresso=" + idIngresso + ", idProdotto=" + idProdotto + ", quantitaPrevista=" + quantitaPrevista + ", quantitaLetta=" + quantitaLetta + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idIngresso == null) ? 0 : idIngresso.hashCode());
+		result = prime * result + ((idProdotto == null) ? 0 : idProdotto.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IngressoDettaglio other = (IngressoDettaglio) obj;
+		if (idIngresso == null) {
+			if (other.idIngresso != null)
+				return false;
+		} else if (!idIngresso.equals(other.idIngresso))
+			return false;
+		if (idProdotto == null) {
+			if (other.idProdotto != null)
+				return false;
+		} else if (!idProdotto.equals(other.idProdotto))
+			return false;
+		return true;
+	}
+
+	public Integer getIdIngresso() {
+		return idIngresso;
+	}
+
+	public void setIdIngresso(Integer idIngresso) {
+		this.idIngresso = idIngresso;
+	}
+
+	public Integer getIdProdotto() {
+		return idProdotto;
+	}
+
+	public void setIdProdotto(Integer idProdotto) {
+		this.idProdotto = idProdotto;
+	}
+
+	public Integer getQuantitaPrevista() {
+		return quantitaPrevista;
+	}
+
+	public void setQuantitaPrevista(Integer quantitaPrevista) {
+		this.quantitaPrevista = quantitaPrevista;
+	}
+
+	public Integer getQuantitaLetta() {
+		return quantitaLetta;
+	}
+
+	public void setQuantitaLetta(Integer quantitaLetta) {
+		this.quantitaLetta = quantitaLetta;
+	}
+
+}

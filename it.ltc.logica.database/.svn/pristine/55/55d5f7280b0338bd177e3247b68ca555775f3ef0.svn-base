@@ -1,0 +1,62 @@
+package it.ltc.logica.database.configuration;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import it.ltc.logica.database.model.locale.ResourceToDelete;
+import it.ltc.logica.database.model.locale.User;
+
+public class ControllerLocalDB {
+
+	private static ControllerLocalDB instance;
+	
+	private SQLite dbms;
+
+	private ControllerLocalDB() {
+		dbms = new SQLite(Database.SQLITE);
+		InitializeDB();
+	}
+
+	public static ControllerLocalDB getInstance() {
+		if (instance == null) {
+			instance = new ControllerLocalDB();
+		}
+		return instance;
+	}
+
+	private void createTables() {
+		String sqlUser = (new User()).getTableDefinition();
+		String sqlResourceToDelete = (new ResourceToDelete()).getTableDefinition();
+
+		try (Connection conn = dbms.getConnection()) {
+			if (conn != null) {
+				//TODO - utilizzare i metadati del db?
+				//DatabaseMetaData meta = conn.getMetaData();
+				Statement stmt = conn.createStatement();
+				stmt.execute(sqlUser);
+				stmt.execute(sqlResourceToDelete);
+			}
+			conn.close();
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
+		}
+
+	}
+
+	private void createFolder() {
+		File folder = dbms.getDBFolderPath();
+		if (!folder.exists())
+			folder.mkdirs();
+	}
+
+	private boolean InitializeDB() {
+		boolean successo = true;
+		createFolder();
+		createTables();
+		return successo;
+	}
+
+}

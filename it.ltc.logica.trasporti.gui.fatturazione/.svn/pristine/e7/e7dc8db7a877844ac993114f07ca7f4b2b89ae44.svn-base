@@ -1,0 +1,23 @@
+package it.ltc.logica.trasporti.gui.fatturazione.elements;
+
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.gui.common.tables.fatturazione.TabellaDocumentiFatturazione;
+import it.ltc.logica.trasporti.gui.fatturazione.dialogs.DialogModificaDatiFatturazioneSpedizioni;
+
+public class TabellaDocumentiFatturazioneSpedizioni extends TabellaDocumentiFatturazione {
+
+	public TabellaDocumentiFatturazioneSpedizioni(Composite parent) {
+		super(parent);
+	}
+	
+	protected void apriDialogModificaDatiFatturazione() {
+		DocumentoFattura documento = getRigaSelezionata();
+		if (documento != null) {
+			DialogModificaDatiFatturazioneSpedizioni dialog = new DialogModificaDatiFatturazioneSpedizioni(documento);
+			dialog.open();
+		}
+	}
+
+}

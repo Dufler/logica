@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+	
+	<!-- DB locale -->
+	<persistence-unit name="locale" transaction-type="RESOURCE_LOCAL">
+		<class>it.ltc.logica.database.model.locale.User</class>
+		<class>it.ltc.logica.database.model.locale.ResourceToDelete</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVoceScaglioniRipetuti</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVoceScaglioni</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVoceProporzionale</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVocePercentuale</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVoceFissa</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazioneVoce</class>
+		<class>it.ltc.logica.database.model.locale.ListinoSimulazione</class>
+		<class>it.ltc.logica.database.model.locale.VersioneTabella</class>
+		<class>it.ltc.logica.database.model.locale.ProprietaLogica</class>
+		<class>it.ltc.logica.database.model.centrale.Prodotto</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.Spedizione</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.Giacenza</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.Contrassegno</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.Cap</class>
+		<class>it.ltc.logica.database.model.centrale.indirizzi.Indirizzo</class>
+		<!-- Roba per le simulazioni -->
+		<class>it.ltc.logica.database.model.centrale.indirizzi.IndirizzoSimulazione</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.SpedizioneSimulazione</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.DocumentoSpedizioniSimulazione</class>
+		<class>it.ltc.logica.database.model.centrale.trasporti.ContrassegnoSimulazione</class>
+<!-- 		<class>it.ltc.logica.database.model.locale.</class> -->
+		<properties>
+			<property name="javax.persistence.jdbc.driver" value="org.sqlite.JDBC" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:sqlite:db/logica.db" />
+<!-- 			<property name="hibernate.hbm2ddl.auto" value="validate" /> -->
+<!-- 			<property name="hibernate.hbm2ddl.auto" value="create" /> -->
+<!-- 			<property name="hibernate.hbm2ddl.auto" value="update" /> -->
+			<property name="hibernate.show_sql" value="true"/>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.SQLiteDialect" />
+			<property name="hibernate.ejb.entitymanager_factory_name" value="locale"/>
+			<property name="hibernate.connection.url" value="jdbc:sqlite:db/logica.db"/>
+			<property name="hibernate.connection.driver_class" value="org.sqlite.JDBC"/>
+			<property name="hibernate.connection.foreign_keys" value="true"/>
+		</properties>
+	</persistence-unit>
+	
+</persistence>

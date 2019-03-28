@@ -1,0 +1,154 @@
+package it.ltc.logica.trasporti.gui.spedizioni.wizard;
+
+import java.util.Date;
+
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.common.controller.uscite.OrdiniController;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.model.centrale.TipoOrdine;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioCorriere;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class NuovaSpedizioneWizard extends Wizard {
+	
+	private final SpedizioniController controllerSpedizioni;
+	private final OrdiniController controllerOrdini;
+	
+	private Ordine ordine;
+	private Spedizione spedizione;
+	private Contrassegno contrassegno;
+	private Indirizzo mittente;
+	private Indirizzo destinatario;
+	
+	private final SelezioneClienteCorriereWizardPage selezionePage;
+	private final InserimentoDatiSpedizioneWizardPage datiPage;
+	private final InserimentoIndirizziWizardPage indirizziPage;
+	private final RiepilogoNuovaSpedizioneWizardPage riepilogoPage;
+
+	public NuovaSpedizioneWizard() {
+		setWindowTitle("Inserisci una nuova spedizione");
+		controllerSpedizioni = SpedizioniController.getInstance();
+		controllerOrdini = OrdiniController.getInstance();
+		selezionePage = new SelezioneClienteCorriereWizardPage();
+		datiPage = new InserimentoDatiSpedizioneWizardPage();
+		indirizziPage = new InserimentoIndirizziWizardPage();
+		riepilogoPage = new RiepilogoNuovaSpedizioneWizardPage();
+		spedizione = new Spedizione();
+		ordine = new Ordine();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(datiPage);
+		addPage(indirizziPage);
+		addPage(riepilogoPage);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = null;
+		if (selezionePage.equals(page)) {
+			recuperaSelezione();
+			nextPage = datiPage;
+		} else if (datiPage.equals(page)) {
+			recuperaDati();
+			nextPage = indirizziPage;
+		} else if (indirizziPage.equals(page)) {
+			recuperaIndirizzi();
+			riepilogoPage.setValori(spedizione, contrassegno, mittente, destinatario);
+			nextPage = riepilogoPage;
+		}
+		return nextPage;
+	}
+
+	private void recuperaSelezione() {
+		Commessa commessa = selezionePage.getCommessaSelezionata();
+		Corriere corriere = selezionePage.getCorriereSelezionato();
+		CodiceClienteCorriere codice = selezionePage.getCodiceSelezionato();
+		ServizioCorriere servizio = selezionePage.getServizioSelezionato();
+		TipoOrdine tipoOrdine = selezionePage.getTipoOrdineSelezionato();
+		String letteraDiVettura = selezionePage.getLetteraDiVettura();
+		if (letteraDiVettura.isEmpty())
+			letteraDiVettura = null;
+		String riferimento = selezionePage.getRiferimento();
+		String note = selezionePage.getNote();
+		spedizione.setIdCommessa(commessa.getId());
+		spedizione.setIdCorriere(corriere.getId());
+		spedizione.setCodiceCliente(codice.getCodiceCliente());
+		spedizione.setServizio(servizio.getCodice());
+		spedizione.setStato("IMN");
+		spedizione.setRiferimentoCliente(riferimento);
+		spedizione.setRiferimentoMittente(riferimento);
+		spedizione.setLetteraDiVettura(letteraDiVettura);
+		spedizione.setPezzi(selezionePage.getPezzi());
+		spedizione.setGiacenza(false);
+		spedizione.setAssicurazione(false); //Da gestire se un giorno vorranno poterla specificare
+		if (!note.isEmpty())
+			spedizione.setNote(note);
+		ordine.setIdCommessa(commessa.getId());
+		ordine.setDataRicezione(new Date());
+		ordine.setRiferimentoCliente(riferimento);
+		ordine.setRiferimentoInterno(riferimento);
+		ordine.setRiferimentoDocumentoFiscale(riferimento);
+		ordine.setTipo(tipoOrdine.getCodice());
+		ordine.setStato("IMN");
+		ordine.setOrigine("Logica 2.0 - Inserimento manuale");
+		if (!note.isEmpty())
+			ordine.setNote(note);
+	}
+	
+	private void recuperaDati() {
+		spedizione.setColli(datiPage.getColli());
+		spedizione.setPeso(datiPage.getPeso());
+		spedizione.setVolume(datiPage.getVolume());
+		spedizione.setData(datiPage.getData());
+		if (datiPage.isContrassegno()) {
+			contrassegno = new Contrassegno();
+			contrassegno.setValore(datiPage.getValoreContrassegno());
+			contrassegno.setValuta(datiPage.getValutaContrassegno());
+			contrassegno.setTipo(datiPage.getTipoContrassegno());
+			spedizione.setContrassegno(true);
+		} else {
+			contrassegno = null;
+			spedizione.setContrassegno(false);
+		}
+	}
+	
+	private void recuperaIndirizzi() {
+		mittente = indirizziPage.getMittente();
+		destinatario = indirizziPage.getDestinatario();
+		spedizione.setIdIndirizzoPartenza(mittente.getId());
+		spedizione.setIdIndirizzoDestinazione(destinatario.getId());
+	}
+
+	@Override
+	public boolean performFinish() {
+		//Condizioni iniziali da verificare
+		boolean inserimentoOrdine = false;
+		boolean inserimentoSpedizione = false;
+		boolean inserimentoContrassegno = true;
+		//Inserisco l'ordine
+		int idOrdine = controllerOrdini.inserisciNuovoOrdine(ordine);
+		inserimentoOrdine = (idOrdine != -1);
+		if (inserimentoOrdine) {
+			spedizione.setIdOrdine(idOrdine);
+			int idSpedizione = controllerSpedizioni.inserisciNuovaSpedizione(spedizione);
+			inserimentoSpedizione = (idSpedizione != -1);
+			if (inserimentoSpedizione && contrassegno != null) {
+				contrassegno.setIdSpedizione(idSpedizione);
+				inserimentoContrassegno = controllerSpedizioni.inserisciContrassegno(contrassegno);
+			}
+		}
+		return inserimentoOrdine && inserimentoSpedizione && inserimentoContrassegno;
+	}
+
+}

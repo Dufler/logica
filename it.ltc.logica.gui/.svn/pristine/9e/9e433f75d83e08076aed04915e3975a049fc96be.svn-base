@@ -1,0 +1,206 @@
+package it.ltc.logica.gui.input;
+
+import java.util.Calendar;
+import java.util.Date;
+
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DateTime;
+
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+public class DateField extends DateTime implements InputElement, ValidationHandler {
+	
+	public static final String MESSAGE_REQUIRED = "L'inserimento di un valore è obbligatorio.";
+	
+	private Date data;
+	
+	private boolean required;
+	private boolean dirty;
+	private boolean valid;
+	
+	private ParentValidationHandler successor;
+	private final ControlDecoration requiredDecoration;
+	
+	public DateField(Composite parent) {
+		super(parent, SWT.DROP_DOWN | SWT.BORDER);
+		required = true;
+		dirty = false;
+		Image imageRequired = Decorator.getImage(Decorator.YELLOW_MARK_12X20);
+		requiredDecoration = new ControlDecoration(this, SWT.RIGHT);
+		requiredDecoration.setImage(imageRequired);
+		requiredDecoration.setDescriptionText(MESSAGE_REQUIRED);
+		hideDecorations();
+		addDirtyListener();
+		
+		if (parent instanceof ParentValidationHandler) {
+			successor = (ParentValidationHandler) parent;
+			successor.addChild(this);
+		} else {
+			successor = null;
+		}
+		
+		valid = true;
+	}
+
+	public DateField(Composite parent, int style) {
+		super(parent, style);
+		required = true;
+		dirty = false;
+		Image imageRequired = Decorator.getImage(Decorator.YELLOW_MARK_12X20);
+		requiredDecoration = new ControlDecoration(this, SWT.RIGHT);
+		requiredDecoration.setImage(imageRequired);
+		requiredDecoration.setDescriptionText(MESSAGE_REQUIRED);
+		hideDecorations();
+		addDirtyListener();
+	}
+	
+	private void addDirtyListener() {
+		addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dirty = true;	
+				validate();
+			}
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				dirty = true;				
+			}});
+	}
+	
+	public void checkSubclass() {
+		//DO NOTHING!
+	}
+	
+	private void showRequiredDecoration() {
+		requiredDecoration.show();
+	}
+	
+	private void hideDecorations() {
+		requiredDecoration.hide();
+	}
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+	
+	public void setValue(Date d) {
+		data = d;
+		Calendar c = Calendar.getInstance();
+		c.setTime(d);
+		int year = c.get(Calendar.YEAR);
+		setYear(year);
+		int month = c.get(Calendar.MONTH);
+		setMonth(month);
+		int day = c.get(Calendar.DATE);
+		setDay(day);
+		int hours = c.get(Calendar.HOUR_OF_DAY);
+		setHours(hours);
+		int minutes = c.get(Calendar.MINUTE);
+		setMinutes(minutes);
+		int seconds = c.get(Calendar.SECOND);
+		setSeconds(seconds);
+		validate();
+	}
+	
+	public void setValue(Calendar c) {
+		data = c.getTime();
+		int year = c.get(Calendar.YEAR);
+		setYear(year);
+		int month = c.get(Calendar.MONTH);
+		setMonth(month);
+		int day = c.get(Calendar.DATE);
+		setDay(day);
+		int hours = c.get(Calendar.HOUR_OF_DAY);
+		setHours(hours);
+		int minutes = c.get(Calendar.MINUTE);
+		setMinutes(minutes);
+		int seconds = c.get(Calendar.SECOND);
+		setSeconds(seconds);
+		validate();
+	}
+	
+	public Date getValue() {
+		Calendar c = getCalendar();
+		data = c.getTime();
+		return data;
+	}
+	
+	public Date getSimpleValue() {
+		Calendar c = getSimpleCalendar();
+		data = c.getTime();
+		return data;
+	}
+	
+	public Calendar getCalendar() {
+		int year = getYear();
+		int month = getMonth();
+		int day = getDay();
+		int hours = getHours();
+		int minutes = getMinutes();
+		int seconds = getSeconds();
+		Calendar c = Calendar.getInstance();
+		c.set(year, month, day, hours, minutes, seconds);
+		return c;
+	}
+	
+	public Calendar getSimpleCalendar() {
+		int year = getYear();
+		int month = getMonth();
+		int day = getDay();
+		int hours = 0;
+		int minutes = 0;
+		int seconds = 0;
+		Calendar c = Calendar.getInstance();
+		c.set(year, month, day, hours, minutes, seconds);
+		return c;
+	}
+
+	@Override
+	public boolean isRequired() {
+		return required;
+	}
+
+	@Override
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
+
+	@Override
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		successor = parent;		
+	}
+
+	@Override
+	public boolean validate() {
+		valid = true;
+		if (required) {
+			Date d = getValue();
+			if (d == null) {
+				valid = false;
+				showRequiredDecoration();
+			}
+		}
+		forwardValidation();
+		return valid;
+	}
+
+	@Override
+	public void forwardValidation() {
+		if (successor != null)
+			successor.validate();
+	}
+
+}

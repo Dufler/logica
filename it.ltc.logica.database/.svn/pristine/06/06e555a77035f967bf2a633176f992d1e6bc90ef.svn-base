@@ -1,0 +1,102 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class Commessa extends Entity {
+	
+	public static final String NOME_TABELLA = "commessa";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+	private static List<Commessa> listaCommesse;
+	private static final EntityManager<Commessa> manager = new EntityManager<Commessa>(Commessa.class);
+
+	private Integer id;
+	private Integer idCliente;
+	private String nome;
+	private String descrizione;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id", Column.AUTOINCREMENT, "id"));
+			variabili.add(new Column("id_cliente", Column.INT, "idCliente"));
+			variabili.add(new Column("nome", Column.STRING, "nome"));
+			variabili.add(new Column("descrizione", Column.STRING, "descrizione"));
+		}
+		return variabili;
+	}
+	
+	public static Commessa getCommessa(Integer idCommessa) {
+		Commessa commessa = null;
+		for (Commessa c : getCommesse()) {
+			if (c.getId().equals(idCommessa)) {
+				commessa = c;
+				break;
+			}
+		}
+		return commessa;
+	}
+	
+	public static List<Commessa> getCommesse() {
+		if (listaCommesse == null || listaCommesse.isEmpty()) {
+			listaCommesse = manager.getEntities();
+		}
+		return listaCommesse;
+	}
+	
+	public String toString() {
+		return (nome != null) ? nome : "";
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof Commessa) {
+			Commessa commessa = (Commessa) o;
+			if (id != null && id.equals(commessa.getId()))
+				uguali = true;
+		}
+		return uguali;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCliente() {
+		return idCliente;
+	}
+
+	public void setIdCliente(Integer idCliente) {
+		this.idCliente = idCliente;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+}

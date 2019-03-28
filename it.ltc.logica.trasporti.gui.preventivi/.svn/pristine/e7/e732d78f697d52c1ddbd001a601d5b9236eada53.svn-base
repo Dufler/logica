@@ -1,0 +1,235 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.common.controller.listini.ListiniCorrieriController;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.trasporti.controller.PreventivoEsistentiController;
+
+public class PreventivoSpedizioneEsistentiSelezioneDatiWizardPage extends WizardPage {
+	
+	private PreventivoEsistentiController controllerPreventivo;
+	private ListiniCorrieriController controllerListiniCorrieri;
+	private ListiniClientiController controllerListiniClienti;
+	
+	private Composite container;
+	
+	private CheckboxTableViewer checkboxTableViewerClienti;
+	private Table tableListiniClienti;
+	
+	private CheckboxTableViewer checkboxTableViewerCorrieri;
+	private Table tableListiniCorrieri;
+	
+	private ComboViewer comboViewer;
+	private ComboBox<Commessa> comboCommessa;
+	
+	private boolean canFlip;
+
+	public PreventivoSpedizioneEsistentiSelezioneDatiWizardPage() {
+		super("wizardPage");
+		setTitle("Preventivo di costo e fatturazione per una spedizione");
+		setDescription("Seleziona la commessa e i corrieri da utilizzare.");
+		controllerPreventivo = PreventivoEsistentiController.getInstance();
+		controllerListiniCorrieri = ListiniCorrieriController.getInstance();
+		controllerListiniClienti = ListiniClientiController.getInstance();
+		canFlip = false;
+	}
+
+	public void createControl(Composite parent) {
+		container = new Composite(parent, SWT.NULL);
+
+		setControl(container);
+		container.setLayout(new GridLayout(1, false));
+		
+		Label lblSelezionaLaCommessa = new Label(container, SWT.NONE);
+		lblSelezionaLaCommessa.setText("Seleziona la commessa del cliente a cui addebitare la spedizione: ");
+		
+		comboCommessa = new ComboBox<Commessa>(container);
+		comboCommessa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				valida();
+				Commessa commessa = comboCommessa.getSelectedValue();
+				aggiornaTabellaClienti(commessa);
+			}
+		});
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		comboViewer = comboCommessa.getViewer();
+		comboViewer.setInput(Commessa.getCommesse());
+		
+		Label lblSelezionaIListiniClienti = new Label(container, SWT.NONE);
+		lblSelezionaIListiniClienti.setText("Seleziona i listini legati alla commessa selezionata con cui realizzare il preventivo:");
+		
+		checkboxTableViewerClienti = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxTableViewerClienti.setContentProvider(ArrayContentProvider.getInstance());
+		
+		tableListiniClienti = checkboxTableViewerClienti.getTable();
+		tableListiniClienti.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				valida();
+			}
+		});
+		tableListiniClienti.setToolTipText("Qui puoi selezionare su quali listini cliente realizzare il preventivo.");
+		tableListiniClienti.setLinesVisible(true);
+		tableListiniClienti.setHeaderVisible(true);
+		tableListiniClienti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		TableViewerColumn tableViewerColumn = new TableViewerColumn(checkboxTableViewerClienti, SWT.NONE);
+		tableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				ListinoCommessa listino = (ListinoCommessa) element;
+				String nome = listino.getNome();
+				return nome;
+			}
+		});
+		
+		TableColumn tblclmnListinoClienti = tableViewerColumn.getColumn();
+		tblclmnListinoClienti.setWidth(100);
+		tblclmnListinoClienti.setText("Listino");
+		
+		TableViewerColumn tableViewerColumn_1 = new TableViewerColumn(checkboxTableViewerClienti, SWT.NONE);
+		tableViewerColumn_1.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				ListinoCommessa listino = (ListinoCommessa) element;
+				String descrizione = listino.getDescrizione();
+				return descrizione;
+			}
+		});
+		
+		TableColumn tblclmnDescrizioneClienti = tableViewerColumn_1.getColumn();
+		tblclmnDescrizioneClienti.setWidth(100);
+		tblclmnDescrizioneClienti.setText("Descrizione");
+		
+		Label lblSelezionaIListiniCorrieri = new Label(container, SWT.NONE);
+		lblSelezionaIListiniCorrieri.setText("Seleziona i listini dei corrieri con cui realizzare il preventivo: ");
+		
+		checkboxTableViewerCorrieri = CheckboxTableViewer.newCheckList(container, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxTableViewerCorrieri.setContentProvider(ArrayContentProvider.getInstance());
+		
+		tableListiniCorrieri = checkboxTableViewerCorrieri.getTable();
+		tableListiniCorrieri.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				valida();
+			}
+		});
+		tableListiniCorrieri.setToolTipText("Qui puoi selezionare su quali listini corriere realizzare il preventivo.");
+		tableListiniCorrieri.setLinesVisible(true);
+		tableListiniCorrieri.setHeaderVisible(true);
+		tableListiniCorrieri.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn tableViewerColumnListino = new TableViewerColumn(checkboxTableViewerCorrieri, SWT.NONE);
+		tableViewerColumnListino.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				ListinoCorriere listino = (ListinoCorriere) element;
+				String nome = listino.getNome();
+				return nome;
+			}
+		});
+		
+		TableColumn tblclmnListino = tableViewerColumnListino.getColumn();
+		tblclmnListino.setWidth(100);
+		tblclmnListino.setText("Listino");
+		
+		TableViewerColumn tableViewerColumnDescrizione = new TableViewerColumn(checkboxTableViewerCorrieri, SWT.NONE);
+		tableViewerColumnDescrizione.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				ListinoCorriere listino = (ListinoCorriere) element;
+				String descrizione = listino.getDescrizione();
+				return descrizione;
+			}
+		});
+		
+		TableColumn tblclmnDescrizione = tableViewerColumnDescrizione.getColumn();
+		tblclmnDescrizione.setWidth(100);
+		tblclmnDescrizione.setText("Descrizione");
+		
+		Composite compositeControlliTabella = new Composite(container, SWT.NONE);
+		compositeControlliTabella.setLayout(new GridLayout(2, false));
+		compositeControlliTabella.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Button btnSelezionaTutto = new Button(compositeControlliTabella, SWT.NONE);
+		btnSelezionaTutto.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkboxTableViewerCorrieri.setAllChecked(true);
+				valida();
+			}
+		});
+		btnSelezionaTutto.setText("Seleziona tutto");
+		
+		Button btnDeselezionaTutto = new Button(compositeControlliTabella, SWT.NONE);
+		btnDeselezionaTutto.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkboxTableViewerCorrieri.setAllChecked(false);
+				valida();
+			}
+		});
+		btnDeselezionaTutto.setText("Deseleziona tutto");
+		
+		aggiornaTabellaCorrieri();
+	}
+	
+	private void valida() {
+		int selectionIndex = comboCommessa.getSelectionIndex();
+		boolean comboSelected = selectionIndex != -1;
+		boolean tableClientiSelected = checkboxTableViewerClienti.getCheckedElements().length > 0;
+		boolean tableCorrieriSelected = checkboxTableViewerCorrieri.getCheckedElements().length > 0;
+		canFlip = comboSelected && tableClientiSelected && tableCorrieriSelected;
+		setPageComplete(canFlip);
+	}
+	
+	@Override
+	public boolean canFlipToNextPage() {
+		return canFlip;
+	}
+	
+	@Override
+	public IWizardPage getNextPage() {
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		controllerPreventivo.setCommessa(commessaSelezionata);
+		Object[] listiniCorriereSelezionati = checkboxTableViewerCorrieri.getCheckedElements();
+		controllerPreventivo.setListiniCorriere(listiniCorriereSelezionati);
+		Object[] listiniClienteSelezionati = checkboxTableViewerClienti.getCheckedElements();
+		controllerPreventivo.setListiniCliente(listiniClienteSelezionati);
+		return super.getNextPage();
+	}
+	
+	private void aggiornaTabellaClienti(Commessa commessa) {
+		checkboxTableViewerClienti.setInput(controllerListiniClienti.getListiniClienti(commessa));
+		for (TableColumn column :tableListiniClienti.getColumns()) {
+			column.pack();
+		}
+		container.layout();
+	}
+	
+	private void aggiornaTabellaCorrieri() {
+		checkboxTableViewerCorrieri.setInput(controllerListiniCorrieri.getListiniCorrieri());
+		for (TableColumn column :tableListiniCorrieri.getColumns()) {
+			column.pack();
+		}
+	}
+}

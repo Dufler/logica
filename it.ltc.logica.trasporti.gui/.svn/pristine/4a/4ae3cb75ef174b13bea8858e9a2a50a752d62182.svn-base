@@ -1,0 +1,125 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionestorica;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.storico.ContrassegnoStorico;
+import it.ltc.logica.database.model.centrale.storico.SpedizioneStorica;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class EtichettatoreSpedizioniStoriche extends Etichettatore<SpedizioneStorica> {
+	
+	public static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
+	
+	private final SimpleDateFormat sdf;
+	private final SpedizioniController controllerSpedizioni;
+	
+	public EtichettatoreSpedizioniStoriche() {
+		controllerSpedizioni = SpedizioniController.getInstance();
+		sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+	}
+
+	@Override
+	public String getTesto(SpedizioneStorica oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto); break;
+			case 1 : testo = getDestinatario(oggetto); break;
+			case 2 : testo = getColli(oggetto); break;
+			case 3 : testo = getPezzi(oggetto); break;
+			case 4 : testo = getContrassegno(oggetto); break;
+			case 5 : testo = oggetto.getGiacenza() ? "In Giacenza" : ""; break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(SpedizioneStorica oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto); break;
+			case 1 : testo = getToolTipDestinatario(oggetto); break;
+			case 2 : testo = getColli(oggetto); break;
+			case 3 : testo = getPezzi(oggetto); break;
+			case 4 : testo = getContrassegno(oggetto); break;
+			case 5 : testo = oggetto.getGiacenza() ? "In Giacenza" : ""; break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public Image getIcona(SpedizioneStorica oggetto, int colonna) {
+		return null;
+	}
+	
+	private String getData(SpedizioneStorica spedizione) {
+		String testo;
+		Date data = spedizione.getData();
+		if (data != null)
+			testo = sdf.format(data);
+		else
+			testo = "Non ancora partita.";
+		return testo;
+	}
+	
+	public String getDestinatario(SpedizioneStorica spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		return ragioneSociale;
+	}
+	
+	public String getToolTipDestinatario(SpedizioneStorica spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		String indirizzo = destinatario.getIndirizzo();
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia.equals("XX"))
+			provincia = " " + destinatario.getNazione();
+		else
+			provincia = " (" + provincia +")";
+		String testo = ragioneSociale + "\r\n" + indirizzo + "\r\n" + localita + provincia;
+		return testo;
+	}
+	
+	public String getColli(SpedizioneStorica spedizione) {
+		String testo;
+		Integer colli = spedizione.getColli();
+		if (colli != null)
+			testo = colli.toString();
+		else
+			testo = "-";
+		return testo;
+	}
+	
+	public String getPezzi(SpedizioneStorica spedizione) {
+		String testo;
+		Integer pezzi = spedizione.getPezzi();
+		if (pezzi != null)
+			testo = pezzi.toString();
+		else
+			testo = "-";
+		return testo;
+	}
+	
+	public String getContrassegno(SpedizioneStorica spedizione) {
+		String contrassegno;
+		if (spedizione.getContrassegno() != null) {
+			ContrassegnoStorico cs = ContrassegnoStorico.getContrassegno(spedizione.getId());
+			contrassegno = Decorator.getEuroValue(cs.getValore());
+		} else {
+			contrassegno = "";
+		}
+		return contrassegno;
+	}
+
+}

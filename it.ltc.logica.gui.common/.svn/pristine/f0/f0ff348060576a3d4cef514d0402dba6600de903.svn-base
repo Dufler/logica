@@ -1,0 +1,122 @@
+package it.ltc.logica.gui.common.composite.fatturazione;
+
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.layout.GridData;
+
+import java.util.HashMap;
+
+import org.eclipse.swt.SWT;
+
+public class CompositeLayoutFatturaSpedizioniItalia extends CompositeLayoutFattura {
+	
+	private final static String subTitle = "Spedizioni Italia";
+	
+	private final HashMap<String, Integer> mappa;
+		
+	private ElementoLayout dataSpedizione;
+	private ElementoLayout riferimento;
+	private ElementoLayout destinatario;
+	private ElementoLayout localita;
+	private ElementoLayout provincia;
+	private ElementoLayout colli;
+	private ElementoLayout pezzi;
+	private ElementoLayout peso;
+	private ElementoLayout volume;
+	private ElementoLayout contrassegno;
+	private ElementoLayout totale;
+	private ElementoLayout nolo;
+
+	public CompositeLayoutFatturaSpedizioniItalia(Composite parent) {
+		super(parent, subTitle);
+		
+		mappa = new HashMap<>();
+	}
+
+	@Override
+	public void setLayoutFatturazione(String layout) {
+		//Resetto le informazioni di layout
+		mappa.clear();
+		//Se ho valori disponibili li vado ad estrarre.
+		if (layout != null) {			
+			//Splitto i valori sul carattere di separazione e mi creo una mappa.
+			String[] values = layout.split("\\" + SEPARATOR);
+			for (String value : values) {
+				String[] keyValue = value.split(KEY_VALUE_SEPARATOR);
+				mappa.put(keyValue[0], Integer.parseInt(keyValue[1]));
+			}
+		}
+		//Applico i valori, eventualmente nulli
+		dataSpedizione.setValoreLarghezza(mappa.get("Data"));
+		riferimento.setValoreLarghezza(mappa.get("Riferimento"));
+		destinatario.setValoreLarghezza(mappa.get("Destinatario"));
+		localita.setValoreLarghezza(mappa.get("Localit\u00E0"));
+		provincia.setValoreLarghezza(mappa.get("Provincia"));
+		colli.setValoreLarghezza(mappa.get("Colli"));
+		pezzi.setValoreLarghezza(mappa.get("Pezzi"));
+		peso.setValoreLarghezza(mappa.get("Peso"));
+		volume.setValoreLarghezza(mappa.get("Volume"));
+		contrassegno.setValoreLarghezza(mappa.get("Contrassegno"));
+		totale.setValoreLarghezza(mappa.get("Totale"));
+		nolo.setValoreLarghezza(mappa.get("Nolo"));
+	}
+
+	@Override
+	public String getLayoutFatturazione() {
+		StringBuilder layout = new StringBuilder();
+		for (Control control : getChildren()) {
+			if (control instanceof ElementoLayout) {
+				ElementoLayout elemento = (ElementoLayout) control;
+				layout.append(elemento.toString());
+				layout.append(SEPARATOR);
+			}
+		}
+		if (layout.length() > 1)
+			layout.deleteCharAt(layout.length() - 1);
+		return layout.toString();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(1, false));
+		
+		dataSpedizione = new ElementoLayout(this, "Data");
+		dataSpedizione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(dataSpedizione);
+
+		riferimento = new ElementoLayout(this, "Riferimento");
+		riferimento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		destinatario = new ElementoLayout(this, "Destinatario");
+		destinatario.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		localita = new ElementoLayout(this, "Localit\u00E0");
+		localita.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		provincia = new ElementoLayout(this, "Provincia");
+		provincia.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		colli = new ElementoLayout(this, "Colli");
+		colli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		pezzi = new ElementoLayout(this, "Pezzi");
+		pezzi.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		peso = new ElementoLayout(this, "Peso");
+		peso.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		volume = new ElementoLayout(this, "Volume");
+		volume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		contrassegno = new ElementoLayout(this, "Contrassegno");
+		contrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		totale = new ElementoLayout(this, "Totale");
+		totale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		nolo = new ElementoLayout(this, "Nolo");
+		nolo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	}
+
+}

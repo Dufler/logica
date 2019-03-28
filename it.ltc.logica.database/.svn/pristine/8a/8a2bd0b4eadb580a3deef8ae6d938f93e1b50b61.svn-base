@@ -1,0 +1,115 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoCorriereScaglioniRipetuti extends Entity implements ValidEntity {
+
+	public static final String NOME_TABELLA = "listino_corriere_voce_scaglioni_ripetuti";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+	
+	private Integer id;
+	private String tipo;
+	private Double intervallo;
+	private Double minimo;
+	private Double massimo;
+	private Double valore;
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (tipo == null || tipo.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il tipo di scaglione ripetuto non può essere vuoto.");
+		}
+		if (intervallo == null || intervallo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("L'intervallo deve essere maggiore di 0.");
+		}
+		if (minimo != null && minimo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore minimo deve essere maggiore di 0.");
+		}
+		if (massimo != null && massimo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore massimo deve essere maggiore di 0.");
+		}
+		if (valore == null || valore <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore per gli intervalli deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id_voce", Column.INT, "id", true, false));
+			variabili.add(new Column("tipo", Column.STRING, "tipo"));
+			variabili.add(new Column("intervallo", Column.DOUBLE, "intervallo"));
+			variabili.add(new Column("minimo", Column.DOUBLE, "minimo"));
+			variabili.add(new Column("massimo", Column.DOUBLE, "massimo"));
+			variabili.add(new Column("valore", Column.DOUBLE, "valore"));
+		}
+		return variabili;
+	}
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Double getIntervallo() {
+		return intervallo;
+	}
+
+	public void setIntervallo(Double intervallo) {
+		this.intervallo = intervallo;
+	}
+
+	public Double getMinimo() {
+		return minimo;
+	}
+
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+
+	public Double getMassimo() {
+		return massimo;
+	}
+
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+	
+}

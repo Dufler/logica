@@ -1,0 +1,30 @@
+package it.ltc.logica.utilities.excel.model.csv;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+
+public class CampoDecimale extends CampoCSV {
+	
+	private final DecimalFormat df;
+
+	private final Double valore;
+	
+	public CampoDecimale(String nome, int posizione, Double valore) {
+		super(nome, posizione, Tipo.DECIMAL);
+		this.valore = valore;
+		df = new DecimalFormat("#.###");
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		df.setDecimalFormatSymbols(dfs);
+	}
+
+	@Override
+	public String getAsString() {
+		return valore != null ? df.format(valore) : "";
+	}
+	
+	public Double getValore() {
+		return valore;
+	}
+
+}

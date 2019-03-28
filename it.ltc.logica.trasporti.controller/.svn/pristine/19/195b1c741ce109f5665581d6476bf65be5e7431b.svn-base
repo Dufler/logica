@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Controller
+Bundle-SymbolicName: it.ltc.logica.trasporti.controller
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: it.ltc.logica.database.model,
+ org.eclipse.jface.operation
+Require-Bundle: it.ltc.logica.database,
+ it.ltc.logica.trasporti.calcolo,
+ it.ltc.logica.container,
+ org.eclipse.equinox.registry,
+ it.ltc.logica.gui,
+ org.eclipse.jface,
+ it.ltc.logica.utilities
+Export-Package: it.ltc.logica.trasporti.controller

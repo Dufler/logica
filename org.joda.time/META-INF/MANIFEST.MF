@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Time
+Bundle-SymbolicName: org.joda.time
+Bundle-Version: 1.0.0
+Bundle-ClassPath: joda-time-2.0.jar
+Bundle-Vendor: Joda.org
+Export-Package: org.joda.time,
+ org.joda.time.base,
+ org.joda.time.chrono,
+ org.joda.time.convert,
+ org.joda.time.field,
+ org.joda.time.format,
+ org.joda.time.tz
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: org.joda.time

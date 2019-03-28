@@ -1,0 +1,63 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.VoceCalcolata;
+
+public class TabellaVoceCalcolata extends Tabella<VoceCalcolata> {
+
+	public TabellaVoceCalcolata(Composite parent) {
+		super(parent, new OrdinatoreVoceCalcolata());
+		
+		aggiungiColonna("Voce", 100, new EtichettatoreVoceCalcolata(), 0);
+		aggiungiColonna("Ambito", 100, new EtichettatoreVoceCalcolata(), 1);
+		aggiungiColonna("Valore", 100, new EtichettatoreVoceCalcolata(), 2);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//DO NOTHING!
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING!
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		//Modifica
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	    //Elimina
+		MenuItem delete = new MenuItem(menu, SWT.PUSH);
+	    delete.setText("Elimina");
+	    delete.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogElimina();
+	    	}
+	    });	
+	}
+	
+	private void apriDialogModifica() {
+		
+	}
+	
+	private void apriDialogElimina() {
+		
+	}
+
+}

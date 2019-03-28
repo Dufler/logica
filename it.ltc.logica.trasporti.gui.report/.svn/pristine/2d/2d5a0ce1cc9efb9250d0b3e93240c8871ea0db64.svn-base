@@ -1,0 +1,52 @@
+package it.ltc.logica.trasporti.gui.report.wizards.destinazione;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.gui.container.PaginaWizardRisultati;
+import it.ltc.logica.gui.container.WizardConRisultati;
+
+public class DistribuzioneDestinazioneWizard extends WizardConRisultati {
+	
+	private static final String titolo = "Distribuzione delle spedizioni per destinazione";
+	
+	private static final LinkedList<PaginaWizardRisultati> fine = new LinkedList<PaginaWizardRisultati>();
+	
+	private SelezionaInputWizardPage selezionePage;
+	private RisultatiWizardPage risultatiPage;
+
+	public DistribuzioneDestinazioneWizard() {
+		setWindowTitle(titolo);
+		selezionePage = new SelezionaInputWizardPage();
+		risultatiPage = new RisultatiWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(risultatiPage);
+	}
+	
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = null;
+		if (selezionePage.equals(page)) {
+			nextPage = risultatiPage;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean performFinish() {
+		return true;
+	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		if (fine.isEmpty()) {
+			fine.add(risultatiPage);
+		}
+		return fine;
+	}
+
+}

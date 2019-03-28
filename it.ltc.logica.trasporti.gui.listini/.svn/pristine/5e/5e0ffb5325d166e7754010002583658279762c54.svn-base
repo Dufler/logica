@@ -1,0 +1,44 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.corriere;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.listini.ListiniCorrieriController;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereFissa;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceFissa;
+
+public class NuovaVoceListinoCorriereFissoWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino corriere - Algoritmo";
+	private static final String descrizione = "Specifica il valore fisso.";
+	
+	private CompositeVoceFissa compositeFissa;
+	
+	private VoceDiListinoCorriereFissa voceFissa;	
+	private ListiniCorrieriController controller;
+
+	public NuovaVoceListinoCorriereFissoWizardPage() {
+		super(titolo, descrizione);
+		voceFissa = new VoceDiListinoCorriereFissa();
+		controller = ListiniCorrieriController.getInstance();
+	}	
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeFissa = new CompositeVoceFissa(container, SWT.NONE);
+		compositeFissa.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeFissa);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		voceFissa.setValore(compositeFissa.getValore());
+		controller.setFisso(voceFissa);
+	}
+
+}

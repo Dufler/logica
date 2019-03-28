@@ -1,0 +1,15 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.Spedizione;
+
+public class SpedizioneColliLabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		String colli = spedizione.getColli().toString();
+		return colli;
+	}
+
+}

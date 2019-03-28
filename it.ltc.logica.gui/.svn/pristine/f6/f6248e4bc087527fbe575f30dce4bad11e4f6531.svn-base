@@ -1,0 +1,40 @@
+package it.ltc.logica.gui.decoration;
+
+import java.io.InputStream;
+
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
+
+public enum Immagine {
+	
+	LISTINO_16X16("/it/ltc/logica/gui/resources/listino_16x16.png"),
+	IMPOSTAZIONI_16X16("/it/ltc/logica/gui/resources/impostazioni_16x16.png"),
+	CALCOLO_16X16("/it/ltc/logica/gui/resources/calcolo_16x16.png"),
+	WIZARD_16X16("/it/ltc/logica/gui/resources/wizard_16x16.png"),
+	TRASPORTI_16X16("/it/ltc/logica/gui/resources/trasporti_16x16.png"),
+	SPUNTAVERDE_16X16("/it/ltc/logica/gui/resources/spuntaVerde_16x16.png"),
+	CROCEROSSA_16X16("/it/ltc/logica/gui/resources/croceRossa_16x16.png"),
+	
+	RED_MARK_12X20("/it/ltc/logica/gui/resources/red_mark_12x20.png"),
+	YELLOW_MARK_12X20("/it/ltc/logica/gui/resources/yellow_mark_12x20.png"),
+	
+	LOADING_256X256("/it/ltc/logica/gui/resources/loading_256x256.png");
+	
+	private final String path;
+	private final Image image;
+	
+	private Immagine(String path) {
+		this.path = path;
+		InputStream imageStream = Immagine.class.getResourceAsStream(path);
+		image = new Image(Display.getCurrent(), imageStream);
+	}
+	
+	public String getPath() {
+		return path;
+	}
+	
+	public Image getImage() {
+		return image;
+	}
+
+}

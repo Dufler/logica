@@ -1,0 +1,111 @@
+package it.ltc.logica.database.configuration;
+
+
+public enum Database {
+
+	WEBSERVICES(30, -1, DBMSType.MYSQLDS, "java:/ltc_centrale", "", "", ""),
+	
+	
+	TEST(30, -1, DBMSType.MYSQL, "ltc_centrale", "192.168.0.11", "ltc", "myltcpsw1087"),
+	PRODUZIONE(30, -1, DBMSType.MYSQL, "ltc_centrale", "192.168.0.12", "ltc", "myltcpsw1087"),
+	APPOGGIO(30, -1, DBMSType.MYSQL, "ltc_centrale","192.168.0.6", "ltc", "ltcpsw"),
+	
+	LTCPG(30, -1, DBMSType.JTDS, "DBLtc", "192.168.0.10", "ltc", "ltcpsw"),
+	LTCPGPROVA(30, -1, DBMSType.JTDS, "prova", "192.168.0.16", "ltc", "ltcpsw"),
+	
+	VUOTA(0, 0, DBMSType.JTDS, "", "", "ltc", "ltcpsw"),
+	
+	FULLSPOT(1, 105, DBMSType.JTDS, "DBFull", "192.168.8.10", "ltc", "ltcpsw"),
+	ROYALTRADING(2, 114, DBMSType.JTDS, "DBSer", "192.168.0.16", "ltc", "ltcpsw"),
+	IGI(3, 75, DBMSType.JTDS, "DBIgi", "192.168.0.10", "ltc", "ltcpsw"),
+	AB(4, 0, DBMSType.JTDS, "DBAb", "192.168.0.10", "ltc", "ltcpsw"),
+	DATE(5, 62, DBMSType.JTDS, "DBDATE", "192.168.0.10", "ltc", "ltcpsw"),
+	ARTPG(6, 69, DBMSType.JTDS, "DBartnew", "192.168.0.10", "ltc", "ltcpsw"),
+	WEDO(11, 78, DBMSType.JTDS, "Dbideam", "192.168.0.16", "ltc", "ltcpsw"),
+	GOGOGO(12, 84, DBMSType.JTDS, "DBGo", "192.168.0.16", "ltc", "ltcpsw"),
+	FT62(13, 0, DBMSType.JTDS, "DBFashteam", "192.168.0.16", "ltc", "ltcpsw"),
+	CUCINELLI(15, 110, DBMSType.JTDS, "DBBc", "192.168.0.16", "ltc", "ltcpsw"),
+	JELKOM(16, 65, DBMSType.JTDS, "DBJelkcom", "192.168.5.11", "ltc", "ltcpsw"),
+	ASH(22, 109, DBMSType.JTDS, "DBASH", "192.168.5.11", "ltc", "ltcpsw"),
+	
+	WOMSH(26, 113, DBMSType.JTDS, "DBWOM", "192.168.8.10", "ltc", "ltcpsw"),
+	
+	SQLITE(30, -1, DBMSType.SQLITE, "", "", "", "");
+	
+	private final int idCommessa;
+	private final int idVecchio;
+	private final DBMSType dbms;
+	private final String nomeDB;
+	private final String indirizzoDB;
+	private final String username;
+	private final String password;
+	
+	private Database(int id, int old, DBMSType ms, String nome, String indirizzo, String user, String pass) {
+		idCommessa = id;
+		idVecchio = old;
+		dbms = ms;
+		nomeDB = nome;
+		indirizzoDB = indirizzo;
+		username = user;
+		password = pass;
+	}
+
+	public int getIdCommessa() {
+		return idCommessa;
+	}
+	
+	public int getIdVecchio() {
+		return idVecchio;
+	}
+
+	public String getNomeDB() {
+		return nomeDB;
+	}
+
+	public String getIndirizzoDB() {
+		return indirizzoDB;
+	}
+
+	public DBMSType getDbms() {
+		return dbms;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+	
+	public static Database getDBByCustomerName(String nome) {
+		Database db = null;
+		try {
+			db = Database.valueOf(nome.toUpperCase());
+		} catch (Exception e) {}
+		return db;
+	}
+	
+	public static Database getDBByID(int id) {
+		Database db = null;
+		for (Database database : Database.values()) {
+			if (database.getIdCommessa() == id) {
+				db = database;
+				break;
+			}
+		}
+		return db;
+	}
+	
+	public static Database getByOldID(int id) {
+		Database db = null;
+		for (Database database : Database.values()) {
+			if (database.getIdVecchio() == id) {
+				db = database;
+				break;
+			}
+		}
+		return db;
+	}
+
+}

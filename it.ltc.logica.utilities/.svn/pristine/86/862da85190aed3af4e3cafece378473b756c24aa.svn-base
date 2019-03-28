@@ -1,0 +1,182 @@
+package it.ltc.logica.utilities.excel;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Iterator;
+
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
+import it.ltc.logica.utilities.excel.model.csv.CampoDecimale;
+import it.ltc.logica.utilities.excel.model.csv.CampoDiTesto;
+import it.ltc.logica.utilities.excel.model.csv.FileCSV;
+import it.ltc.logica.utilities.excel.model.csv.RigaCSV;
+
+public class XLStoCSV {
+	
+	public static FileCSV getCSV(File inputFile) {
+		FileCSV csv = null;
+		try {
+			// Get the workbook object for XLS file
+			HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(inputFile));
+			// Get first sheet from the workbook
+			HSSFSheet sheet = workbook.getSheetAt(0);
+			Cell cell;
+			Row row;
+
+			String[] nomiColonne;
+			
+			// Iterate through each rows from first sheet
+			Iterator<Row> rowIterator = sheet.iterator();
+			
+			//Prima riga, prendo i nomi delle colonne
+			if (rowIterator.hasNext()) {
+				row = rowIterator.next();
+				nomiColonne = new String[row.getPhysicalNumberOfCells()];
+				Iterator<Cell> titleCellIterator = row.cellIterator();
+				int titleIndex = 0;
+				while (titleCellIterator.hasNext()) {
+					cell = titleCellIterator.next();
+					String nomeColonna = formatString(cell.getStringCellValue());
+					nomiColonne[titleIndex] = nomeColonna;
+					titleIndex += 1;
+				}
+				csv = new FileCSV(nomiColonne);
+				//Proseguo su tutte le righe con i dati
+				while (rowIterator.hasNext()) {
+					row = rowIterator.next();
+					RigaCSV riga = new RigaCSV(nomiColonne);
+					// For each row, iterate through each columns
+					for (int index = 0; index < nomiColonne.length; index++) {
+						cell = row.getCell(index);
+						if (cell == null) {
+							//Sperimentale, serve a non saltare nessuna cella.
+							String s = cell != null? cell.toString() : "cella null";
+							CampoDiTesto ct = new CampoDiTesto(nomiColonne[index], index, s);
+							riga.setCampo(index, ct);
+						} else switch (cell.getCellType()) {
+							case Cell.CELL_TYPE_BOOLEAN: 
+							{
+								System.out.println("boolean?");
+							}
+							break;
+							case Cell.CELL_TYPE_BLANK:
+							{
+								String s = "";
+								CampoDiTesto ct = new CampoDiTesto(nomiColonne[index], index, s);
+								riga.setCampo(index, ct);
+							}
+							break;
+							case Cell.CELL_TYPE_NUMERIC: 
+							{
+								double d = cell.getNumericCellValue();
+								CampoDecimale cd = new CampoDecimale(nomiColonne[index], index, d);
+								riga.setCampo(index, cd);
+							} break;
+							case Cell.CELL_TYPE_STRING: 
+							{
+								String s = formatString(cell.getStringCellValue());
+								CampoDiTesto ct = new CampoDiTesto(nomiColonne[index], index, s);
+								riga.setCampo(index, ct);
+							} break;
+							default:
+							{
+								//Sperimentale, serve a non saltare nessuna cella.
+								String s = cell != null? cell.toString() : "cella null";
+								CampoDiTesto ct = new CampoDiTesto(nomiColonne[index], index, s);
+								riga.setCampo(index, ct);
+							} break;
+						}
+					}
+					csv.aggiungiRiga(riga);
+				}
+			} else {
+				nomiColonne = null;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return csv;
+	}
+	
+	public static void xls(File inputFile, File outputFile) {
+		DecimalFormat df = new DecimalFormat("#.###");
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		df.setDecimalFormatSymbols(dfs);
+		// For storing data into CSV files
+		StringBuffer data = new StringBuffer();
+		try {
+			FileOutputStream fos = new FileOutputStream(outputFile);
+
+			// Get the workbook object for XLS file
+			HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(inputFile));
+			// Get first sheet from the workbook
+			HSSFSheet sheet = workbook.getSheetAt(0);
+			Cell cell;
+			Row row;
+
+			// Iterate through each rows from first sheet
+			Iterator<Row> rowIterator = sheet.iterator();
+			while (rowIterator.hasNext()) {
+				row = rowIterator.next();
+				// For each row, iterate through each columns
+				Iterator<Cell> cellIterator = row.cellIterator();
+				while (cellIterator.hasNext()) {
+					cell = cellIterator.next();
+
+					switch (cell.getCellType()) {
+					case Cell.CELL_TYPE_BOOLEAN:
+						data.append(cell.getBooleanCellValue() + ",");
+						break;
+
+					case Cell.CELL_TYPE_NUMERIC:
+						double d = cell.getNumericCellValue();
+						data.append(df.format(d) + ",");
+						break;
+
+					case Cell.CELL_TYPE_STRING:
+						data.append(formatString(cell.getStringCellValue()) + ",");
+						break;
+
+					case Cell.CELL_TYPE_BLANK:
+						data.append("" + ",");
+						break;
+
+					default:
+						data.append(cell + ",");
+					}
+
+				}
+				data.append('\n');
+			}
+
+			fos.write(data.toString().getBytes());
+			fos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static String formatString(String s) {
+		s = s.replace("\n", " ");
+		return s;
+	}
+
+	public static void test() {
+		File inputFile = new File("C:/test.xls");
+		File outputFile = new File("C:/output.csv");
+		xls(inputFile, outputFile);
+	}
+}

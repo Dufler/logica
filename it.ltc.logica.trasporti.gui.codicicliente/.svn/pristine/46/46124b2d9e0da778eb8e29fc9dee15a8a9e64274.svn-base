@@ -1,0 +1,64 @@
+package it.ltc.logica.trasporti.gui.codicicliente.elements;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+
+public class EtichettatoreCodiciCliente extends Etichettatore<CodiceClienteCorriere> {
+
+	private ListiniCorrieriController controllerCorriere;
+	private ListiniClientiController controllerCliente;
+	
+	public EtichettatoreCodiciCliente() {
+		super();
+		controllerCorriere = ListiniCorrieriController.getInstance();
+		controllerCliente = ListiniClientiController.getInstance();
+	}
+
+	@Override
+	public String getTesto(CodiceClienteCorriere oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = oggetto.getCodiceCliente();  break;
+			case 1 : testo = oggetto.getEStato().toString(); break;
+			case 2 : testo = Corriere.getCorriere(oggetto.getIdCorriere()).getNome(); break;
+			case 3 : testo = getNomeListinoCorriere(oggetto); break;
+			case 4 : testo = Commessa.getCommessa(oggetto.getIdCommessa()).getNome(); break;
+			case 5 : testo = getNomeListinoCliente(oggetto); break;
+			case 6 : testo = oggetto.getDescrizione(); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+	
+	private String getNomeListinoCorriere(CodiceClienteCorriere oggetto) {
+		ListinoCorriere listino = controllerCorriere.getListinoCorriere(oggetto.getIdListinoCorriere());
+		String nomeListino = listino.getNome();
+		return nomeListino;
+	}
+	
+	private String getNomeListinoCliente(CodiceClienteCorriere oggetto) {
+		ListinoCommessa listino = controllerCliente.getListinoCliente(oggetto.getIdListinoCommessa());
+		String nomeListino = listino.getNome();
+		return nomeListino;
+	}
+
+	@Override
+	public String getTestoTooltip(CodiceClienteCorriere oggetto, int colonna) {
+		String tooltip = getTesto(oggetto, colonna);
+		return tooltip;
+	}
+
+	@Override
+	public Image getIcona(CodiceClienteCorriere oggetto, int colonna) {
+		return null;
+	}
+
+}

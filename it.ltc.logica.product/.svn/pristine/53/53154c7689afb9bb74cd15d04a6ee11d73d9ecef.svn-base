@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Logica" uid="Base.product" id="it.ltc.logica.base.base" application="org.eclipse.e4.ui.workbench.swt.E4Application" version="1.0" useFeatures="true" includeLaunchers="true">
+
+   <aboutInfo>
+      <image path="/it.ltc.logica.product/resources/images/ltclogo.png"/>
+      <text>
+         L&amp;TC 2016
+      </text>
+   </aboutInfo>
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-clearPersistedState
+      </programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <windowImages i16="/it.ltc.logica.product/resources/icons/ltc_logo_16x16.png" i32="/it.ltc.logica.product/resources/icons/ltc_logo_32x32.png" i64="/it.ltc.logica.product/resources/icons/ltc_logo_64x64.png"/>
+
+   <splash
+      location="it.ltc.logica.base"
+      startupProgressRect="5,275,445,15"
+      startupMessageRect="7,252,445,20"
+      startupForegroundColor="000000" />
+   <launcher name="Logica">
+      <solaris/>
+      <win useIco="false">
+         <bmp
+            winSmallHigh="/it.ltc.logica.base/resources/icons/ltc_logo_16x16.bmp"
+            winMediumHigh="/it.ltc.logica.base/resources/icons/ltc_logo_32x32.bmp"
+            winLargeHigh="/it.ltc.logica.base/resources/icons/ltc_logo_48x48.bmp"
+            winExtraLargeHigh="/it.ltc.logica.base/resources/icons/ltc_logo_256x256.bmp"/>
+      </win>
+   </launcher>
+
+
+   <vm>
+      <windows include="true">org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8</windows>
+   </vm>
+
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="org.eclipse.e4.rcp"/>
+      <feature id="org.eclipse.emf.ecore"/>
+      <feature id="org.eclipse.emf.common"/>
+      <feature id="org.eclipse.rcp"/>
+      <feature id="org.eclipse.equinox.p2.core.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient4.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.httpclient4.ssl.feature"/>
+      <feature id="org.eclipse.ecf.core.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.feature"/>
+      <feature id="org.eclipse.ecf.core.ssl.feature"/>
+      <feature id="org.eclipse.ecf.filetransfer.ssl.feature"/>
+      <feature id="org.eclipse.equinox.p2.discovery.feature"/>
+      <feature id="org.eclipse.equinox.p2.extras.feature"/>
+      <feature id="org.eclipse.equinox.p2.rcp.feature"/>
+      <feature id="org.eclipse.equinox.p2.user.ui"/>
+      <feature id="org.eclipse.platform"/>
+      <feature id="org.eclipse.help"/>
+   </features>
+
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
+
+   <repositories>
+      <repository location="http://traffic.services.ltc-logistics.it/logica-update" enabled="false" />
+      <repository location="http://localhost:8080/logica-update/" enabled="true" />
+   </repositories>
+
+   <preferencesInfo>
+      <targetfile overwrite="false"/>
+   </preferencesInfo>
+
+   <cssInfo>
+      <file path="/it.ltc.logica.base/resources/css/style.css"/>
+   </cssInfo>
+
+</product>

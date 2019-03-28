@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:commands="http://www.eclipse.org/ui/2010/UIModel/application/commands" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <imports xsi:type="commands:Command" xmi:id="_F0-rEDQ8EemPXKgLc20fqA" elementId="it.ltc.logica.container.command.switchPerspective"/>
+  <imports xsi:type="commands:CommandParameter" xmi:id="_JgzckDQ8EemPXKgLc20fqA" elementId="it.ltc.logica.container.commandparameter.perspectivename"/>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_hzK9cA9fEemN071NBXTnPA" featurename="children" parentElementId="org.eclipse.ui.main.toolbar">
+    <elements xsi:type="menu:DirectToolItem" xmi:id="_o6lFAA9fEemN071NBXTnPA" elementId="it.ltc.logica.magazzino.gui.directtoolitem.magazzino" label="Magazzino" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/scatola_16x16.png" tooltip="Apre la perspective Magazzino" contributionURI="bundleclass://it.ltc.logica.magazzino.gui/it.ltc.logica.magazzino.gui.handlers.MagazzinoToolbarHandler"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_LhLQIA9hEemN071NBXTnPA" featurename="children" parentElementId="org.eclipse.ui.ide.perspectivestack">
+    <elements xsi:type="advanced:Perspective" xmi:id="_ORpMoA9hEemN071NBXTnPA" elementId="it.ltc.logica.magazzino.gui.perspective.magazzino" label="Magazzino" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/scatola_16x16.png" tooltip="Qui puoi gestire le attivita' operative di magazzino">
+      <children xsi:type="basic:PartSashContainer" xmi:id="_cn2dMA9hEemN071NBXTnPA" elementId="it.ltc.logica.magazzino.gui.partsashcontainer.magazzino" containerData="10000" selectedElement="_vOfoMA9hEemN071NBXTnPA" horizontal="true">
+        <children xsi:type="basic:PartStack" xmi:id="_vOfoMA9hEemN071NBXTnPA" elementId="it.ltc.logica.magazzino.gui.partstack.funzioni" containerData="8000"/>
+      </children>
+    </elements>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_RhbEEDQ8EemPXKgLc20fqA" featurename="children" parentElementId="it.ltc.logica.container.menu.perspective">
+    <elements xsi:type="menu:HandledMenuItem" xmi:id="_TXhqEDQ8EemPXKgLc20fqA" elementId="it.ltc.logica.magazzino.gui.handledmenuitem.magazzino" label="Magazzino" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/scatola_16x16.png" tooltip="Mostra le funzioni per il magazzino" command="_F0-rEDQ8EemPXKgLc20fqA">
+      <parameters xmi:id="_Ym2OoDQ8EemPXKgLc20fqA" elementId="it.ltc.logica.magazzino.gui.parameter.magazzino" name="it.ltc.logica.container.commandparameter.perspectivename" value="it.ltc.logica.magazzino.gui.perspective.magazzino"/>
+    </elements>
+  </fragments>
+</fragment:ModelFragments>

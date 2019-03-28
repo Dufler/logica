@@ -1,0 +1,50 @@
+ 
+package it.ltc.logica.trasporti.gui.fatturazione.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.trasporti.gui.fatturazione.wizards.FatturazioneWizard;
+
+public class FatturazionePart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.fatturazione.part.fatturazione";
+	
+	@Inject
+	public FatturazionePart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnFattura = new Button(parent, SWT.NONE);
+		btnFattura.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazione();
+			}
+		});
+		btnFattura.setText("Fattura");
+		
+	}
+	
+	private void avviaFatturazione() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneWizard(), DialogWizard.WIZARD_PREVENTIVO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			//Se serve fail qualcosa.
+		}
+	}
+	
+}

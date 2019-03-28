@@ -1,0 +1,21 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class FactoryAlgoritmi {
+	
+	private static List<IAlgoritmo> algoritmi = new ArrayList<IAlgoritmo>();
+	
+	public static List<IAlgoritmo> getAlgoritmi() {
+		if (algoritmi.isEmpty()) {
+			algoritmi.add(AlgoritmoFisso.getInstance());
+			algoritmi.add(AlgoritmoPercentuale.getInstance(AlgoritmoPercentuale.TIPO_NESSUNA_SELEZIONE, AlgoritmoPercentuale.SCOPO_NESSUNO));
+			algoritmi.add(AlgoritmoProporzionale.getInstance(AlgoritmoProporzionale.TIPO_NESSUNO));
+			algoritmi.add(AlgoritmoScaglioni.getInstance(AlgoritmoScaglioni.TIPO_NESSUNO));
+			algoritmi.add(AlgoritmoScaglioniRipetuti.getInstance(AlgoritmoScaglioniRipetuti.TIPO_NESSUNO));
+		}
+		return algoritmi;
+	}
+	
+}

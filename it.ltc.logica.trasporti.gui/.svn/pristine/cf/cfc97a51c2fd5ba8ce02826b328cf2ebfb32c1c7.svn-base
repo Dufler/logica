@@ -1,0 +1,56 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+
+import it.ltc.logica.database.model.Indirizzo;
+
+public class FiltroIndirizzi extends ViewerFilter {
+
+	private String ragioneSociale;
+	private String indirizzoMisto;
+	
+	@Override
+	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		Indirizzo indirizzo = (Indirizzo) element;
+		boolean toShow;
+		toShow = checkRagioneSociale(indirizzo);
+		if (toShow)
+			toShow = checkIndirizzo(indirizzo);
+		return toShow;
+	}
+
+	private boolean checkRagioneSociale(Indirizzo indirizzo) {
+		boolean check = true;
+		if (ragioneSociale != null && !ragioneSociale.isEmpty()) {
+			String rs = indirizzo.getRagioneSociale().toUpperCase();
+			check = rs.contains(ragioneSociale);
+		}
+		return check;
+	}
+	
+	private boolean checkIndirizzo(Indirizzo indirizzo) {
+		boolean check = true;
+		if (indirizzoMisto != null && !indirizzoMisto.isEmpty()) {
+			String ind = indirizzo.getIndirizzo().toUpperCase();
+			boolean checkIndirizzo = ind.contains(indirizzoMisto);
+			String localita = indirizzo.getLocalita().toUpperCase();
+			boolean checkLocalita = localita.contains(indirizzoMisto);
+			check = checkIndirizzo || checkLocalita;
+		}
+		return check;
+	}
+	
+	public void setRagioneSociale(String rs) {
+		if (rs != null)
+			rs = rs.toUpperCase();
+		ragioneSociale = rs;
+	}
+
+	public void setIndirizzo(String i) {
+		if (i != null)
+			i = i.toUpperCase();
+		indirizzoMisto = i;	
+	}
+
+}

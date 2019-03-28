@@ -1,0 +1,165 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerCap {
+	
+	private static ControllerCap instance;
+	
+	private final HashMap<String, Cap> mappaCap;
+	private final HashMap<String, Cap> mappaCapLocalita;
+
+	private ControllerCap() {
+		mappaCap = new HashMap<String, Cap>();
+		mappaCapLocalita = new HashMap<String, Cap>();
+		caricaDati();
+	}
+
+	public static ControllerCap getInstance() {
+		if (instance == null) {
+			instance = new ControllerCap();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcd);
+	}
+	
+	public Collection<Cap> getListaCap() {
+		return mappaCapLocalita.values();
+	}
+	
+	public Cap getInfoGeneraliCap(String cap) {
+		return mappaCap.get(cap);
+	}
+	
+	public Cap getInfoCap(String cap, String localita) {
+		return mappaCapLocalita.get(cap + "-" + localita);
+	}
+	
+	public boolean insert(Cap cap) {
+		ProcessoInserimento pid = new ProcessoInserimento(cap);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pid);
+		return pid.getEsito();
+	}
+	
+	public boolean update(Cap cap) {
+		ProcessoAggiornamento pid = new ProcessoAggiornamento(cap);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pid);
+		return pid.getEsito();
+	}
+	
+	private class ProcessoCaricamentoDati extends Processo {
+		
+		private static final String title = "Caricamento dei cap";
+		
+		public ProcessoCaricamentoDati() {
+			super(title, -1);
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("cap");
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante lo scaricamento dei cap: '" + wsAnswer.getMessage() + "'");
+			
+			ObjectMapper mapper = new ObjectMapper();
+			List<Cap> lista = mapper.readValue(answer, new TypeReference<List<Cap>>(){});
+			
+			mappaCap.clear();
+			mappaCapLocalita.clear();
+			
+			for (Cap cap : lista) {
+				mappaCap.put(cap.getCap(), cap);
+				mappaCapLocalita.put(cap.getCap() + "-" + cap.getLocalita(), cap);
+			}
+		}
+	}
+	
+	private class ProcessoInserimento extends Processo {
+		
+		private static final String title = "Inserimento del cap";
+		
+		private final Cap cap;
+		private boolean esito;
+		
+		public ProcessoInserimento(Cap cap) {
+			super(title, -1);
+			this.cap = cap;
+			esito = false;
+		}
+		
+		public boolean getEsito() {
+			return esito;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(cap);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.post("cap", json);
+			if (wsAnswer.getStatus() == 201) {
+				mappaCap.put(cap.getCap(), cap);
+				mappaCapLocalita.put(cap.getCap() + "-" + cap.getLocalita(), cap);
+				esito = true;
+			} else {
+				esito = false;
+				throw new RuntimeException("Errore durante l'inserimento del cap: '" + wsAnswer.getMessage() + "'");
+			}
+			
+		}
+	}
+	
+	private class ProcessoAggiornamento extends Processo {
+		
+		private static final String title = "Aggiornamento del cap";
+		
+		private final Cap cap;
+		private boolean esito;
+		
+		public ProcessoAggiornamento(Cap cap) {
+			super(title, -1);
+			this.cap = cap;
+		}
+		
+		public boolean getEsito() {
+			return esito;
+		}
+	
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			ObjectMapper mapper = new ObjectMapper();
+			String json = mapper.writeValueAsString(cap);
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.put("cap", json);
+			if (wsAnswer.getStatus() != 200) {
+				
+				throw new RuntimeException("Errore durante l'aggiornamento del cap: '" + wsAnswer.getMessage() + "'");
+			} else {
+				esito = true;
+				//TODO - ricarica lo specifico cap dal ws?
+			}
+		}
+	}
+
+}

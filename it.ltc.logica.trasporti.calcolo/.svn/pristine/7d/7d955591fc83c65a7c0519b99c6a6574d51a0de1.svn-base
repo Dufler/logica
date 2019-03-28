@@ -1,0 +1,30 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class NoloPriorityOre12 extends NoloItalia {
+
+	public NoloPriorityOre12(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODIFICA_SERVIZIO_ORE12 = "O12";
+	public static final String CODICE = "NOLO_PRIORITY_12";
+	public static final int ID = 29;
+	
+	@Override
+	public boolean isApplicabile(SpedizioneModel model) {
+		String servizio = model.getSpedizione().getServizio();
+		boolean applicabile = CODIFICA_SERVIZIO_ORE12.equals(servizio);
+		if (applicabile)
+			System.out.println("applicabile");
+		return applicabile;
+	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+	
+}

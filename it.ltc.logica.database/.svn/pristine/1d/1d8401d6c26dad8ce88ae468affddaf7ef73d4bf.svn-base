@@ -1,0 +1,93 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoCorrierePercentuale extends Entity implements ValidEntity {
+	
+	public static final String NOME_TABELLA = "listino_corriere_voce_percentuale";
+	private static final ArrayList<Column> variabili = new ArrayList<Column>();
+
+	private Integer id;
+	private Double valore;
+	private String tipo;
+	private Double valoreMinimo;
+	private Double valoreMassimo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("id_voce", Column.INT, "id", true, false));
+			variabili.add(new Column("valore", Column.DOUBLE, "valore"));
+			variabili.add(new Column("tipo", Column.STRING, "tipo"));
+			variabili.add(new Column("valore_minimo", Column.DOUBLE, "valoreMinimo"));
+			variabili.add(new Column("valore_massimo", Column.DOUBLE, "valoreMassimo"));
+		}
+		return variabili;
+	}
+	
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (valore == null || valore < 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore percentuale deve essere valido e maggiore di 0.");
+		}
+		if (tipo == null || tipo.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Il valore percentuale deve essere calcolato su un tipo valido.");
+		}
+		return esito;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Double getValoreMinimo() {
+		return valoreMinimo;
+	}
+
+	public void setValoreMinimo(Double valoreMinimo) {
+		this.valoreMinimo = valoreMinimo;
+	}
+
+	public Double getValoreMassimo() {
+		return valoreMassimo;
+	}
+
+	public void setValoreMassimo(Double valoreMassimo) {
+		this.valoreMassimo = valoreMassimo;
+	}
+
+}

@@ -1,0 +1,178 @@
+package it.ltc.logica.database.model.centrale;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class AmbitoDiTrasporto extends Entity {
+	
+	public enum Tipo {
+		
+		NOLO_BASE,
+		NOLO_EXTRA,
+		EXTRA,
+		CONTRASSEGNO,
+		ISTAT,
+		FUEL,
+		GIACENZA
+		
+	}
+	
+	public static final String NOLO_BASE = "NOLO";
+	public static final String NOLO_PRIORITY_10 = "NOLO_PRIORITY_10";
+	public static final String NOLO_PRIORITY_12 = "NOLO_PRIORITY_12";
+	public static final String NOLO_SUD = "NOLO_SUD";
+	public static final String NOLO_ESTERO = "NOLO_ESTERO";
+	
+	public static final String NOME_TABELLA = "ambito_trasporto";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static List<AmbitoDiTrasporto> listaAmbiti;
+	private static final List<AmbitoDiTrasporto> listaAmbitiCorrieri = new ArrayList<AmbitoDiTrasporto>();
+	private static final List<AmbitoDiTrasporto> listaAmbitiClienti = new ArrayList<AmbitoDiTrasporto>();
+	private static final EntityManager<AmbitoDiTrasporto> managerAmbiti = new EntityManager<AmbitoDiTrasporto>(AmbitoDiTrasporto.class, ConfigurationManager.getDefault());
+
+	private String codice;
+	private String nome;
+	private String descrizione;
+	private String tipo;
+	private Boolean usoCorriere;
+	private Boolean usoCliente;
+	private Boolean valoreNecessario;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("codice", "codice", true, false);
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+			variabili.addString("tipo", "tipo");
+			variabili.addBoolean("uso_corriere", "usoCorriere");
+			variabili.addBoolean("uso_cliente", "usoCliente");
+			variabili.addBoolean("valore", "valoreNecessario");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return (nome != null) ? nome : "";
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AmbitoDiTrasporto) {
+			AmbitoDiTrasporto ambito = (AmbitoDiTrasporto) o;
+			uguali = codice.equals(ambito.getCodice());
+		}
+		return uguali;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbiti() {
+		if (listaAmbiti == null) {
+			listaAmbiti = managerAmbiti.getEntities();
+		}
+		return listaAmbiti;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbitiClienti() {
+		if (listaAmbitiClienti.isEmpty()) {
+			for (AmbitoDiTrasporto ambito : getListaAmbiti()) {
+				if (ambito.getUsoCliente())
+					listaAmbitiClienti.add(ambito);
+			}
+		}
+		return listaAmbitiClienti;
+	}
+	
+	public static List<AmbitoDiTrasporto> getListaAmbitiCorrieri() {
+		if (listaAmbitiCorrieri.isEmpty()) {
+			for (AmbitoDiTrasporto ambito : getListaAmbiti()) {
+				if (ambito.getUsoCorriere())
+					listaAmbitiCorrieri.add(ambito);
+			}
+		}
+		return listaAmbitiCorrieri;
+	}
+	
+	public static AmbitoDiTrasporto getAmbito(String codice) {
+		AmbitoDiTrasporto ambito = null;
+		for (AmbitoDiTrasporto a : getListaAmbiti()) {
+			if (a.getCodice().equals(codice)) {
+				ambito = a;
+				break;
+			}
+		}
+		return ambito;
+	}
+
+	public String getCodice() {
+		return codice;
+	}
+
+	public void setCodice(String codice) {
+		this.codice = codice;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+	
+	public Tipo getETipo() {
+		Tipo type = Tipo.valueOf(tipo);
+		return type;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Boolean getUsoCorriere() {
+		return usoCorriere;
+	}
+
+	public void setUsoCorriere(Boolean usoCorriere) {
+		this.usoCorriere = usoCorriere;
+	}
+
+	public Boolean getUsoCliente() {
+		return usoCliente;
+	}
+
+	public void setUsoCliente(Boolean usoCliente) {
+		this.usoCliente = usoCliente;
+	}
+	
+	public Boolean getValoreNecessario() {
+		return valoreNecessario;
+	}
+
+	public void setValoreNecessario(Boolean valoreNecessario) {
+		this.valoreNecessario = valoreNecessario;
+	}
+
+}

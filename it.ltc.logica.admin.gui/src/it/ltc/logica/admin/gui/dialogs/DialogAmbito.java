@@ -1,0 +1,120 @@
+package it.ltc.logica.admin.gui.dialogs;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura.Categoria;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForDescription;
+import it.ltc.logica.gui.input.TextForString;
+
+public class DialogAmbito extends DialogModel<AmbitoFattura> {
+	
+	public static final String title = "Ambito Fatturazione";
+	
+	private final ControllerAmbitiFatturazione controller;
+	
+	private ComboBox<Categoria> comboCategoria;
+	private TextForString textNome;
+	private TextForDescription textDescrizione;
+
+	public DialogAmbito(AmbitoFattura value) {
+		super(title, value);
+		controller = ControllerAmbitiFatturazione.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblCategoria = new Label(container, SWT.NONE);
+		lblCategoria.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCategoria.setText("Categoria:");
+		
+		comboCategoria = new ComboBox<Categoria>(container);
+		comboCategoria.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCategoria.setItems(Categoria.values());
+		addChild(comboCategoria);
+		
+		new SpacerLabel(container);
+		
+		Label lblNome = new Label(container, SWT.NONE);
+		lblNome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNome.setText("Nome: ");
+		
+		textNome = new TextForString(container);
+		textNome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(textNome);
+		
+		new SpacerLabel(container);
+		
+		Label lblDescrizione = new Label(container, SWT.NONE);
+		lblDescrizione.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizione.setText("Descrizione: ");
+		
+		textDescrizione = new TextForDescription(container);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(textDescrizione);
+
+		new SpacerLabel(container);
+		
+	}
+
+	@Override
+	public boolean isDirty() {
+		return comboCategoria.isDirty() || textNome.isDirty() || textDescrizione.isDirty();
+	}
+
+	@Override
+	public void loadModel() {
+		comboCategoria.setSelectedValue(Categoria.valueOf(valore.getCategoria()));
+		textNome.setText(valore.getNome());
+		if (valore.getDescrizione() != null)
+			textDescrizione.setText(valore.getDescrizione());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		valore.setCategoria(comboCategoria.getSelectedValue().name());
+		valore.setNome(textNome.getText());
+		valore.setDescrizione(textDescrizione.getText());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controller.update(valore);
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		boolean insert = controller.insert(valore);
+		return insert;
+	}
+
+	@Override
+	public AmbitoFattura createNewModel() {
+		AmbitoFattura nuovoAmbito = new AmbitoFattura();
+		return nuovoAmbito;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!
+	}
+
+}

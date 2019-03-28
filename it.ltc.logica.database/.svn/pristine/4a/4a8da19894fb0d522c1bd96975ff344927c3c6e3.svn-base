@@ -1,0 +1,79 @@
+package it.ltc.logica.database.model.centrale;
+
+import java.util.Date;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Tracking extends Entity {
+	
+	public static final String NOME_TABELLA = "tracking";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer id;
+	private Integer idOrdine;
+	private String stato;
+	private String descrizione;
+	private Date data;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("id_ordine", "idOrdine");
+			variabili.addString("stato", "stato");
+			variabili.addString("descrizione", "descrizione");
+			variabili.addDate("data", "data");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdOrdine() {
+		return idOrdine;
+	}
+
+	public void setIdOrdine(Integer idOrdine) {
+		this.idOrdine = idOrdine;
+	}
+
+	public String getStato() {
+		return stato;
+	}
+
+	public void setStato(String stato) {
+		this.stato = stato;
+	}
+
+	public String getDescrizione() {
+		return descrizione;
+	}
+
+	public void setDescrizione(String descrizione) {
+		this.descrizione = descrizione;
+	}
+
+	public Date getData() {
+		return data;
+	}
+
+	public void setData(Date data) {
+		if (data != null)
+			this.data = new Date(data.getTime());
+		else
+			this.data = null;
+	}
+
+}

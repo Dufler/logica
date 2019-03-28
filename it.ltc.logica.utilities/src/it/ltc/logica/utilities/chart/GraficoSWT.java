@@ -1,0 +1,188 @@
+package it.ltc.logica.utilities.chart;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.labels.PieSectionLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.data.category.CategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.experimental.chart.swt.ChartComposite;
+
+public class GraficoSWT extends Composite {
+	
+	private ChartComposite composite;
+	
+	public GraficoSWT(Composite parent, int style) {
+		super(parent, style);
+		setLayout(new GridLayout(1, false));
+		JFreeChart chart = null;
+		composite = new ChartComposite(this, SWT.BORDER, chart, true);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+	
+	public void costruisciGraficoABarreOrizzontaliComposte(DatiGraficoSemplice dati) {
+		JFreeChart chart = createStackedBarChart(dati.getDati(), dati.getTitolo(), dati.getNomeAscisse(), dati.getNomeOrdinate());
+		composite.setChart(chart);
+		pack();
+	}
+	
+	public void costruisciGraficoATortaConPercentuali(DatiGraficoTorta dati) {
+		JFreeChart chart = createPercentagePieChart(dati.getDati(), dati.getTitolo());
+		composite.setChart(chart);
+		pack();
+	}
+	
+	public void costruisciGraficoABarre(DatiGraficoSemplice dati) {
+		JFreeChart chart = createBarChart(dati.getDati(), dati.getTitolo(), dati.getNomeAscisse(), dati.getNomeOrdinate());
+		composite.setChart(chart);
+		pack();
+	}
+	
+	public void costruisciGraficoABarreConPercentuali(DatiGraficoSemplice dati) {
+		JFreeChart chart = createPercentageBarChart(dati.getDati(), dati.getTitolo(), dati.getNomeAscisse(), dati.getNomeOrdinate());
+		composite.setChart(chart);
+		pack();
+	}
+	
+	public void costruisciGraficoABarreConEuro(DatiGraficoSemplice dati) {
+		JFreeChart chart = createMoneyBarChart(dati.getDati(), dati.getTitolo(), dati.getNomeAscisse(), dati.getNomeOrdinate());
+		composite.setChart(chart);
+		pack();
+	}
+	
+	private JFreeChart createStackedBarChart(CategoryDataset dataset, String titolo, String ascisse, String ordinate) {
+		JFreeChart chart = ChartFactory.createStackedBarChart(
+	            titolo,
+	            ascisse,                  // domain axis label
+	            ordinate,                     // range axis label
+	            dataset,                     // data
+	            PlotOrientation.HORIZONTAL,  // the plot orientation
+	            true,                        // include legend
+	            true,                        // tooltips
+	            false                        // urls
+	        );
+		CategoryPlot plot = (CategoryPlot) chart.getPlot();
+		StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
+		renderer.setBaseItemLabelsVisible(true);
+		StandardCategoryToolTipGenerator tooltipGenerator = new StandardCategoryToolTipGenerator(StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING, new DecimalFormat("0.00 \u20AC"));
+        renderer.setBaseToolTipGenerator(tooltipGenerator);
+		//renderer.setItemLabelsVisible(true);
+		return chart;
+	}
+	
+	private JFreeChart createPercentagePieChart(DefaultPieDataset dataset, String titolo) {
+		JFreeChart chart = ChartFactory.createPieChart3D(titolo, dataset, true, true, false);
+		PiePlot3D plot = (PiePlot3D) chart.getPlot();
+		PieSectionLabelGenerator labelGenerator = new StandardPieSectionLabelGenerator("{0}: {1}, {2}", NumberFormat.getNumberInstance(), NumberFormat.getPercentInstance());
+		plot.setLabelGenerator(labelGenerator);
+		//PieRenderer renderer = (PieRenderer) plot.getRenderer();
+		return chart;
+	}
+	
+	private JFreeChart createBarChart(CategoryDataset dataset, String titolo, String ascisse, String ordinate) {
+		//Creo il grafico
+		JFreeChart chart = ChartFactory.createBarChart3D(titolo, ascisse, ordinate, dataset);
+        //Prendo il plot e lo customizzo
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        // Range axis percentuale
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        //rangeAxis.setTickUnit(new NumberTickUnit(0.05, new DecimalFormat("0.0 %")));
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        // disable bar outlines...
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        StandardCategoryItemLabelGenerator labelGenerator = new StandardCategoryItemLabelGenerator("{3}", new DecimalFormat("#.# %"));
+        renderer.setBaseItemLabelGenerator(labelGenerator);
+        renderer.setBaseItemLabelsVisible(true);
+        StandardCategoryToolTipGenerator tooltipGenerator = new StandardCategoryToolTipGenerator(StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING + ", {3}", new DecimalFormat("#"));
+        renderer.setBaseToolTipGenerator(tooltipGenerator);
+        renderer.setDrawBarOutline(false);
+
+        // the SWTGraphics2D class doesn't handle GradientPaint well, so
+        // replace the gradient painter from the default theme with a
+        // standard painter...
+        renderer.setBarPainter(new StandardBarPainter());
+
+//        CategoryAxis domainAxis = plot.getDomainAxis();
+//        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
+
+        return chart;
+    }
+	
+	private JFreeChart createPercentageBarChart(CategoryDataset dataset, String titolo, String ascisse, String ordinate) {
+		//Creo il grafico
+		JFreeChart chart = ChartFactory.createBarChart3D(titolo, ascisse, ordinate, dataset);
+        //Prendo il plot e lo customizzo
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        // Range axis percentuale
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setTickUnit(new NumberTickUnit(0.05, new DecimalFormat("0.0 %")));
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        // disable bar outlines...
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        StandardCategoryItemLabelGenerator labelGenerator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("#.# %"));
+        renderer.setBaseItemLabelGenerator(labelGenerator);
+        renderer.setBaseItemLabelsVisible(true);
+        StandardCategoryToolTipGenerator tooltipGenerator = new StandardCategoryToolTipGenerator(StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING, new DecimalFormat("0.00 %"));
+        renderer.setBaseToolTipGenerator(tooltipGenerator);
+        renderer.setDrawBarOutline(false);
+
+        // the SWTGraphics2D class doesn't handle GradientPaint well, so
+        // replace the gradient painter from the default theme with a
+        // standard painter...
+        renderer.setBarPainter(new StandardBarPainter());
+
+        CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
+
+        return chart;
+    }
+	
+	private JFreeChart createMoneyBarChart(CategoryDataset dataset, String titolo, String ascisse, String ordinate) {
+		//Creo il grafico
+		JFreeChart chart = ChartFactory.createBarChart3D(titolo, ascisse, ordinate, dataset);
+        //Prendo il plot e lo customizzo
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        // Range axis percentuale
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setTickUnit(new NumberTickUnit(10.0, new DecimalFormat("0 \u20AC")));
+        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        // disable bar outlines...
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        StandardCategoryItemLabelGenerator labelGenerator = new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("0.00 \u20AC"));
+        renderer.setBaseItemLabelGenerator(labelGenerator);
+        renderer.setBaseItemLabelsVisible(true);
+        StandardCategoryToolTipGenerator tooltipGenerator = new StandardCategoryToolTipGenerator(StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING, new DecimalFormat("0.00 \u20AC"));
+        renderer.setBaseToolTipGenerator(tooltipGenerator);
+        renderer.setDrawBarOutline(false);
+
+        // the SWTGraphics2D class doesn't handle GradientPaint well, so
+        // replace the gradient painter from the default theme with a
+        // standard painter...
+        renderer.setBarPainter(new StandardBarPainter());
+
+        CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setCategoryLabelPositions(CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0));
+
+        return chart;
+    }
+
+}

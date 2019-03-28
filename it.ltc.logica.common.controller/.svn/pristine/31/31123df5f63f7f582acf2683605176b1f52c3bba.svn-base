@@ -1,0 +1,121 @@
+package it.ltc.logica.common.controller;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.Cliente;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerClienti {
+	
+	private static final String title = "Clienti";
+	private static final String resource = "cliente";
+	
+	private static ControllerClienti instance;
+	
+	private final HashMap<Integer, Cliente> clienti;
+
+	private ControllerClienti() {
+		clienti = new HashMap<Integer, Cliente>();
+		caricaDati();
+	}
+
+	public static ControllerClienti getInstance() {
+		if (instance == null) {
+			instance = new ControllerClienti();
+		}
+		return instance;
+	}
+	
+	public Collection<Cliente> getClienti() {
+		return clienti.values();
+	}
+	
+	public Cliente getCliente(int id) {
+		return clienti.get(id);
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoClienti processo = new ProcessoCaricamentoClienti();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		if (processo.getEsito()) {
+			clienti.clear();
+			for (Cliente cliente : processo.getLista()) {
+				clienti.put(cliente.getId(), cliente);
+			}
+		}
+	}
+	
+	public boolean inserisci(Cliente cliente) {
+		ProcessoInserimentoCliente processo = new ProcessoInserimentoCliente(cliente);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			Cliente nuovoCliente = processo.getObject();
+			cliente.setId(nuovoCliente.getId());
+			clienti.put(nuovoCliente.getId(), nuovoCliente);
+		}
+		return esito;
+	}
+	
+	public boolean aggiorna(Cliente cliente) {
+		ProcessoAggiornamentoCliente processo = new ProcessoAggiornamentoCliente(cliente);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (!esito) {
+			//TODO - ricarica i dati
+		}
+		return esito;
+	}
+	
+	public boolean elimina(Cliente cliente) {
+		ProcessoEliminazioneCliente processo = new ProcessoEliminazioneCliente(cliente);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			clienti.remove(cliente.getId());
+		}
+		return esito;
+	}
+	
+	private class ProcessoCaricamentoClienti extends ProcessoCaricamentoDati<Cliente> {
+
+		public ProcessoCaricamentoClienti() {
+			super(title, resource, Cliente.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoCliente extends ProcessoInserimentoDati<Cliente> {
+
+		public ProcessoInserimentoCliente(Cliente object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoCliente extends ProcessoAggiornamentoDati<Cliente> {
+
+		public ProcessoAggiornamentoCliente(Cliente object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazioneCliente extends ProcessoCancellazioneDati<Cliente> {
+
+		public ProcessoEliminazioneCliente(Cliente object) {
+			super(title, resource, object);
+		}
+		
+	}
+
+}

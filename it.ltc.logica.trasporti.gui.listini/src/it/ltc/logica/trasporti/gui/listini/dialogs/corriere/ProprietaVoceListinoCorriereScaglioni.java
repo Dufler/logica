@@ -1,0 +1,146 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.corriere;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.calcolo.algoritmi.Scaglione;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.listini.ControllerListiniCorrieri;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoCorriere;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoCorriereScaglioni;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceScaglioni;
+import it.ltc.logica.trasporti.gui.elements.ETipoListino;
+
+public class ProprietaVoceListinoCorriereScaglioni extends DialogModel<VoceDiListinoCorriere> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino corriere a scaglioni";
+	
+	private ControllerListiniCorrieri controller;
+	
+	private final VoceDiListinoCorriere voce;
+	private final List<VoceDiListinoCorriereScaglioni> vociScaglioni;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceScaglioni compositeScaglioni;
+	
+	private final boolean permessoGestione;
+
+	public ProprietaVoceListinoCorriereScaglioni(VoceDiListinoCorriere voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		voce = voceDiListino;
+		vociScaglioni = voce.getScaglioni();
+		controller = ControllerListiniCorrieri.getInstance();
+		permessoGestione = permesso;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(this, container, ETipoListino.CORRIERE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		compositeVoce.enableElement(permessoGestione);
+		
+		compositeScaglioni = new CompositeVoceScaglioni(this, container);
+		compositeScaglioni.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeScaglioni.enableElement(permessoGestione);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyScaglioni = compositeScaglioni.isDirty();
+		return modifyVoce || modifyScaglioni;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		compositeVoce.setNome(nome);
+		String descrizione = voce.getDescrizione();
+		compositeVoce.setDescrizione(descrizione);
+		Integer ambito = voce.getIdSottoAmbito();
+		SottoAmbitoFattura ambitoDiTrasporto = ControllerAmbitiFatturazione.getInstance().getSottoAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		String valoreAmbito = voce.getValoreSottoAmbito();
+		if (valoreAmbito != null)
+			compositeVoce.setValoreAmbito(valoreAmbito);
+		String tipo = voce.getStrategiaCalcolo();
+		compositeScaglioni.setTipo(tipo);
+		ArrayList<Scaglione> scaglioni = new ArrayList<Scaglione>();
+		for (VoceDiListinoCorriereScaglioni voceScaglione : vociScaglioni) {
+			Scaglione scaglione = new Scaglione();
+			scaglione.setInizio(voceScaglione.getInizio());
+			scaglione.setFine(voceScaglione.getFine());
+			scaglione.setValore(voceScaglione.getValore());
+			scaglioni.add(scaglione);
+		}
+		compositeScaglioni.setScaglioni(scaglioni);
+		compositeScaglioni.abilitaInserimento(true);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		Integer ambito = compositeVoce.getAmbito().getId();
+		voce.setIdSottoAmbito(ambito);
+		String valoreAmbito = compositeVoce.getValoreAmbito();
+		if (!valoreAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreAmbito);
+		Integer id = voce.getId();
+		String tipo = compositeScaglioni.getTipo();
+		voce.setStrategiaCalcolo(tipo);
+		ArrayList<Scaglione> scaglioni = compositeScaglioni.getScaglioni();
+		vociScaglioni.clear();
+		for (Scaglione scaglione : scaglioni) {
+			VoceDiListinoCorriereScaglioni voceScaglione = new VoceDiListinoCorriereScaglioni();
+			voceScaglione.setIdVoce(id);
+			voceScaglione.setInizio(scaglione.getInizio());
+			voceScaglione.setFine(scaglione.getFine());
+			voceScaglione.setValore(scaglione.getValore());
+			vociScaglioni.add(voceScaglione);
+		}
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoce(voce);
+		return updateVoce;
+//		boolean updateScaglioni = controller.aggiornaVoceDiListinoScaglioni(vociScaglioni, voce.getId());
+//		return updateVoce && updateScaglioni;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	public VoceDiListinoCorriere createNewModel() {
+		VoceDiListinoCorriere voce = new VoceDiListinoCorriere();
+		return voce;
+	}
+
+}

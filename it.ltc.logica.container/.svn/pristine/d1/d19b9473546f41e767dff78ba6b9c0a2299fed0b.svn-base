@@ -1,0 +1,28 @@
+package it.ltc.logica.container.controller;
+
+import it.ltc.logica.database.model.Permesso;
+
+/**
+ * Lista statica dei permessi all'interno dell'applicazione.
+ * @author Damiano
+ *
+ */
+public enum Permessi {
+	
+	TEST(1),
+	TUTTI(3),
+	SPEDIZIONI_INSERISCI(4),
+	SPEDIZIONI_MODIFICA(5),
+	SPEDIZIONI_ELIMINA(6);
+	
+	private final int id;
+	
+	private Permessi(int id) {
+		this.id = id;
+	}
+
+	public Permesso getPermesso() {
+		return Permesso.getPermesso(id);
+	}
+
+}

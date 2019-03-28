@@ -1,0 +1,132 @@
+package it.ltc.logica.database.model.centrale.listini;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class VoceDiListinoCorriereScaglioniRipetuti extends Entity implements ValidEntity {
+
+	@JsonIgnore
+	public static final String NOME_TABELLA = "listino_corriere_voce_scaglioni_ripetuti";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idVoce;
+	private Double intervallo;
+	private Double minimo;
+	private Double massimo;
+	private Double valore;
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (intervallo == null || intervallo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("L'intervallo deve essere maggiore di 0.");
+		}
+		if (minimo != null && minimo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore minimo deve essere maggiore di 0.");
+		}
+		if (massimo != null && massimo <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore massimo deve essere maggiore di 0.");
+		}
+		if (valore == null || valore <= 0) {
+			esito.setValid(false);
+			esito.addMessage("Il valore per gli intervalli deve essere maggiore di 0.");
+		}
+		return esito;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addInt("id_voce", "idVoce", true, false);
+			variabili.addDouble("intervallo", "intervallo");
+			variabili.addDouble("minimo", "minimo");
+			variabili.addDouble("massimo", "massimo");
+			variabili.addDouble("valore", "valore");
+		}
+		return variabili;
+	}
+	
+	@Override
+	public String toString() {
+		return "VoceDiListinoCorriereScaglioniRipetuti [intervallo=" + intervallo + ", minimo=" + minimo + ", massimo=" + massimo + ", valore=" + valore + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((idVoce == null) ? 0 : idVoce.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VoceDiListinoCorriereScaglioniRipetuti other = (VoceDiListinoCorriereScaglioniRipetuti) obj;
+		if (idVoce == null) {
+			if (other.idVoce != null)
+				return false;
+		} else if (!idVoce.equals(other.idVoce))
+			return false;
+		return true;
+	}
+
+	public Integer getIdVoce() {
+		return idVoce;
+	}
+
+	public void setIdVoce(Integer id) {
+		this.idVoce = id;
+	}
+
+	public Double getIntervallo() {
+		return intervallo;
+	}
+
+	public void setIntervallo(Double intervallo) {
+		this.intervallo = intervallo;
+	}
+
+	public Double getMinimo() {
+		return minimo;
+	}
+
+	public void setMinimo(Double minimo) {
+		this.minimo = minimo;
+	}
+
+	public Double getMassimo() {
+		return massimo;
+	}
+
+	public void setMassimo(Double massimo) {
+		this.massimo = massimo;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+	
+}

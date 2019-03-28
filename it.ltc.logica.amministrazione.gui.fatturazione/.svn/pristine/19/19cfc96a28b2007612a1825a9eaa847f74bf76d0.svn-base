@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_8FrEIFwNEeeziNj7rRLOlw" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_gk0hwFwOEeeziNj7rRLOlw" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.funzionefatturazione" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.FunzioneFatturazionePart" label="Funzione - Fatturazione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/sacco_soldi_16x16.png" tooltip="Qui puoi fatturare."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_wgRR0FwOEeeziNj7rRLOlw" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_ywYTQFwOEeeziNj7rRLOlw" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.fatturazione" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.FatturazionePart" label="Fatturazione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/sacco_soldi_16x16.png" tooltip="Qui puoi fatturare"/>
+  </fragments>
+</fragment:ModelFragments>

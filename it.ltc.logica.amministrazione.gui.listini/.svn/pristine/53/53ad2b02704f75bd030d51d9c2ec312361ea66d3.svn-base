@@ -1,0 +1,148 @@
+package it.ltc.logica.amministrazione.gui.listini.dialogs;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.amministrazione.gui.composite.CompositeVoceListino;
+import it.ltc.logica.amministrazione.gui.composite.CompositeVoceScaglioniRipetuti;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoScaglioniRipetuti;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.dialog.DialogModel;
+
+public class ProprietaVoceListinoCommessaScaglioniRipetuti extends DialogModel<VoceDiListino> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino cliente a scaglioni ripetuti";
+	
+	private ListiniClientiController controller;
+	
+	private final VoceDiListino voce;
+	private final VoceDiListinoScaglioniRipetuti voceScaglioni;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceScaglioniRipetuti compositeScaglioni;
+	
+	private final boolean permessoGestione;
+
+	public ProprietaVoceListinoCommessaScaglioniRipetuti(VoceDiListino voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		controller = ListiniClientiController.getInstance();
+		voce = voceDiListino;
+		voceScaglioni = controller.getVoceScaglioniRipetuti(voce);
+		permessoGestione = permesso;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.Tipo.LOGISTICA);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeVoce.enableInputElements(permessoGestione);
+		addChild(compositeVoce);
+		
+		compositeScaglioni = new CompositeVoceScaglioniRipetuti(container, SWT.NONE, permessoGestione);
+		compositeScaglioni.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeScaglioni.enableInputElements(permessoGestione);
+		addChild(compositeScaglioni);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyScaglioni = compositeScaglioni.isDirty();
+		return modifyVoce || modifyScaglioni;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		String descrizione = voce.getDescrizione();
+		Integer ambito = voce.getIdsottoAmbito();
+		compositeVoce.setNome(nome);
+		compositeVoce.setDescrizione(descrizione);
+		SottoAmbitoFattura ambitoDiTrasporto = ControllerAmbitiFatturazione.getInstance().getSottoAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		String valoreAmbito = voce.getValoreSottoAmbito();
+		if (valoreAmbito != null)
+			compositeVoce.setValoreAmbito(valoreAmbito);
+		String tipo = voce.getStrategia(); //voceScaglioni.getTipo();
+		Double intervallo = voceScaglioni.getIntervallo();
+		Double valore = voceScaglioni.getValore();
+		Double minimo = voceScaglioni.getMinimo();
+		Double massimo = voceScaglioni.getMassimo();
+		compositeScaglioni.setTipo(tipo);
+		compositeScaglioni.setIntervallo(intervallo);
+		compositeScaglioni.setValore(valore);
+		compositeScaglioni.setMinimo(minimo);
+		compositeScaglioni.setMassimo(massimo);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		Integer ambito = compositeVoce.getAmbito().getId();
+		voce.setIdsottoAmbito(ambito);
+		String valoreAmbito = compositeVoce.getValoreAmbito();
+		if (!valoreAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreAmbito);
+		String tipo = compositeScaglioni.getTipo();
+		voce.setStrategia(tipo);
+		//voceScaglioni.setTipo(tipo);
+		Double intervallo = compositeScaglioni.getIntervallo();
+		voceScaglioni.setIntervallo(intervallo);
+		Double valore = compositeScaglioni.getValore();
+		voceScaglioni.setValore(valore);
+		Double minimo = compositeScaglioni.getMinimo();
+		voceScaglioni.setMinimo(minimo);
+		Double massimo = compositeScaglioni.getMassimo();
+		voceScaglioni.setMassimo(massimo);	
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoScaglioniRipetuti = voceScaglioni.validate();
+		errors.addAll(esitoScaglioniRipetuti.getMessages());
+		return errors;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoceDiListino(voce);
+		boolean updateScaglioni = controller.aggiornaVoceDiListinoScaglioniRipetuti(voceScaglioni);
+		boolean update = updateVoce && updateScaglioni;
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	public VoceDiListino createNewModel() {
+		VoceDiListino listino = new VoceDiListino();
+		return listino;
+	}
+
+}

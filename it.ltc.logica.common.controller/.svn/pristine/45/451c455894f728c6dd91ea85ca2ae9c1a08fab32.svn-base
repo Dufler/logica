@@ -1,0 +1,281 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.common.controller.fatturazione.documento.ProcessoCaricamentoDatiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.documento.RealizzatoreDocumentoDiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.documento.TrasportiExcel;
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDato;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerDocumentiDiFatturazione {
+	
+	private static final String titleDocumenti = "Documenti di Fatturazione";
+	private static final String resourceDocumenti = "documentifatturazione";
+	
+	private static final String titleVoci = "Voci di Fatturazione";
+	private static final String resourceVoci = "vocifatturazione";
+	
+	private static ControllerDocumentiDiFatturazione instance;
+	
+	private final HashMap<Integer, DocumentoFattura> documenti;
+	
+	private ControllerDocumentiDiFatturazione() {
+		documenti = new HashMap<>();
+		caricaDati();
+	}
+	
+	public static ControllerDocumentiDiFatturazione getInstance() {
+		if (instance == null) {
+			instance = new ControllerDocumentiDiFatturazione();
+		}
+		return instance;
+	}
+	
+	public void produciDocumentoPDF(String path, int idDocumento, boolean bozza) {
+		ProcessoCaricamentoDatiFatturazione processo = new ProcessoCaricamentoDatiFatturazione(path, idDocumento, bozza);
+		DialogProgresso dialog = new DialogProgresso("Generazione Fattura", false);
+		boolean esito = dialog.esegui(processo);
+		if (esito) {
+			DialogMessaggio.openInformation("Esportazione completata", "Esportazione completata!\r\nE' stato generato il file nel percorso selezionato");
+		} else {
+			DialogMessaggio.openError("Errore nella esportazione", "Non \u00E8 stato possibile esportare i risultati.");
+		}
+	}
+	
+	public RealizzatoreDocumentoDiFatturazione getRealizzatore(AmbitoFattura modello) {
+		return new TrasportiExcel();
+		//return new TrasportiPDF(); //FIXME - Cambiare sul PDF appena abbiamo il via libera per tutti gli ambiti di fatturazione.
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoDocumenti processo = new ProcessoCaricamentoDocumenti();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		if (processo.getEsito()) {
+			documenti.clear();
+			for (DocumentoFattura documento : processo.getLista())
+				documenti.put(documento.getId(), documento);
+		}
+	}
+	
+	public synchronized List<VoceFattura> caricaVociPerDocumento(DocumentoFattura documento) {
+		ProcessoCaricamentoVoci processo = new ProcessoCaricamentoVoci(documento.getId());
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		return processo.getLista();
+	}
+	
+	public Collection<DocumentoFattura> getDocumenti() {
+		return documenti.values();
+	}
+	
+	public List<DocumentoFattura> getDocumentiPerAmbito(int idAmbito) {
+		List<DocumentoFattura> fatture = new LinkedList<>();
+		for (DocumentoFattura documento : getDocumenti()) {
+			if (documento.getIdAmbito() == idAmbito)
+				fatture.add(documento);
+		}
+		return fatture;
+	}
+	
+	public DocumentoFattura getDocumento(int id) {
+		return documenti.get(id);
+	}
+	
+	public int getProssimoNumeroFatturaPerAnno(int anno) {
+		int max = 0;
+		for (DocumentoFattura documento : getDocumenti()) {
+			if (documento.getAnnoFattura() == anno && documento.getNumeroFattura() > max)
+				max = documento.getNumeroFattura();
+		}
+		max += 1;
+		return max;
+	}
+	
+	public boolean inserisci(DocumentoFattura documento) {
+		ProcessoInserimentoDocumento processo = new ProcessoInserimentoDocumento(documento);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			DocumentoFattura fattura = processo.getObject();
+			documenti.put(fattura.getId(), fattura);
+			//Aggiorno l'ID per quelli che non hanno ancora il riferimento
+			documento.setId(fattura.getId());
+		}
+		return esito;
+	}
+	
+	public boolean aggiorna(DocumentoFattura documento) {
+		ProcessoAggiornamentoDocumento processo = new ProcessoAggiornamentoDocumento(documento);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (!esito) {
+			ProcessoRefreshDocumento processoRefresh = new ProcessoRefreshDocumento(documento.getId());
+			DialogProgresso dialogRefresh = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialogRefresh.esegui(processoRefresh);
+			DocumentoFattura fatturaOriginale = processoRefresh.getObject();
+			if (fatturaOriginale != null) {
+				documenti.put(fatturaOriginale.getId(), fatturaOriginale);
+			}
+		}
+		return esito;
+	}
+	
+	public boolean elimina(DocumentoFattura documento) {
+		ProcessoEliminazioneDocumento processo = new ProcessoEliminazioneDocumento(documento);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			documenti.remove(documento.getId());
+		}
+		return esito;
+	}
+	
+	public VoceFattura getVoce(int idVoce) {
+		ProcessoRefreshVoce processo = new ProcessoRefreshVoce(idVoce);
+		VoceFattura voce;
+		try {
+			processo.eseguiOperazioni();
+			voce = processo.getObject();
+		} catch (Exception e) {
+			voce = null;
+			e.printStackTrace();
+		}
+		return voce;
+	}
+	
+	public boolean inserisciVoce(VoceFattura voce) {
+		ProcessoInserimentoVoce processo = new ProcessoInserimentoVoce(voce);
+		boolean esito;
+		try {
+			processo.eseguiOperazioni();
+			esito = processo.getEsito();
+		} catch (Exception e) {
+			esito = false;
+			e.printStackTrace();
+		}
+		return esito;
+	}
+	
+	public boolean aggiornaVoce(VoceFattura voce) {
+		ProcessoAggiornamentoVoce processo = new ProcessoAggiornamentoVoce(voce);
+		boolean esito;
+		try {
+			processo.eseguiOperazioni();
+			esito = processo.getEsito();
+		} catch (Exception e) {
+			esito = false;
+			e.printStackTrace();
+		}
+		return esito;
+	}
+	
+	public boolean eliminaVoce(VoceFattura voce) {
+		ProcessoEliminazioneVoce processo = new ProcessoEliminazioneVoce(voce);
+		boolean esito;
+		try {
+			processo.eseguiOperazioni();
+			esito = processo.getEsito();
+		} catch (Exception e) {
+			esito = false;
+			e.printStackTrace();
+		}
+		return esito;
+	}
+	
+	private class ProcessoCaricamentoDocumenti extends ProcessoCaricamentoDati<DocumentoFattura> {
+
+		public ProcessoCaricamentoDocumenti() {
+			super(titleDocumenti, resourceDocumenti, DocumentoFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoRefreshDocumento extends ProcessoCaricamentoDato<DocumentoFattura> {
+
+		public ProcessoRefreshDocumento(int id) {
+			super(titleDocumenti, resourceDocumenti + "/" + id, DocumentoFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoDocumento extends ProcessoInserimentoDati<DocumentoFattura> {
+
+		public ProcessoInserimentoDocumento(DocumentoFattura object) {
+			super(titleDocumenti, resourceDocumenti, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoDocumento extends ProcessoAggiornamentoDati<DocumentoFattura> {
+
+		public ProcessoAggiornamentoDocumento(DocumentoFattura object) {
+			super(titleDocumenti, resourceDocumenti, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazioneDocumento extends ProcessoCancellazioneDati<DocumentoFattura> {
+
+		public ProcessoEliminazioneDocumento(DocumentoFattura object) {
+			super(titleDocumenti, resourceDocumenti, object);
+		}
+		
+	}
+	
+	private class ProcessoCaricamentoVoci extends ProcessoCaricamentoDati<VoceFattura> {
+
+		public ProcessoCaricamentoVoci(int idDocumento) {
+			super(titleVoci, resourceVoci + "/documento/" + idDocumento, VoceFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoRefreshVoce extends ProcessoCaricamentoDato<VoceFattura> {
+
+		public ProcessoRefreshVoce(int idVoce) {
+			super(titleVoci, resourceVoci + "/voce/" + idVoce, VoceFattura.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoVoce extends ProcessoInserimentoDati<VoceFattura> {
+
+		public ProcessoInserimentoVoce(VoceFattura object) {
+			super(titleVoci, resourceVoci, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoVoce extends ProcessoAggiornamentoDati<VoceFattura> {
+
+		public ProcessoAggiornamentoVoce(VoceFattura object) {
+			super(titleVoci, resourceVoci, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazioneVoce extends ProcessoCancellazioneDati<VoceFattura> {
+
+		public ProcessoEliminazioneVoce(VoceFattura object) {
+			super(titleVoci, resourceVoci, object);
+		}
+		
+	}
+
+}

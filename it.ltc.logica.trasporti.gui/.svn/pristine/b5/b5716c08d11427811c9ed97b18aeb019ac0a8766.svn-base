@@ -1,0 +1,144 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeVoceListino extends Gruppo {
+	
+	private static final String titolo = "Propriet\u00E0  - Voce di Listino";
+	
+	public enum Tipo {
+		
+		CORRIERE(4),
+		CLIENTE(1);
+		
+		private final int idAmbito;
+		
+		private Tipo(int idAmbito) {
+			this.idAmbito = idAmbito;
+		}
+
+		public int getIdAmbito() {
+			return idAmbito;
+		}
+	}
+	
+	private TextForString textNome;
+	private TextForString textDescrizione;
+	private Label lblAmbito;
+	private ComboBox<SottoAmbitoFattura> comboAmbito;
+	private Label lblValoreAmbito;
+	private TextForString textValoreAmbito;
+	
+	public CompositeVoceListino(Composite parent, int style, Tipo type) {
+		super(parent, style, titolo);
+		setAmbiti(type);
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		lblAmbito = new Label(this, SWT.NONE);
+		lblAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblAmbito.setText("Ambito: ");
+		
+		comboAmbito = new ComboBox<SottoAmbitoFattura>(this);
+		comboAmbito.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selezioneAmbito();
+			}
+		});
+		comboAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblValoreAmbito = new Label(this, SWT.NONE);
+		lblValoreAmbito.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblValoreAmbito.setText("Valore Ambito: ");
+		
+		textValoreAmbito = new TextForString(this, SWT.BORDER);
+		textValoreAmbito.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textValoreAmbito.setRequired(false);
+		textValoreAmbito.setEditable(false);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblNome = new Label(this, SWT.NONE);
+		lblNome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNome.setText("Nome: ");
+		
+		textNome = new TextForString(this, SWT.BORDER);
+		textNome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDescrizione = new Label(this, SWT.NONE);
+		lblDescrizione.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false, 1, 1));
+		lblDescrizione.setText("Descrizione: ");
+		
+		textDescrizione = new TextForString(this, SWT.BORDER);
+		textDescrizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		textDescrizione.setRequired(false);
+		
+		Label lbl = new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		lbl.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+	}
+	
+	private void setAmbiti(Tipo type) {
+		comboAmbito.setItems(SottoAmbitoFattura.getSottoAmbitiPerAmbito(type.getIdAmbito()));
+	}
+	
+	private void selezioneAmbito() {
+		SottoAmbitoFattura ambito = comboAmbito.getSelectedValue();
+		boolean valoreAmbitoInseribile = ambito != null && ambito.getValoreAmmesso();
+		textValoreAmbito.setEditable(valoreAmbitoInseribile);
+		textValoreAmbito.setRequired(valoreAmbitoInseribile);
+	}
+	
+	public String getNome() {
+		return textNome.getText();
+	}
+	
+	public void setNome(String nome) {
+		textNome.setText(nome);
+	}
+	
+	public String getDescrizione() {
+		return textDescrizione.getText();
+	}
+	
+	public void setDescrizione(String descrizione) {
+		textDescrizione.setText(descrizione);
+	}
+	
+	public SottoAmbitoFattura getAmbito() {
+		return comboAmbito.getSelectedValue();
+	}
+	
+	public void setAmbito(SottoAmbitoFattura ambito) {
+		comboAmbito.setSelectedValue(ambito);
+		selezioneAmbito();
+	}
+	
+	public String getValoreAmbito() {
+		return textValoreAmbito.getText();
+	}
+	
+	public void setValoreAmbito(String value) {
+		textValoreAmbito.setText(value);
+	}
+
+}

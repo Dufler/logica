@@ -1,0 +1,36 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class ConsegnaAiPrivati extends IAmbitoTrasporto {
+	
+	public ConsegnaAiPrivati(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static final String CODICE = "CONSEGNA_A_PRIVATI";
+	public static final int ID = 3;
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = destinazione.getConsegnaPrivato();
+		return applicabile;
+	}
+
+//	@Override
+//	public double getValore(SpedizioneModel spedizione, MVoceDiListino<SpedizioneModel> voce) {
+//		double valore = 0;
+//		if (isApplicabile(spedizione))
+//			valore += 1;
+//		return valore;
+//	}
+	
+	@Override
+	public Tipo getTipo() {
+		return Tipo.NOLO_EXTRA;
+	}
+
+}

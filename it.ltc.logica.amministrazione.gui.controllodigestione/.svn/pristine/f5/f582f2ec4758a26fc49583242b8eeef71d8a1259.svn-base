@@ -1,0 +1,38 @@
+package it.ltc.logica.amministrazione.gui.controllodigestione.controller;
+
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class SpedizioniCDGController {
+	
+	private static SpedizioniCDGController instance;
+	
+	private final EntityManager<Spedizione> manager;
+	
+	private List<Spedizione> spedizioni;
+	
+	private SpedizioniCDGController() {
+		manager = new EntityManager<Spedizione>(Spedizione.class, ConfigurationManager.getDefault());
+		caricaDati();
+	}
+	
+	public static SpedizioniCDGController getInstance() {
+		if (instance == null) {
+			instance = new SpedizioniCDGController();
+		}
+		return instance;
+	}
+	
+	private void caricaDati() {
+		String query = "SELECT * FROM spedizione WHERE costo IS NOT NULL AND ricavo IS NOT NULL";
+		spedizioni = manager.executeQuery(query);
+	}
+
+	public List<Spedizione> getSpedizioni() {
+		return spedizioni;
+	}
+
+}

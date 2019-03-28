@@ -1,0 +1,95 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.Cap;
+import it.ltc.logica.database.model.Provincia;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeCap;
+
+public class DialogCap extends DialogModel<Cap> {
+	
+	private final static String title = "CAP";
+	
+	private CompositeCap compositeCap;
+	private final Cap cap;
+	private final String capIniziale;
+	private final String localitaIniziale;
+	
+	public DialogCap(Cap c) {
+		super(title, c);
+		cap = getValore();
+		if (c != null) {
+			capIniziale = c.getCap();
+			localitaIniziale = c.getLocalita();
+		} else {
+			capIniziale = null;
+			localitaIniziale = null;
+		}
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeCap = new CompositeCap(container, SWT.NONE);
+		compositeCap.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeCap);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return compositeCap.isDirty();
+	}
+
+	@Override
+	public void loadModel() {
+		compositeCap.setCAP(cap.getCap());
+		compositeCap.setLocalita(cap.getLocalita());
+		compositeCap.setProvincia(Provincia.getProvincia(cap.getProvincia()));
+		compositeCap.setOre10(cap.getTntOre10());
+		compositeCap.setOre12(cap.getTntOre12());
+		compositeCap.setDisagiato(cap.getBrtDisagiate());
+		compositeCap.setIsola(cap.getBrtIsole());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		cap.setCap(compositeCap.getCAP());
+		cap.setLocalita(compositeCap.getLocalita());
+		cap.setProvincia(compositeCap.getProvincia().getSigla());
+		cap.setRegione(compositeCap.getProvincia().getRegione());
+		cap.setBrtDisagiate(compositeCap.getDisagiato());
+		cap.setBrtIsole(compositeCap.getIsola());
+		cap.setTntOre10(compositeCap.getOre10());
+		cap.setTntOre12(compositeCap.getOre12());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ValidationResult esito = cap.validate();
+		return esito.getMessages();
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = Cap.update(cap, capIniziale, localitaIniziale);
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		boolean insert = Cap.insert(cap);
+		return insert;
+	}
+
+	@Override
+	public Cap createNewModel() {
+		Cap cap = new Cap();
+		return cap;
+	}
+
+}

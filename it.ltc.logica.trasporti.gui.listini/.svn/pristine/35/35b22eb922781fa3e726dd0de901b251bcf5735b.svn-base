@@ -1,0 +1,46 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.corriere;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.VoceDiListinoCorrierePercentuale;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+import it.ltc.logica.trasporti.gui.composite.CompositeVocePercentuale;
+
+public class NuovaVoceListinoCorrierePercentualeWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino corriere - Algoritmo";
+	private static final String descrizione = "Specifica il valore percentuale.";
+	
+	private CompositeVocePercentuale compositePercentuale;
+	
+	private ListiniCorrieriController controller;
+	private VoceDiListinoCorrierePercentuale vocePercentuale;
+	
+	public NuovaVoceListinoCorrierePercentualeWizardPage() {
+		super(titolo, descrizione);
+		vocePercentuale = new VoceDiListinoCorrierePercentuale();
+		controller = ListiniCorrieriController.getInstance();
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositePercentuale = new CompositeVocePercentuale(container, SWT.NONE);
+		compositePercentuale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositePercentuale);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		vocePercentuale.setValore(compositePercentuale.getValore());
+		vocePercentuale.setTipo(compositePercentuale.getTipo());
+		controller.setPercentuale(vocePercentuale);
+		
+	}
+	
+}

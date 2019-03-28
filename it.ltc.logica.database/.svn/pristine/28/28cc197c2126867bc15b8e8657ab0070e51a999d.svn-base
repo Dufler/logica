@@ -1,0 +1,254 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.database.orm.ValidEntity;
+import it.ltc.logica.database.orm.ValidationResult;
+
+public class Cap extends Entity implements ValidEntity {
+	
+	@JsonIgnore
+	public static final String NOME_TABELLA = "cap";
+	@JsonIgnore
+	private static final ColumnList variabili = new ColumnList();
+	
+	@JsonIgnore
+	private static final String regex = "^\\d{5}";
+	
+	@JsonIgnore
+	private static final List<Cap> listaCap = new ArrayList<Cap>();
+	@JsonIgnore
+	private static final List<Cap> listaCapIsole = new ArrayList<Cap>();
+	@JsonIgnore
+	private static final HashMap<String, Cap> mappaCap = new HashMap<String, Cap>();
+	@JsonIgnore
+	private static final HashMap<String, Cap> mappaCapLocalita = new HashMap<String, Cap>();
+	@JsonIgnore
+	private static final EntityManager<Cap> manager = new EntityManager<Cap>(Cap.class, ConfigurationManager.getDefault());
+	
+	private String cap;
+	private String localita;
+	private String provincia;
+	private String regione;
+	private Boolean tntOre10;
+	private Boolean tntOre12;
+	private Boolean brtDisagiate;
+	private Boolean brtIsole;
+	private Boolean brtZtl;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("cap", "cap", true, false);
+			variabili.addString("localita", "localita", true, false);
+			variabili.addString("provincia", "provincia");
+			variabili.addString("regione", "regione");
+			variabili.addBoolean("tnt_ore_dieci", "tntOre10", false, true);
+			variabili.addBoolean("tnt_ore_dodici", "tntOre12", false, true);
+			variabili.addBoolean("brt_disagiate", "brtDisagiate", false, true);
+			variabili.addBoolean("brt_isole", "brtIsole", false, true);
+			variabili.addBoolean("brt_ztl", "brtZtl", false, true);
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return cap + " - " + localita;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cap == null) ? 0 : cap.hashCode());
+		result = prime * result + ((localita == null) ? 0 : localita.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cap other = (Cap) obj;
+		if (cap == null) {
+			if (other.cap != null)
+				return false;
+		} else if (!cap.equals(other.cap))
+			return false;
+		if (localita == null) {
+			if (other.localita != null)
+				return false;
+		} else if (!localita.equals(other.localita))
+			return false;
+		return true;
+	}
+
+	public static List<Cap> getListaCap() {
+		if (listaCap.isEmpty()) {
+			listaCap.addAll(manager.getEntities());
+		}
+		return listaCap;
+	}
+	
+	public static List<Cap> getIsole() {
+		if (listaCapIsole.isEmpty()) {
+			for (Cap cap : getListaCap()) {
+				if (cap.getBrtIsole())
+					listaCapIsole.add(cap);
+			}
+		}
+		return listaCapIsole;
+	}
+	
+	public static Cap getInfoGeneraliCap(String cap) {
+		if (mappaCap.isEmpty()) {
+			for (Cap entity : getListaCap()) {
+				String key = entity.getCap();
+				mappaCap.put(key, entity);
+			}
+		}
+		return mappaCap.get(cap);
+	}
+	
+	public static Cap getInfoCap(String cap, String localita) {
+		String chiave = cap + "-" + localita;
+		if (mappaCapLocalita.isEmpty()) {
+			for (Cap entity : getListaCap()) {
+				String key = entity.getCap() + "-" + entity.getLocalita();
+				mappaCapLocalita.put(key, entity);
+			}
+		}
+		return mappaCapLocalita.get(chiave);
+	}
+	
+	public static boolean insert(Cap cap) {
+		boolean inserimento = manager.insert(cap);
+		if (inserimento) {
+			String key = cap.getCap() + "-" + cap.getLocalita();
+			listaCap.add(cap);
+			mappaCap.put(cap.getCap(), cap);
+			mappaCapLocalita.put(key, cap);
+			if (cap.getBrtIsole())
+				listaCapIsole.add(cap);
+		}
+		return inserimento;
+	}
+	
+	public static boolean update(Cap c, String cap, String localita) {
+		Cap condition = new Cap();
+		condition.setCap(cap);
+		condition.setLocalita(localita);
+		int rows = manager.update(c, condition);
+		boolean update = (rows == 1);
+		if (update) {
+			listaCapIsole.remove(c);
+			if (c.getBrtIsole())
+				listaCapIsole.add(c);
+		}
+		return update;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getLocalita() {
+		return localita;
+	}
+
+	public void setLocalita(String localita) {
+		this.localita = localita;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getRegione() {
+		return regione;
+	}
+
+	public void setRegione(String regione) {
+		this.regione = regione;
+	}
+
+	public Boolean getTntOre10() {
+		return tntOre10;
+	}
+
+	public void setTntOre10(Boolean tntOre10) {
+		this.tntOre10 = tntOre10;
+	}
+
+	public Boolean getTntOre12() {
+		return tntOre12;
+	}
+
+	public void setTntOre12(Boolean tntOre12) {
+		this.tntOre12 = tntOre12;
+	}
+
+	public Boolean getBrtDisagiate() {
+		return brtDisagiate;
+	}
+
+	public void setBrtDisagiate(Boolean brtDisagiate) {
+		this.brtDisagiate = brtDisagiate;
+	}
+
+	public Boolean getBrtIsole() {
+		return brtIsole;
+	}
+
+	public void setBrtIsole(Boolean brtIsole) {
+		this.brtIsole = brtIsole;
+	}
+
+	public Boolean getBrtZtl() {
+		return brtZtl;
+	}
+
+	public void setBrtZtl(Boolean brtZtl) {
+		this.brtZtl = brtZtl;
+	}
+
+	@Override
+	public ValidationResult validate() {
+		ValidationResult esito = ValidationResult.getValidResult();
+		if (cap == null || !cap.matches(regex)) {
+			esito.setValid(false);
+			esito.addMessage("Il cap non \u00E8 valido. Es. di cap corretto: '12345'");
+		}
+		if (localita == null || localita.isEmpty()) {
+			esito.setValid(false);
+			esito.addMessage("Bisogna inserire una localit\u00E0.");
+		}
+		return esito;
+	}
+
+}

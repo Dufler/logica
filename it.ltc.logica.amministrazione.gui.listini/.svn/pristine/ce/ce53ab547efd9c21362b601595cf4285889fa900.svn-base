@@ -1,0 +1,31 @@
+package it.ltc.logica.amministrazione.gui.listini.wizards;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.gui.wizard.WizardConFinale;
+
+public class NuovoListinoCommessaWizard extends WizardConFinale {
+	
+	private ListiniClientiController controller;
+	
+	NuovoListinoCommessaProprietaWizardPage paginaProprieta;
+
+	public NuovoListinoCommessaWizard() {
+		setWindowTitle("Nuovo listino cliente");
+		controller = ListiniClientiController.getInstance();
+		paginaProprieta = new NuovoListinoCommessaProprietaWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+	}
+
+	@Override
+	public boolean finisci() {
+		ListinoCommessa listino = paginaProprieta.getListino();
+		boolean insert = controller.creaNuovoListino(listino);
+		return insert;
+	}
+
+}

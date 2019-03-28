@@ -1,0 +1,83 @@
+package it.ltc.logica.database.configuration;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+public class MySQLDataSource extends DBMS {
+	
+	private final String dateFormat = "yyyy-MM-dd HH:mm:ss";
+	
+	private DataSource ds;
+	private Connection transactionalConnection;
+
+	protected MySQLDataSource(Database db) {
+		super(db);
+		try {
+			Context ctx = new InitialContext();
+			ds = (DataSource) ctx.lookup(db.getNomeDB());
+			transactionalConnection = null;
+		} catch(NamingException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public Connection getConnection() {
+		Connection connection = null;
+		try {
+			connection = ds.getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return connection;
+	}
+
+	@Override
+	public Connection getTransactionConnection() {
+		try {
+			if (!(checkConnectionValidity(transactionalConnection))) {
+				transactionalConnection = ds.getConnection();
+				transactionalConnection.setAutoCommit(false);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			transactionalConnection = null;
+		}
+		return transactionalConnection;
+	}
+
+	@Override
+	public String getDefaultDateFormat() {
+		return dateFormat;
+	}
+	
+	public void finalize() {
+		ds = null;
+	}
+	
+	@Override
+	public DBMSType getType() {
+		return DBMSType.MYSQLDS;
+	}
+	
+	@Override
+	public boolean checkConnectionValidity(Connection connection) {
+		boolean valid = true;
+		 try {
+			 if (connection == null || connection.isClosed() || !connection.isValid(1)) {
+				 valid = false;
+			 }
+		}
+		catch (SQLException e) {
+			valid = false;
+			e.printStackTrace();
+		}
+		return valid;
+	}
+
+}

@@ -1,0 +1,29 @@
+ 
+package it.ltc.logica.trasporti.gui.indirizzi.parts;
+
+import javax.inject.Inject;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.gui.elements.FunzionePart;
+
+public class FunzioneIndirizziPart extends FunzionePart {
+	
+	private static final String label = "CAP e Indirizzi";
+	private static final String tooltip = "Qui puoi gestire i CAP e gli indirizzi.";
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.indirizzi.part.indirizzi";
+	public static final String funzionePartID = "it.ltc.logica.trasporti.gui.indirizzi.part.funzioneindirizzi";
+	
+	@Inject
+	public FunzioneIndirizziPart() {
+		super(label, tooltip, funzionePartID, partID);
+	}
+
+	@Override
+	public boolean isVisible() {
+		boolean visible = ControllerUtente.getInstance().isAllowed(Permessi.CAP.getID());
+		return visible;
+	}
+	
+}

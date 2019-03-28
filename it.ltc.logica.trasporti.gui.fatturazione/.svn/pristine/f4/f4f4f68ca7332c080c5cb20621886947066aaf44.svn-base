@@ -1,0 +1,37 @@
+package it.ltc.logica.trasporti.gui.fatturazione.wizards;
+
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.Wizard;
+
+public class FatturazioneWizard extends Wizard {
+	
+	private final SelezioneDatiFatturazioneWizardPage selezionePage;
+	private final EsitoFatturazioneWizardPage esitoPage;
+	
+	public FatturazioneWizard() {
+		setWindowTitle("Fatturazione");
+		selezionePage = new SelezioneDatiFatturazioneWizardPage();
+		esitoPage = new EsitoFatturazioneWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(selezionePage);
+		addPage(esitoPage);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage page) {
+		IWizardPage nextPage = null;
+		if (selezionePage.equals(page)) {
+			nextPage = esitoPage;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public boolean performFinish() {
+		return false;
+	}
+
+}

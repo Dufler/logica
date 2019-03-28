@@ -1,0 +1,145 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.decoration.Immagine;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+
+public class EtichettatoreSpedizioniModel extends Etichettatore<SpedizioneModel> {
+
+	private final Integer idListino;
+	
+	private final SimpleDateFormat sdf;
+	private final SpedizioniController controllerSpedizioni;
+	
+	public EtichettatoreSpedizioniModel() {
+		idListino = null;
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	public EtichettatoreSpedizioniModel(Integer id) {
+		idListino = id;
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		controllerSpedizioni = SpedizioniController.getInstance();
+	}
+	
+	@Override
+	public String getTesto(SpedizioneModel oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto.getSpedizione()); break;
+			case 1 : testo = getDestinatario(oggetto.getSpedizione()); break;
+			case 2 : testo = getLocalita(oggetto.getSpedizione()); break;
+			case 3 : testo = oggetto.getSpedizione().getRiferimentoCliente(); break;
+			case 4 : case  5 : testo = getTotale(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(SpedizioneModel oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getData(oggetto.getSpedizione()); break;
+			case 1 : case 2: testo = getToolTipDestinatario(oggetto.getSpedizione()); break;
+			case 3 : testo = oggetto.getSpedizione().getRiferimentoCliente(); break;
+			case 4 : case  5 : testo = getTooltipTotale(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+
+	@Override
+	public Image getIcona(SpedizioneModel oggetto, int colonna) {
+		Image image = null;
+		if (colonna == 0 && oggetto.isDatiPerCalcoloCompleti()) {
+			image = Immagine.RED_MARK_12X20.getImage();
+		} else if (colonna == 4) {
+			Calcolo calcolo = oggetto.getCalcolo(idListino);
+			if (calcolo != null && calcolo.isRicavoMaggiore()) {
+				image = Immagine.MONETE_16X16.getImage();
+			}
+		} else if (colonna == 5) {
+			Calcolo calcolo = oggetto.getCalcolo(idListino);
+			if (calcolo != null && calcolo.isCostoMinore()) {
+				image = Immagine.SALVADANAIO_16X16.getImage();
+			}
+		}
+		return image;
+	}
+	
+	private String getData(Spedizione spedizione) {
+		String testo;
+		Date data = spedizione.getData();
+		if (data != null)
+			testo = sdf.format(data);
+		else
+			testo = "Non ancora partita.";
+		return testo;
+	}
+	
+	public String getDestinatario(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		return ragioneSociale;
+	}
+	
+	public String getLocalita(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia != null && !provincia.isEmpty() && !"XX".equalsIgnoreCase(provincia))
+			localita += " (" + provincia + ")";
+		return localita;
+	}
+	
+	public String getToolTipDestinatario(Spedizione spedizione) {
+		Integer idDestinatario = spedizione.getIdIndirizzoDestinazione();
+		Indirizzo destinatario = controllerSpedizioni.getIndirizzo(idDestinatario);
+		String ragioneSociale = destinatario.getRagioneSociale();
+		String indirizzo = destinatario.getIndirizzo();
+		String localita = destinatario.getLocalita();
+		String provincia = destinatario.getProvincia();
+		if (provincia.equals("XX"))
+			provincia = " " + destinatario.getNazione();
+		else
+			provincia = " (" + provincia +")";
+		String testo = ragioneSociale + "\r\n" + indirizzo + "\r\n" + localita + provincia;
+		return testo;
+	}
+	
+	private String getTotale(SpedizioneModel oggetto) {
+		Calcolo calcolo = oggetto.getCalcolo(idListino);
+		double totale = calcolo != null ? calcolo.getTotale() : 0;
+		String testo = Decorator.getEuroValue(totale);
+		return testo;
+	}
+	
+	private String getTooltipTotale(SpedizioneModel oggetto) {
+		String testo = "";
+		Calcolo calcolo = oggetto.getCalcolo(idListino);
+		if (calcolo != null) {
+			for (VoceCalcolata voce : calcolo.getVoci()) {
+				String nome = voce.getNomeVoce();
+				String costo = Decorator.getEuroValue(voce.getCosto());
+				testo += nome + ": " + costo + "\r\n";
+			}
+		}
+		return testo;
+	}
+
+}

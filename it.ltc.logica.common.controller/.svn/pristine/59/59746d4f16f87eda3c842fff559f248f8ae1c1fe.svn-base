@@ -1,0 +1,79 @@
+package it.ltc.logica.common.controller.prodotti;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.orm.EntityManager;
+import it.ltc.logica.gui.container.DialogProgresso;
+
+public class ProdottiController {
+	
+	private static ProdottiController instance;
+	
+	private final EntityManager<Prodotto> managerProdotti;
+	
+	private final List<Prodotto> listaProdotti;
+	private final HashMap<Integer, Prodotto> prodotti;
+	
+	private ProdottiController() {
+		managerProdotti = new EntityManager<Prodotto>(Prodotto.class, ConfigurationManager.getDefault());
+		listaProdotti = new ArrayList<Prodotto>();
+		prodotti = new HashMap<Integer, Prodotto>();
+		caricaDati();
+	}
+	
+	public static ProdottiController getInstance() {
+		if (instance == null) {
+			instance = new ProdottiController();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		caricaProdotti();
+	}
+	
+	private void caricaProdotti() {
+		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+			@Override
+			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+				monitor.beginTask("Caricamento dei prodotti", -1);
+				//Svuoto le liste, se ci sono stati aggiornamenti sui dati posso così prenderli
+				prodotti.clear();
+				listaProdotti.clear();
+				//Carico tutto quello che trovo
+				List<Prodotto> lista = managerProdotti.getEntities();
+				for (Prodotto prodotto : lista) {
+					if (!prodotti.containsKey(prodotto.getId())) {
+						prodotti.put(prodotto.getId(), prodotto);
+						listaProdotti.add(prodotto);
+					}
+				}
+				monitor.done();
+			}
+		};
+
+		try {
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.run(true, true, runnable);
+		} catch (InvocationTargetException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public List<Prodotto> getProdotti() {
+		return listaProdotti;
+	}
+	
+	public Prodotto getProdotto(int id) {
+		return prodotti.get(id);
+	}
+
+}

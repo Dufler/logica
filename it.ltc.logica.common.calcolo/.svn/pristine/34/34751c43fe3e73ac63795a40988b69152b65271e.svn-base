@@ -1,0 +1,30 @@
+package it.ltc.logica.common.calcolo.algoritmi;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+
+public abstract class ModelDaCalcolare {
+
+	protected final HashMap<Integer, Calcolo> mappaCalcoli;
+	
+	public ModelDaCalcolare() {
+		mappaCalcoli = new HashMap<Integer, Calcolo>();
+	}
+	
+	protected void addCalcolo(Calcolo calcolo) {
+		mappaCalcoli.put(calcolo.getIdListino(), calcolo);
+	}
+	
+	protected Calcolo getCalcolo(Integer idListino) {
+		return mappaCalcoli.get(idListino);
+	}
+	
+	protected LinkedList<Calcolo> getCalcoli() {
+		LinkedList<Calcolo> lista = new LinkedList<Calcolo>();
+		for (Integer idListino : mappaCalcoli.keySet()) {
+			lista.add(mappaCalcoli.get(idListino));
+		}
+		return lista;
+	}
+
+}

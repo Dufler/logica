@@ -1,0 +1,169 @@
+package it.ltc.logica.gui.task;
+
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.ProgressIndicator;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+
+import it.ltc.logica.gui.dialog.DialogErrore;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+
+/**
+ * Questa classe genera una finestra con una progress bar
+ * Esempio di utilizzo:
+ * 
+ * <pre>
+ * 		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+ *			Override
+ *			public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+ *				monitor.beginTask("Nome del task", 100);
+ *				...
+ *				monitor.worked(1);
+ *				monitor.done();
+ *			}
+ *		};
+ *
+ *		try {
+ *			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+ *			dialog.run(true, true, runnable);
+ *		} catch (InvocationTargetException | InterruptedException e) {
+ *			e.printStackTrace();
+ *		}
+ * </pre>
+ * @author Damiano
+ *
+ */
+public class DialogProgresso extends ProgressMonitorDialog {
+
+	private static final String CANCEL_LABEL = "Annulla";
+	public static final String TITOLO_DEFAULT = "Operazione in corso";
+	private static int LABEL_DLUS = 21;
+	private static int BAR_DLUS = 9;
+	
+	private final String titolo;
+	
+	public DialogProgresso(String title) {
+		super(getMyShell());
+		titolo = title;
+		enableCancelButton = true;
+	}
+	
+//	private static Shell getMyShell() {
+//		Thread ct = Thread.currentThread();
+//		Display d = Display.findDisplay(ct);
+//		if (d == null)
+//			d = Display.getDefault();
+//		Shell s = d != null ? d.getActiveShell() : null;
+//		return s;
+//	}
+	
+	private static Shell getMyShell() {
+		Thread ct = Thread.currentThread();
+		Display d = Display.findDisplay(ct);
+		Shell s = d != null ? d.getActiveShell() : createNewDisplayAndShell();
+		return s;
+	}
+	
+	private static Shell createNewDisplayAndShell() {
+		Display display = new Display();
+		Shell shell = new Shell(display);
+		return shell;
+	}
+	
+//	private static Shell getAsyncShell() {
+//		ShellOpener so = new ShellOpener();
+//		//PlatformUI.getWorkbench().getDisplay().asyncExec(so);
+//		Display.getDefault().asyncExec(so);
+//		return so.getShell();
+//	}
+	
+	public DialogProgresso(String title, boolean canCancelOperation) {
+		super(null);
+		titolo = title;
+		enableCancelButton = canCancelOperation;
+	}
+	
+	@Override
+    protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(titolo);
+    }
+	
+	@Override
+	protected void createCancelButton(Composite parent) {
+		cancel = createButton(parent, IDialogConstants.CANCEL_ID, CANCEL_LABEL, true);
+		if (arrowCursor == null) {
+			arrowCursor = new Cursor(cancel.getDisplay(), SWT.CURSOR_ARROW);
+		}
+		cancel.setCursor(arrowCursor);
+		setOperationCancelButtonEnabled(enableCancelButton);
+	}
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		setMessage(TITOLO_DEFAULT, false);
+		createMessageArea(parent);
+		// Only set for backwards compatibility
+		taskLabel = messageLabel;
+		// progress indicator
+		progressIndicator = new ProgressIndicator(parent);
+		GridData gd = new GridData();
+		gd.heightHint = convertVerticalDLUsToPixels(BAR_DLUS);
+		gd.horizontalAlignment = GridData.FILL;
+		gd.grabExcessHorizontalSpace = true;
+		gd.horizontalSpan = 2;
+		progressIndicator.setLayoutData(gd);
+		// label showing current task
+		subTaskLabel = new Label(parent, SWT.LEFT | SWT.WRAP);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.heightHint = convertVerticalDLUsToPixels(LABEL_DLUS);
+		gd.horizontalSpan = 2;
+		subTaskLabel.setLayoutData(gd);
+		subTaskLabel.setFont(parent.getFont());
+		return parent;
+	}
+	
+	private void setMessage(String messageString, boolean force) {
+		// must not set null text in a label
+		message = messageString == null ? "" : messageString; //$NON-NLS-1$
+		if (messageLabel == null || messageLabel.isDisposed()) {
+			return;
+		}
+		if (force || messageLabel.isVisible()) {
+			messageLabel.setToolTipText(message);
+			messageLabel.setText(shortenText(message, messageLabel));
+		}
+	}
+	
+	public boolean esegui(Processo runnable) {
+		boolean eseguito = true;
+		try {
+			run(true, true, runnable.getRunnable());
+		} catch (InvocationTargetException e) {
+			eseguito = false;
+			DialogErrore.openError("Errore nell'esecuzione del task", e.getTargetException().getMessage(), e.getTargetException());
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			DialogMessaggio.openError("Procedura interrotta", "La procedura \u00E8 stata interrotta.");
+			e.printStackTrace();
+		} catch (Exception e) {
+			String messaggio = "La procedura \u00E8 ha riscontrato un errore imprevisto: " + e.getLocalizedMessage() + "\r\n";
+			for (StackTraceElement elemente : e.getStackTrace()) {
+				messaggio += elemente.toString() + "\r\n";
+			}
+			DialogMessaggio.openError("Procedura interrotta", messaggio);
+			e.printStackTrace();
+		}
+		return eseguito;
+	}
+
+}

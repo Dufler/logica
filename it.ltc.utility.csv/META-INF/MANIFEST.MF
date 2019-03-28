@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Csv
+Bundle-SymbolicName: it.ltc.utility.csv
+Bundle-Version: 1.0.1
+Bundle-ClassPath: csv-1.0.jar,
+ commons-csv-1.6.jar
+Bundle-Vendor: LTC
+Export-Package: it.ltc.utility.csv,
+ it.ltc.utility.csv.annotation,
+ org.apache.commons.csv
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: it.ltc.utility.csv
+Require-Bundle: org.apache.logging;bundle-version="1.0.0"

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_tDCfwAtDEeika6c62XRaHA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_vdIjoAtDEeika6c62XRaHA" elementId="it.ltc.logica.cdg.gui.analisi.part.funzioneanalisi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.FunzioneAnalisiPart" label="Funzione - Analisi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_HYX0wAtEEeika6c62XRaHA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_IlHUsAtEEeika6c62XRaHA" elementId="it.ltc.logica.cdg.gui.analisi.part.analisi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.AnalisiPart" label="Analisi Centri di Costo e Ricavo" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_CHyjgDMmEeif_aHOqX4bQg" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_IK4uYDMmEeif_aHOqX4bQg" elementId="it.ltc.logica.cdg.gui.analisi.part.funzioneanalisicdg" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.FunzioneAnalisiCDGPart" label="Funzione - Analisi Controllo Di Gestione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_nHa4ADMmEeif_aHOqX4bQg" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_qLzPADMmEeif_aHOqX4bQg" elementId="it.ltc.logica.cdg.gui.analisi.part.analisicdg" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.AnalisiCDGPart" label="Analisi CDG" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_o49HQDNLEeif_aHOqX4bQg" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_sgRzQDNLEeif_aHOqX4bQg" elementId="it.ltc.logica.cdg.gui.analisi.part.funzioneanalisitempi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.FunzioneAnalisiTempiPart" label="Funzione - Analisi Tempi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_BoIWwDNMEeif_aHOqX4bQg" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_DZp-wDNMEeif_aHOqX4bQg" elementId="it.ltc.logica.cdg.gui.analisi.part.analisitempi" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.AnalisiTempiPart" label="Analisi Tempi" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i dati ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_V_J2MEfEEeimdeq7RNNKFA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Y4HAUEfEEeimdeq7RNNKFA" elementId="it.ltc.logica.cdg.gui.analisi.part.funzioneanalisibudget" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.FunzioneAnalisiBudgetPart" label="Funzione - Analisi Budget" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i budget ed effettuare il controllo di Gestione."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_ofgL8EfEEeimdeq7RNNKFA" featurename="children" parentElementId="it.ltc.logica.cdg.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_qXqAYEfEEeimdeq7RNNKFA" elementId="it.ltc.logica.cdg.gui.analisi.part.analisibudget" contributionURI="bundleclass://it.ltc.logica.cdg.gui.analisi/it.ltc.logica.cdg.gui.analisi.parts.AnalisiBudgetPart" label="Analisi Budget" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/calcolo_16x16.png" tooltip="Qui puoi analizzare i budget ed effettuare il controllo di Gestione."/>
+  </fragments>
+</fragment:ModelFragments>

@@ -1,0 +1,35 @@
+package it.ltc.logica.common.controller.processi;
+
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+
+public class ProcessoCaricamentoDato<T> extends ProcessoWebService {
+	
+	protected static final String PREFISSO_TITOLO = "Caricamento: ";
+	
+	private final String resource;
+	private final Class<T> c;
+	private T object;
+
+	public ProcessoCaricamentoDato(String title, String resource, Class<T> c) {
+		super(PREFISSO_TITOLO + title, -1);
+		this.resource = resource;
+		this.c = c;
+	}
+	
+	public T getObject() {
+		return object;
+	}
+
+	@Override
+	public void eseguiOperazioni() throws Exception {
+		WSAnswer wsAnswer = consumer.get(resource);
+		if (wsAnswer.getStatus() == 200) {
+			object = mapper.readValue(wsAnswer.getMessage(), c);
+		} else {
+			object = null;
+			throw new RuntimeException("Errore durante il caricamento dei dati: '" + wsAnswer.toString() + "'");
+		}
+
+	}
+
+}

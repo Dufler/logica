@@ -1,0 +1,62 @@
+package it.ltc.logica.amministrazione.gui.composite;
+
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
+
+import it.ltc.logica.common.calcolo.algoritmi.Scaglione;
+
+public abstract class ScaglioneEditingSupport extends EditingSupport {
+	
+	private final TableViewer viewer;
+	private final CellEditor editor;
+	private final int maxDecimal;
+
+	public ScaglioneEditingSupport(TableViewer tableViewer, int md) {
+		super(tableViewer);
+		viewer = tableViewer;
+		editor = new TextCellEditor(viewer.getTable());
+		maxDecimal = md;
+	}
+
+	@Override
+	protected CellEditor getCellEditor(Object element) {
+		return editor;
+	}
+
+	@Override
+	protected boolean canEdit(Object element) {
+		return true;
+	}
+	
+	@Override
+	protected void setValue(Object element, Object value) {
+		if (element != null && value != null) {
+			Scaglione scaglione = (Scaglione) element;
+			String valore = value.toString();
+			parseAndSetValue(scaglione, valore);
+			viewer.update(element, null);
+		}
+	}
+	
+	private void parseAndSetValue(Scaglione scaglione, String value) {
+		try {
+			int index = value.indexOf(" \u20AC");
+			if (index != -1)
+				value = value.substring(0, index);
+			double valore;
+			if (maxDecimal > 0) {
+				valore = Double.parseDouble(value);
+			} else {
+				valore = Integer.parseInt(value);
+			}
+			checkAndEdit(scaglione, valore);
+		} catch (NumberFormatException e) {
+			//Notifica del valore errato.
+		}
+	}
+
+	protected abstract void checkAndEdit(Scaglione scaglione, double valore);
+
+}

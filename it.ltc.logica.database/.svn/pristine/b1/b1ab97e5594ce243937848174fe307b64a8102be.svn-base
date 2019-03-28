@@ -1,0 +1,57 @@
+package it.ltc.logica.database.model;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Taglia extends Entity {
+	
+	public static final String NOME_TABELLA = "schiera_taglie";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private String taglia;
+	private String tipo;
+	private Double valore;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("taglia", Column.STRING, "taglia", true, false));
+			variabili.addColumnString("tipo", "tipo");
+			variabili.addColumnDouble("valore", "valore");
+		}
+		return variabili;
+	}
+
+	public String getTaglia() {
+		return taglia;
+	}
+
+	public void setTaglia(String taglia) {
+		this.taglia = taglia;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public Double getValore() {
+		return valore;
+	}
+
+	public void setValore(Double valore) {
+		this.valore = valore;
+	}
+
+}

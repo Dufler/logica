@@ -1,0 +1,57 @@
+package it.ltc.logica.database.orm;
+
+import java.util.ArrayList;
+
+public class ColumnList extends ArrayList<Column> {
+
+	private static final long serialVersionUID = 1L;
+	
+	public boolean addColumn(String columnName, int columnType, String variableName) {
+		Column column = new Column(columnName, columnType, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addDefaultIDColumn() {
+		Column idColumn = new Column("id", Column.AUTOINCREMENT, "id");
+		boolean added = add(idColumn);
+		return added;
+	}
+	
+	public boolean addColumnAutoincrement(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.AUTOINCREMENT, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addColumnString(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.STRING, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addColumnInt(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.INT, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addColumnDouble(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.DOUBLE, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addColumnBoolean(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.BOOLEAN, variableName);
+		boolean added = add(column);
+		return added;
+	}
+	
+	public boolean addColumnDate(String columnName, String variableName) {
+		Column column = new Column(columnName, Column.DATE, variableName);
+		boolean added = add(column);
+		return added;
+	}
+
+}

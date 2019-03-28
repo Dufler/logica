@@ -1,0 +1,65 @@
+package it.ltc.logica.trasporti.gui.fatturazione.elements;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerDocumentiDiFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.gui.container.DialogCartella;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaDocumentiFatturazione extends Tabella<DocumentoFattura> {
+
+	public TabellaDocumentiFatturazione(Composite parent) {
+		super(parent, new OrdinatoreDocumentiFatturazione());
+		
+		aggiungiColonna("Commessa", 200, new EtichettatoreDocumentiFatturazione(), 0);
+		aggiungiColonna("Tipo", 200, new EtichettatoreDocumentiFatturazione(), 1);
+		aggiungiColonna("Stato", 200, new EtichettatoreDocumentiFatturazione(), 2);
+		aggiungiColonna("Periodo", 120, new EtichettatoreDocumentiFatturazione(), 3);
+		aggiungiColonna("Data Creazione", 200, new EtichettatoreDocumentiFatturazione(), 4);
+		aggiungiColonna("Creata da", 200, new EtichettatoreDocumentiFatturazione(), 5);
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem generate = new MenuItem(menu, SWT.PUSH);
+		generate.setText("Genera Documento");
+		generate.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogDocumento();
+	    	}
+	    });		
+	}
+	
+	private void apriDialogDocumento() {
+		int selectionIndex = table.getSelectionIndex();
+		if (selectionIndex != -1) {
+			DialogCartella dialog = new DialogCartella();
+			String path = dialog.open();
+			if (path != null && !path.isEmpty()) {
+				TableItem selectedItem = table.getItem(selectionIndex);
+				DocumentoFattura documento = (DocumentoFattura) selectedItem.getData();
+				ControllerDocumentiDiFatturazione.getInstance().produciDocumentoXLS(path, documento.getId());
+			}
+		}
+	}
+
+}

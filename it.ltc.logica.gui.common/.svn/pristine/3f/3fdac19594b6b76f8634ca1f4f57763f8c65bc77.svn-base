@@ -1,0 +1,96 @@
+package it.ltc.logica.gui.common.dialogs.fatturazione;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.ControllerCoordinateBancarie;
+import it.ltc.logica.common.controller.fatturazione.ControllerDocumentiDiFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura.Stato;
+import it.ltc.logica.gui.common.composite.fatturazione.CompositeDatiFatturazione;
+import it.ltc.logica.gui.dialog.DialogModel;
+
+public class DialogPreferenzeDocumentoFatturazione extends DialogModel<DocumentoFattura> {
+
+	private static final String title = "Conferma Dati di Fatturazione";
+	
+	private final ControllerDocumentiDiFatturazione controller;
+	
+	private CompositeDatiFatturazione compositeDati;
+	
+	public DialogPreferenzeDocumentoFatturazione(DocumentoFattura value) {
+		super(title, value);
+			
+		controller = ControllerDocumentiDiFatturazione.getInstance();
+	}
+
+	@Override
+	public void loadModel() {
+		compositeDati.setAmbito(ControllerAmbitiFatturazione.getInstance().getAmbito(valore.getIdAmbito()));
+		compositeDati.setCommessa(ControllerCommesse.getInstance().getCommessa(valore.getIdCommessa()));
+		compositeDati.setCoordinatePagamento(ControllerCoordinateBancarie.getInstance().getCoordinata(valore.getCoordinatePagamento()));
+		compositeDati.setDataEmissione(valore.getDataEmissione());
+		compositeDati.setDescrizione(valore.getDescrizioneFattura());
+		compositeDati.setIva(valore.getIva());
+		compositeDati.setModalitaPagamaneto(valore.getModalitaPagamento());
+		compositeDati.setNote(valore.getNote());
+		compositeDati.setNumeroFattura(valore.getNumeroFattura());
+	}
+
+	@Override
+	public void prefillModel() {}
+
+	@Override
+	public void copyDataToModel() {
+		//Copio i nuovi valori, salto commessa e ambito che non sono modificabili
+		valore.setCoordinatePagamento(compositeDati.getCoordinatePagamento().getId());
+		valore.setDataEmissione(compositeDati.getDataEmissione());
+		valore.setDescrizioneFattura(compositeDati.getDescrizione());
+		valore.setIva(compositeDati.getIva());
+		valore.setModalitaPagamento(compositeDati.getModalitaPagamento());
+		valore.setNote(compositeDati.getNote());
+		valore.setNumeroFattura(compositeDati.getNumeroFattura());
+		//Inoltre imposto lo stato ad archiviata se non lo è già.
+		if (valore.getStato() == Stato.APPROVATA)
+			valore.setStato(Stato.ARCHIVIATA);
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controller.aggiorna(valore);
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		return false;
+	}
+
+	@Override
+	public DocumentoFattura createNewModel() {
+		throw new UnsupportedOperationException("Non è possibile creare un documento di fatturazione così.");
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean dirty = valore.getStato() == Stato.APPROVATA ? true : compositeDati.isDirty(); 
+		return dirty;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeDati = new CompositeDatiFatturazione(container);
+		compositeDati.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+
+}

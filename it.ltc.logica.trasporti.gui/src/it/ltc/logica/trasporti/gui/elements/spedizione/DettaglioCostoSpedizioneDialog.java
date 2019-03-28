@@ -1,0 +1,285 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.List;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.common.controller.trasporti.ControllerCorrieri;
+import it.ltc.logica.common.controller.trasporti.ControllerNazioni;
+import it.ltc.logica.common.controller.trasporti.ControllerProvince;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.common.composite.CompositeIndirizzo;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiSpedizione;
+
+public class DettaglioCostoSpedizioneDialog extends DialogModel<SpedizioneModel> {
+
+	private static final String titolo = "Dettaglio dei dati della spedizione e dei preventivi";
+	
+	private final SpedizioneModel model;
+	
+	private CompositeDatiSpedizione compositeDatiSpedizione;
+	private CompositeIndirizzo compositeDestinazione;
+	
+	private CTabFolder tabFolder;
+	private TableViewer tableViewerRicavi;
+	private Table tableRicavi;
+	private final TableViewer[] listaTableViewerCosti;
+	
+	public DettaglioCostoSpedizioneDialog(SpedizioneModel sm) {
+		super(titolo, sm);
+		model = sm;
+		listaTableViewerCosti = new TableViewer[sm.getPreventiviCosto().size()];
+	}
+
+	@Override
+	public void loadModel() {
+		//Dati Spedizione
+		Spedizione spedizione = model.getSpedizione();
+		compositeDatiSpedizione.setColli(spedizione.getColli());
+		compositeDatiSpedizione.setCorriere(ControllerCorrieri.getInstance().getCorriere(spedizione.getIdCorriere()));
+		compositeDatiSpedizione.setVolume(spedizione.getVolume());
+		compositeDatiSpedizione.setPeso(spedizione.getPeso());
+		compositeDatiSpedizione.setDataSpedizione(spedizione.getDataPartenza());
+		compositeDatiSpedizione.setCommessa(spedizione.getIdCommessa());
+		//Destinatario
+		Indirizzo destinazione = model.getDestinazione();
+		compositeDestinazione.setIndirizzo(destinazione.getIndirizzo());
+		compositeDestinazione.setCap(destinazione.getCap());
+		compositeDestinazione.setRagioneSociale(destinazione.getRagioneSociale());
+		compositeDestinazione.setLocalita(destinazione.getLocalita());
+		compositeDestinazione.setNazione(ControllerNazioni.getInstance().getNazione(destinazione.getNazione()));
+		compositeDestinazione.setProvincia(ControllerProvince.getInstance().getProvincia(destinazione.getProvincia()));
+		compositeDestinazione.setPiano(destinazione.getConsegnaAlPiano());
+		compositeDestinazione.setPrivato(destinazione.getConsegnaPrivato());
+		compositeDestinazione.setGDO(destinazione.getConsegnaGdo());
+		compositeDestinazione.setAppuntamento(destinazione.getConsegnaAppuntamento());
+		//Ricavi
+		Calcolo ricavi = model.getPreventivoRicavo();
+		tableViewerRicavi.setInput(ricavi.getVoci());
+		for (TableColumn column : tableRicavi.getColumns()) {
+			column.pack();
+		}
+		//Costi
+		int index = 0;
+		for (Calcolo costo : model.getPreventiviCosto()) {
+			listaTableViewerCosti[index].setInput(costo.getVoci());
+			for (TableColumn column : listaTableViewerCosti[index].getTable().getColumns()) {
+				column.pack();
+			}
+		}
+	}
+
+	@Override
+	public void copyDataToModel() {
+		//DO NOTHING!
+	}
+
+	@Override
+	public boolean updateModel() {
+		//DO NOTHING!
+		return true;
+	}
+	
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return true;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		
+		tabFolder = new CTabFolder(container, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+		
+		aggiungiTabDettagliSpedizione();
+		
+		aggiungiTabRicavi();
+		
+		aggiungiTabsCosti();
+		
+	}
+	
+	private void aggiungiTabDettagliSpedizione() {
+		CTabItem tbtmDettagliSpedizione = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDettagliSpedizione.setText("Dettagli Spedizione");
+		
+		Composite compositeDettaglio = new Composite(tabFolder, SWT.NONE);
+		tbtmDettagliSpedizione.setControl(compositeDettaglio);
+		compositeDettaglio.setLayout(new GridLayout(1, false));
+		
+		compositeDatiSpedizione = new CompositeDatiSpedizione(this, compositeDettaglio);
+		compositeDatiSpedizione.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 1, 1));
+		compositeDatiSpedizione.enableElement(false);
+		
+		compositeDestinazione = new CompositeIndirizzo(this, compositeDettaglio, CompositeIndirizzo.TipoIndirizzo.DESTINATARIO);
+		compositeDestinazione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeDestinazione.enableElement(false);
+	}
+	
+	private void aggiungiTabRicavi() {
+		CTabItem tbtmRicavi = new CTabItem(tabFolder, SWT.NONE);
+		tbtmRicavi.setText("Ricavi");
+		
+		Composite compositeRicavi = new Composite(tabFolder, SWT.NONE);
+		compositeRicavi.setLayout(new GridLayout(1, false));
+		tbtmRicavi.setControl(compositeRicavi);
+		
+		Label lblListaDelleVoci = new Label(compositeRicavi, SWT.NONE);
+		lblListaDelleVoci.setText("Lista delle voci fatturabili per la spedizione");
+		
+		tableViewerRicavi = new TableViewer(compositeRicavi, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewerRicavi.setContentProvider(ArrayContentProvider.getInstance());
+		
+		tableRicavi = tableViewerRicavi.getTable();
+		tableRicavi.setLinesVisible(true);
+		tableRicavi.setHeaderVisible(true);
+		tableRicavi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn colonnaNome = new TableViewerColumn(tableViewerRicavi, SWT.NONE);
+		colonnaNome.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				VoceCalcolata voce = (VoceCalcolata) element;
+				String nome = voce.getNomeVoce();
+				return nome;
+			}
+		});
+		
+		TableColumn tblclmnNome = colonnaNome.getColumn();
+		tblclmnNome.setWidth(100);
+		tblclmnNome.setText("Nome");
+		
+		TableViewerColumn colonnaValore = new TableViewerColumn(tableViewerRicavi, SWT.NONE);
+		colonnaValore.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				VoceCalcolata voce = (VoceCalcolata) element;
+				String valore = Decorator.getEuroValue(voce.getCosto());
+				return valore;
+			}
+		});
+		
+		TableColumn tblclmnValore = colonnaValore.getColumn();
+		tblclmnValore.setWidth(100);
+		tblclmnValore.setText("Valore");
+		
+		TableViewerColumn colonnaDescrizione = new TableViewerColumn(tableViewerRicavi, SWT.NONE);
+		colonnaDescrizione.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				VoceCalcolata voce = (VoceCalcolata) element;
+				String descrizione = voce.getDescrizioneAmbito();
+				return descrizione;
+			}
+		});
+		
+		TableColumn tblclmnDescrizione = colonnaDescrizione.getColumn();
+		tblclmnDescrizione.setWidth(100);
+		tblclmnDescrizione.setText("Descrizione");
+	}
+	
+	private void aggiungiTabsCosti() {
+		int index = 0;
+		for (Calcolo costo : getValore().getPreventiviCosto()) {
+			CTabItem tbtmCosto = new CTabItem(tabFolder, SWT.NONE);
+			tbtmCosto.setText("Costo per " + costo.getNome());
+			
+			Composite compositeCosto = new Composite(tabFolder, SWT.NONE);
+			compositeCosto.setLayout(new GridLayout(1, false));
+			tbtmCosto.setControl(compositeCosto);
+			
+			Label lblListaDelleVoci = new Label(compositeCosto, SWT.NONE);
+			lblListaDelleVoci.setText("Lista delle voci di costo per la spedizione");
+			
+			TableViewer tableViewerCosti = new TableViewer(compositeCosto, SWT.BORDER | SWT.FULL_SELECTION);
+			tableViewerCosti.setContentProvider(ArrayContentProvider.getInstance());
+			listaTableViewerCosti[index] = tableViewerCosti;
+			index += 1;
+			
+			Table tableCosti = tableViewerCosti.getTable();
+			tableCosti.setLinesVisible(true);
+			tableCosti.setHeaderVisible(true);
+			tableCosti.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+			
+			TableViewerColumn colonnaNome = new TableViewerColumn(tableViewerCosti, SWT.NONE);
+			colonnaNome.setLabelProvider(new ColumnLabelProvider() {
+				public String getText(Object element) {
+					VoceCalcolata voce = (VoceCalcolata) element;
+					String nome = voce.getNomeVoce();
+					return nome;
+				}
+			});
+			
+			TableColumn tblclmnNome = colonnaNome.getColumn();
+			tblclmnNome.setWidth(100);
+			tblclmnNome.setText("Nome");
+			
+			TableViewerColumn colonnaValore = new TableViewerColumn(tableViewerCosti, SWT.NONE);
+			colonnaValore.setLabelProvider(new ColumnLabelProvider() {
+				public String getText(Object element) {
+					VoceCalcolata voce = (VoceCalcolata) element;
+					String valore = Decorator.getEuroValue(voce.getCosto());
+					return valore;
+				}
+			});
+			
+			TableColumn tblclmnValore = colonnaValore.getColumn();
+			tblclmnValore.setWidth(100);
+			tblclmnValore.setText("Valore");
+			
+			TableViewerColumn colonnaDescrizione = new TableViewerColumn(tableViewerCosti, SWT.NONE);
+			colonnaDescrizione.setLabelProvider(new ColumnLabelProvider() {
+				public String getText(Object element) {
+					VoceCalcolata voce = (VoceCalcolata) element;
+					String descrizione =voce.getDescrizioneAmbito();
+					return descrizione;
+				}
+			});
+			
+			TableColumn tblclmnDescrizione = colonnaDescrizione.getColumn();
+			tblclmnDescrizione.setWidth(100);
+			tblclmnDescrizione.setText("Descrizione");
+		}
+	}
+
+	@Override
+	public boolean isDirty() {
+		return false;
+	}
+
+	@Override
+	public SpedizioneModel createNewModel() {
+		//DO NOTHING!
+		return null;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		//DO NOTHING!
+		return null;
+	}
+
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!
+	}
+	
+}

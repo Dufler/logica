@@ -1,0 +1,170 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import java.util.LinkedHashSet;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+
+import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
+import it.ltc.logica.common.calcolo.algoritmi.VoceCalcolata;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.TextForMoney;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+public class DialogNuovaVoceCalcolata extends Dialog implements ParentValidationHandler {
+	
+	private static final String OK_LABEL = "Ok";
+	private static final String CANCEL_LABEL = "Annulla";
+	private static final String titolo = "Nuova voce";
+	
+	private final ListiniClientiController controller;
+	
+	private final LinkedHashSet<ValidationHandler> children;
+	
+	protected boolean valid;
+	
+	private Composite container;
+	private Button okButton;
+	private Button cancelButton;
+	private Label lblVoceDiListino;
+	private Label lblValore;
+	private ComboBox<VoceDiListino> combo;
+	private TextForMoney text;
+
+	private final Calcolo calcolo;
+	private final int idListino;
+	
+	private VoceDiListino voceSelezionata;
+	private Double valore;
+	
+	protected DialogNuovaVoceCalcolata(Calcolo risultato) {
+		super(Display.getDefault().getActiveShell());
+		children = new LinkedHashSet<ValidationHandler>();
+		setDefaultImage(Decorator.getImage(Decorator.CALCOLO_16X16));
+		calcolo = risultato;
+		idListino = risultato.getIdListino();
+		controller = ListiniClientiController.getInstance();
+	}
+	
+	@Override
+    protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(titolo);
+    }
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(3, false));
+		
+		lblVoceDiListino = new Label(container, SWT.NONE);
+		lblVoceDiListino.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblVoceDiListino.setText("Voce di listino: ");
+		
+		combo = new ComboBox<VoceDiListino>(container);
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		combo.setItems(controller.getVociDiListino(idListino));
+		addChild(combo);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblValore = new Label(container, SWT.NONE);
+		lblValore.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblValore.setText("Valore: ");
+		
+		text = new TextForMoney(container, SWT.BORDER);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(text);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+
+		return container;
+	}
+	
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		okButton = createButton(parent, IDialogConstants.OK_ID, OK_LABEL, false);
+		okButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				aggiungiNuovaVoce();
+			}
+		});
+		cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, CANCEL_LABEL, true);
+	}
+	
+	public void enableOkButton(boolean enable) {
+		if (okButton != null)
+			okButton.setEnabled(enable);
+	}
+	
+	public void enableCancelButton(boolean enable) {
+		if (cancelButton != null)
+			cancelButton.setEnabled(enable);
+	}
+
+	@Override
+	public void addChild(ValidationHandler child) {
+		child.setParent(this);
+		children.add(child);
+	}
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public boolean validate() {
+		valid = true;
+		for (ValidationHandler child : children) {
+			valid = child.isValid();
+			if (!valid)
+				break;
+		}
+		if (valid)
+			copiaValori();
+		enableOkButton(valid);
+		return valid;
+	}
+	
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		//DO NOTHING!
+	}
+
+	@Override
+	public void forwardValidation() {
+		//DO NOTHING!	
+	}
+	
+	private void copiaValori() {
+		voceSelezionata = combo.getSelectedValue();
+		valore = text.getValue();
+	}
+
+	private void aggiungiNuovaVoce() {
+		SottoAmbitoFattura ambito = SottoAmbitoFattura.getSottoAmbito(voceSelezionata.getIdsottoAmbito());
+		VoceCalcolata nuovaVoce = new VoceCalcolata(voceSelezionata.getId(), voceSelezionata.getNome(), ambito.getId(), ambito.getNome(), ambito.getCategoria(), ambito.getDescrizione());
+		nuovaVoce.setCosto(valore);
+		calcolo.aggiungiVoce(nuovaVoce);
+	}
+	
+}

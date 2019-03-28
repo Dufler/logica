@@ -1,0 +1,65 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TextCellEditor;
+
+import it.ltc.logica.trasporti.calcolo.algoritmi.Scaglione;
+
+public class ScaglioneDaEdit extends EditingSupport {
+	
+	private final TableViewer viewer;
+	private final CellEditor editor;
+	private final int maxDecimal;
+
+	public ScaglioneDaEdit(TableViewer tableViewer, int md) {
+		super(tableViewer);
+		viewer = tableViewer;
+		editor = new TextCellEditor(viewer.getTable());
+		maxDecimal = md;
+	}
+
+	@Override
+	protected CellEditor getCellEditor(Object element) {
+		return editor;
+	}
+
+	@Override
+	protected boolean canEdit(Object element) {
+		return true;
+	}
+
+	@Override
+	protected Object getValue(Object element) {
+		Scaglione scaglione = (Scaglione) element;
+		return scaglione.getInizioStringa();
+	}
+	
+	@Override
+	protected void setValue(Object element, Object value) {
+		if (element != null && value != null) {
+			Scaglione scaglione = (Scaglione) element;
+			String valore = value.toString();
+			parseAndSetValue(scaglione, valore);
+			viewer.update(element, null);
+		}
+	}
+	
+	private void parseAndSetValue(Scaglione scaglione, String value) {
+		try {
+			double valore;
+			if (maxDecimal > 0) {
+				valore = Double.parseDouble(value);
+			} else {
+				valore = Integer.parseInt(value);
+			}
+			if (valore < scaglione.getFine()) {
+				scaglione.setInizio(valore);
+			}
+		} catch (NumberFormatException e) {
+			//Notifica del valore errato.
+		}
+	}
+
+}

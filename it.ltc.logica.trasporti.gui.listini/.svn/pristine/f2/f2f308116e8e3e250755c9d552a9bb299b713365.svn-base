@@ -1,0 +1,65 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.simulazione;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
+import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
+import it.ltc.logica.database.model.locale.ListinoSimulazione;
+import it.ltc.logica.database.model.locale.ListinoSimulazioneVoce;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeListino;
+
+public class NuovaVoceListinoSimulazioneProprietaWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Nuova Voce di listino di simulazione - propriet\u00E0";
+	private static final String descrizione = "Specifica nome, descrizione, ambito e tipologia di calcolo.";
+	
+	private ListiniSimulazioneController controller;
+	
+	private ListinoSimulazione listino;
+	private ListinoSimulazioneVoce voce;
+	
+	private CompositeListino compositeListino;
+
+	public NuovaVoceListinoSimulazioneProprietaWizardPage(ListinoSimulazione listinoSelezionato) {
+		super(titolo, descrizione);
+		listino = listinoSelezionato;
+		voce = new ListinoSimulazioneVoce();
+		controller = ListiniSimulazioneController.getInstance();
+	}
+	
+	public ListinoSimulazioneVoce getVoceDiListino() {
+		return voce;
+	}
+	
+	public TipoAlgoritmo getTipoAlgoritmoSelezionato() {
+		return compositeListino.getAlgoritmo();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeListino = new CompositeListino(container, SWT.NONE, CompositeListino.Tipo.SIMULAZIONE);
+		compositeListino.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeListino);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		voce.setNome(compositeListino.getNome());
+		voce.setDescrizione(compositeListino.getDescrizione());
+		voce.setIdListino(listino.getId());
+		voce.setTipo(compositeListino.getAlgoritmo().getCodifica());
+		voce.setIdsottoAmbito(compositeListino.getAmbito().getId());
+		String valoreSottoAmbito = compositeListino.getValoreAmbito();
+		if (!valoreSottoAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreSottoAmbito);
+		controller.setNuovaListinoSimulazioneVoce(voce);
+		controller.setTipoAlgoritmoSelezionato(compositeListino.getAlgoritmo());
+	}
+
+}

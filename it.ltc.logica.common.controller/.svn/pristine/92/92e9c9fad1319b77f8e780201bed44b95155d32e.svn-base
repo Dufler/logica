@@ -1,0 +1,78 @@
+package it.ltc.logica.common.controller.prodotti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.Brand;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+/**
+ * Controller adibito alla gestione dei marchi e brand.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerBrand {
+	
+	private static ControllerBrand instance;
+	
+	private final HashMap<Integer, Brand> brands;
+
+	private ControllerBrand() {
+		brands = new HashMap<Integer, Brand>();
+		caricaDati();
+	}
+
+	public static ControllerBrand getInstance() {
+		if (instance == null) {
+			instance = new ControllerBrand();
+		}
+		return instance;
+	}
+	
+	public Brand getBrand(Integer idBrand) {
+		return brands.get(idBrand);
+	}
+	
+	public Collection<Brand> getBrands() {
+		return brands.values();
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentobrand pcb = new ProcessoCaricamentobrand();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcb);
+	}
+	
+	private class ProcessoCaricamentobrand extends Processo {
+		
+		private static final String title = "Caricamento brand";
+		
+		public ProcessoCaricamentobrand() {
+			super(title, -1);
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			WSAnswer wsAnswer = c.get("brand");
+			if (wsAnswer.getStatus() == 200) {
+				String answer = wsAnswer.getMessage();
+				List<Brand> lista = mapper.readValue(answer, new TypeReference<List<Brand>>() {});
+				for (Brand brand : lista) {
+					brands.put(brand.getId(), brand);
+				}
+			} else {
+				throw new RuntimeException(wsAnswer.toString());
+			}	
+		}
+	}
+
+}

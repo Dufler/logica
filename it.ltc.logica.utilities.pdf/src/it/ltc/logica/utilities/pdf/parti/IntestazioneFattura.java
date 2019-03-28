@@ -1,0 +1,66 @@
+package it.ltc.logica.utilities.pdf.parti;
+
+import java.awt.Color;
+import java.io.IOException;
+
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+
+import it.ltc.logica.utilities.pdf.ElementoPDF;
+import it.ltc.logica.utilities.pdf.elementi.BoxPDF;
+import it.ltc.logica.utilities.pdf.elementi.TestoMultilineaPDF;
+import it.ltc.logica.utilities.pdf.elementi.TestoSemplicePDF;
+import it.ltc.logica.utilities.pdf.stili.StileTestoPDF;
+
+public class IntestazioneFattura extends ElementoPDF {
+	
+	private final static float margine = 25;
+	
+	private final static float margineSx = 10;
+	private final static float margineUp = 10;
+	private final static float margineRiquadro = 10;
+	
+	private final static float gapLinee = 15;
+	private final static float gapTitolo = 25;
+	
+	private final static String DENOMINAZIONE_AZIENDA = "L & TC srl";
+	private final static String[] DESCRIZIONE_AZIENDA = {
+			"Via Firenze 41", 
+			"06073  Taverne di Corciano  PG", 
+			"075/506861 fax 075/5068650", 
+			"P. IVA  01951960549-REA 169785 Reg.Imprese di Perugia", 
+			"Cap. Soc. \u20AC 78.000,00 int. Versato - Società Unipersonale"
+		};
+		
+	
+	private final TestoSemplicePDF azienda;
+	private final TestoMultilineaPDF descrizioneAzienda;
+	private final BoxPDF riquadro;
+	
+	private final float altezza;
+	private final float larghezza;
+	
+	public IntestazioneFattura(float y) {
+		azienda = new TestoSemplicePDF(DENOMINAZIONE_AZIENDA, margine + margineSx, y - margineUp, StileTestoPDF.TITOLO);
+		descrizioneAzienda = new TestoMultilineaPDF(DESCRIZIONE_AZIENDA, margine + margineSx, y - margineUp - gapTitolo , gapLinee, StileTestoPDF.HELVETICA_12, false);
+		altezza = y - descrizioneAzienda.getyFineTesto() + gapTitolo + margineRiquadro;
+		larghezza = PDRectangle.A4.getWidth() - margine * 2;
+		riquadro = new BoxPDF(margine, descrizioneAzienda.getyFineTesto() - margineRiquadro, larghezza, altezza, Color.BLACK);
+	}
+
+	@Override
+	public void aggiungi(PDPageContentStream stream) throws IOException {
+		azienda.aggiungi(stream);
+		descrizioneAzienda.aggiungi(stream);
+		riquadro.aggiungi(stream);
+	}
+
+	public float getAltezza() {
+		return altezza;
+	}
+
+	public float getLarghezza() {
+		return larghezza;
+	}
+
+}

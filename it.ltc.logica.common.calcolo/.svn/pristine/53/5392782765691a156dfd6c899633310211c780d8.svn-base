@@ -1,0 +1,58 @@
+package it.ltc.logica.common.calcolo.algoritmi;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+
+/**
+ * Un modello che rappresenta un'oggetto fatturabile da riempire con dei calcoli.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public abstract class ModelDaCalcolare {
+
+	protected final HashMap<Integer, Calcolo> mappaCalcoli;
+	protected Calcolo calcolo;
+	
+	public ModelDaCalcolare() {
+		mappaCalcoli = new HashMap<Integer, Calcolo>();
+	}
+	
+	/**
+	 * Aggiunge un calcolo al model
+	 * @param calcolo
+	 */
+	protected void addCalcolo(Calcolo calcolo) {
+		mappaCalcoli.put(calcolo.getIdListino(), calcolo);
+		this.calcolo = calcolo;
+	}
+	
+	/**
+	 * Restituisce lo specifico calcolo fatto con il listino il cui ID viene passato come argomento
+	 * @param idListino
+	 * @return
+	 */
+	public Calcolo getCalcolo(Integer idListino) {
+		return mappaCalcoli.get(idListino);
+	}
+	
+	/**
+	 * Restituisce l'ultimo calcolo aggiunto.
+	 * @return
+	 */
+	public Calcolo getCalcolo() {
+		return calcolo;
+	}
+	
+	/**
+	 * Restituisce una lista con tutti i calcoli inseriti.
+	 * @return
+	 */
+	public LinkedList<Calcolo> getCalcoli() {
+		LinkedList<Calcolo> lista = new LinkedList<Calcolo>();
+		for (Integer idListino : mappaCalcoli.keySet()) {
+			lista.add(mappaCalcoli.get(idListino));
+		}
+		return lista;
+	}
+
+}

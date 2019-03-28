@@ -1,0 +1,86 @@
+package it.ltc.logica.ufficio.gui.uscite.elements;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.sistema.ControllerStatoTracking;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.model.centrale.Ordine.TipoOrdine;
+import it.ltc.logica.database.model.centrale.StatoOrdine;
+import it.ltc.logica.gui.elements.Etichettatore;
+
+public class EtichettatoreOrdini extends Etichettatore<Ordine> {
+
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+	
+	@Override
+	public String getTesto(Ordine oggetto, int colonna) {
+		String testo;
+		switch (colonna) {
+			case 0 : testo = getCommessa(oggetto); break;
+			case 1 : testo = getData(oggetto); break;
+			case 2 : testo = getRiferimentoCliente(oggetto); break;
+			case 3 : testo = getRiferimentoInterno(oggetto); break;
+			case 4 : testo = getPezzi(oggetto); break;
+			case 5 : testo = getTipo(oggetto); break;
+			case 6 : testo = getStato(oggetto); break;
+			default : testo = "";
+		}
+		return testo;
+	}
+	
+	private String getStato(Ordine oggetto) {
+		StatoOrdine stato = ControllerStatoTracking.getInstance().getStato(oggetto.getStato());
+		String testo = stato != null ? stato.getNome() : "-";
+		return testo;
+	}
+
+	private String getTipo(Ordine oggetto) {
+		TipoOrdine tipo = TipoOrdine.valueOf(oggetto.getTipo());
+		String testo = tipo != null ? tipo.toString() : "-";
+		return testo;
+	}
+
+	private String getPezzi(Ordine oggetto) {
+		String testo = oggetto.getPezzi() != null ? oggetto.getPezzi().toString() : "-";
+		return testo;
+	}
+
+	private String getRiferimentoInterno(Ordine oggetto) {
+		String testo = oggetto.getRiferimentoInterno() != null ? oggetto.getRiferimentoInterno() : "-";
+		return testo;
+	}
+
+	private String getRiferimentoCliente(Ordine oggetto) {
+		String testo = oggetto.getRiferimentoCliente() != null ? oggetto.getRiferimentoCliente() : "-";
+		return testo;
+	}
+
+	private String getData(Ordine oggetto) {
+		Date data = oggetto.getDataRicezione();
+		String testo = data != null? sdf.format(data) : "-";
+		return testo;
+	}
+
+	private String getCommessa(Ordine oggetto) {
+		Commessa commessa = ControllerCommesse.getInstance().getCommessa(oggetto.getIdCommessa());
+		String testo = commessa != null? commessa.getNome() : "Commessa non trovata!";
+		return testo;
+	}
+
+	@Override
+	public String getTestoTooltip(Ordine oggetto, int colonna) {
+		return getTesto(oggetto, colonna);
+	}
+
+	@Override
+	public Image getIcona(Ordine oggetto, int colonna) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

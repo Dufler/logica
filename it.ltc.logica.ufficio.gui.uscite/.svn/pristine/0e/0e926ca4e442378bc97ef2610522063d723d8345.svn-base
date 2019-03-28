@@ -1,0 +1,46 @@
+ 
+package it.ltc.logica.ufficio.gui.uscite.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.uscite.OrdiniController;
+import it.ltc.logica.ufficio.gui.uscite.elements.TabellaOrdini;
+
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.layout.GridData;
+
+public class UscitePart {
+	
+	public static final String partID = "it.ltc.logica.ufficio.gui.ordini.part.ordini";
+	
+	private TabellaOrdini viewerOrdini;
+	
+	@Inject
+	public UscitePart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnNuovoOrdine = new Button(parent, SWT.NONE);
+		btnNuovoOrdine.setText("Nuovo Ordine");
+		
+		Label lblOrdini = new Label(parent, SWT.NONE);
+		lblOrdini.setText("Ordini: ");
+		
+		viewerOrdini = new TabellaOrdini(parent);
+		Table table = viewerOrdini.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		viewerOrdini.setInput(OrdiniController.getInstance().getOrdini());
+		viewerOrdini.aggiustaLarghezzaColonne();
+	}
+	
+}

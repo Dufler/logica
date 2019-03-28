@@ -1,0 +1,80 @@
+package it.ltc.logica.database.model;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Nazione extends Entity {
+	
+	public static final String NOME_TABELLA = "nazione";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private String codiceISO3;
+	private String codiceISO2;
+	private String nome;
+	private Boolean ue;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("codice_iso_tre", Column.STRING, "codiceISO3", true, false));
+			variabili.addColumnString("codice_iso_due", "codiceISO2");
+			variabili.addColumnString("nome", "nome");
+			variabili.addColumnBoolean("ue", "ue");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return nome;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof Nazione) {
+			Nazione nazione = (Nazione) o;
+			uguali = nazione.getCodiceISO3().equals(codiceISO3);
+		}
+		return uguali;
+	}
+
+	public String getCodiceISO3() {
+		return codiceISO3;
+	}
+
+	public void setCodiceISO3(String codiceISO3) {
+		this.codiceISO3 = codiceISO3;
+	}
+
+	public String getCodiceISO2() {
+		return codiceISO2;
+	}
+
+	public void setCodiceISO2(String codiceISO2) {
+		this.codiceISO2 = codiceISO2;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public Boolean getUe() {
+		return ue;
+	}
+
+	public void setUe(Boolean ue) {
+		this.ue = ue;
+	}
+
+}

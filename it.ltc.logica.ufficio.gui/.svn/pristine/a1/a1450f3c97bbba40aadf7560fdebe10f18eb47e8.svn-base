@@ -1,0 +1,41 @@
+package it.ltc.logica.ufficio.gui.elements.prodotto;
+
+import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
+import it.ltc.logica.gui.elements.Ordinatore;
+
+public class OrdinatoreProdottiConQuantita extends Ordinatore<ProdottoConQuantita> {
+
+	@Override
+	protected int compare(ProdottoConQuantita t1, ProdottoConQuantita t2, int property) {
+		int compare;
+		switch (property) {
+			case 0 : compare = ordinaPerArticolo(t1, t2); break;
+			case 1 : compare = ordinaPerTaglia(t1, t2); break;
+			case 2 : compare = ordinaPerQuantita(t1, t2); break;
+			default : compare = 0;
+		}
+		return compare;
+	}
+
+	private int ordinaPerArticolo(ProdottoConQuantita t1, ProdottoConQuantita t2) {
+		String s1 = t1.getProdotto().getCodificaCliente() != null ? t1.getProdotto().getCodificaCliente() : "";
+		String s2 = t2.getProdotto().getCodificaCliente() != null ? t2.getProdotto().getCodificaCliente() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+	private int ordinaPerTaglia(ProdottoConQuantita t1, ProdottoConQuantita t2) {
+		String s1 = t1.getProdotto().getTaglia() != null ? t1.getProdotto().getTaglia() : "";
+		String s2 = t2.getProdotto().getTaglia() != null ? t2.getProdotto().getTaglia() : "";
+		int compare = s1.compareTo(s2);
+		return compare;
+	}
+
+	private int ordinaPerQuantita(ProdottoConQuantita t1, ProdottoConQuantita t2) {
+		Integer q1 = t1.getQuantita();
+		Integer q2 = t2.getQuantita();
+		int compare = q1.compareTo(q2);
+		return compare;
+	}
+
+}

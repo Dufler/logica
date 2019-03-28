@@ -1,0 +1,231 @@
+package it.ltc.logica.database.orm;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Properties;
+
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.log4j.Logger;
+
+import it.ltc.logica.utilities.Configuration;
+
+/**
+ * Questa classe si occupa di interfacciarsi con il database.
+ * Per poter utilizzare un EntityManager va prima impostata la configurazione per la connessione al DB da utilizzare.
+ * E' possibile impostare una specifica configurazione passando un oggetto Configuration al metodo setSettings.
+ * In maniera del tutto opzionale è possibile impostare un logger di Log4J da utilizzare per monitorare le operazioni svolte attraverso il metodo setLogger.
+ * E' stato implementato un meccanismo di pooling delle connessioni tramite la libreria Apache commons DBCP.
+ *  
+ * @version 1.4
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class DBManager {
+	
+	private static Logger logger;
+	
+	private static HashMap<String, String> drivers;
+	
+	private static DBManager manager;
+	private static Configuration settings;
+
+	private String userName;
+	private String password;
+	private String dbms;
+	private String serverName;
+	private String portNumber;
+	private String nomeDB;
+	private String useSSL;
+	private boolean autocommit;
+	
+	private Properties connectionProperties;
+	private String connectionURL;
+	
+	private PoolingDataSource<PoolableConnection> dataSource;
+	private ObjectPool<PoolableConnection> connectionPool;
+	
+	private DBManager(Configuration settings) {
+		out("Creata nuova istanza del DBManager");
+		userName = settings.get("db_username");
+		password = settings.get("db_password");
+		dbms = settings.get("db_dbms");
+		serverName = settings.get("db_host");
+		portNumber = settings.get("db_port");
+		nomeDB = settings.get("db_name");
+		useSSL = settings.get("useSSL");
+		String valoreAutocommit = settings.get("db_autocommit");
+		if (valoreAutocommit != null)
+			autocommit = Boolean.getBoolean(valoreAutocommit);
+		else
+			autocommit = true;
+		setConnectionProperties();
+		setConnectionURL();
+		loadDriver(dbms);
+	}
+	
+	/**
+	 * restituisce l'istanza della classe.
+	 * @return l'istanza di classe.
+	 */
+	public static DBManager getInstance() throws InstantiationException {
+		if (manager == null)
+			throw new InstantiationException("Bisogna prima impostare la configurazione del database.");
+		return manager;
+	}
+	
+	/**
+	 * Imposta la configurazione del database e restituisce la nuova istanza di classe.
+	 * @param configuration
+	 * @throws IllegalArgumentException
+	 * @return l'istanza di classe.
+	 */
+	public static DBManager setSettings(Configuration configuration) throws IllegalArgumentException {
+		if (configuration == null)
+			throw new IllegalArgumentException("La configurazione del database deve essere valida.");
+		settings = configuration;
+		manager = new DBManager(settings);
+		out("Impostata la nuova configurazione");
+		return manager;
+	}
+	
+	/**
+	 * Imposta la configurazione al database di test e restituisce la nuova istanza di classe.
+	 * @return l'istanza di classe.
+	 */
+	public static DBManager setTestDevelopmentSettings() {
+		if (!isSet()) {
+			Configuration configuration = new Configuration();
+			configuration.set("db_username", "ltc");
+			configuration.set("db_password", "ltcpsw");
+			configuration.set("db_dbms", "mysql");
+			configuration.set("db_host", "192.168.0.6");
+			configuration.set("db_port", "3306");
+			configuration.set("db_name", "ltc_centrale");
+			configuration.set("useSSL", "false");
+			manager = setSettings(configuration);
+		}
+		return manager;
+	}
+	
+	/**
+	 * Informa se la classe è stata gia' impostata o meno.
+	 * @return true se sono gia' state ricevute delle impostazioni, false altrimenti.
+	 */
+	public static boolean isSet() {
+		boolean isSet = true;
+		if (settings == null)
+			isSet = false;
+		return isSet;
+	}
+
+	/**
+	 * Restituisce una connessione per una transazione atomica al DB.
+	 * E' necessario chiudere la connessione al termine.
+	 * La connessione restituita non è in auto commit.
+	 * @return una connection al DB. null nel caso in cui ci sono stati problemi.
+	 */
+	public Connection getTransactionConnection() {
+		Connection connection = null;
+		try {
+			connection = dataSource.getConnection();
+			connection.setAutoCommit(false);
+		} catch (SQLException e) {
+			out("Impossibile connettersi al DataBase: " + e.getMessage(), e);
+		}		
+		return connection;
+	}
+	
+	/**
+	 * Restituisce una connessione al DB.
+	 * Il pool di connessioni al DB viene gestito autonomamente. Non è necessario chiudere la connessione.
+	 * La connessione restituita è gia' in auto commit.
+	 * @return una connection al DB. null nel caso in cui ci sono stati problemi.
+	 */
+	public PoolableConnection getConnection() {
+		PoolableConnection connection = null;
+		try {
+			if (connectionPool.getNumIdle() < 1) {
+				dataSource.getConnection();
+			}
+			connection = connectionPool.borrowObject();
+			connection.setAutoCommit(autocommit);
+		} catch (SQLException e) {
+			out("Impossibile connettersi al DataBase: " + e.getMessage(), e);
+		} catch (Exception e) {
+			out("Impossibile instanziare una nuova connessione: " + e.getMessage(), e);
+		}	
+		return connection;
+	}
+	
+	private void loadDriver(String dbms) {
+		if (drivers == null) {
+			drivers = new HashMap<String, String>();
+			drivers.put("sqlserver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+			drivers.put("jtds:sqlserver", "net.sourceforge.jtds.jdbc.Driver");
+			drivers.put("mysql", "com.mysql.jdbc.Driver");
+		}
+		try {
+			Class.forName(drivers.get(dbms));
+			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionURL, connectionProperties);
+			PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
+			connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+			poolableConnectionFactory.setPool(connectionPool);
+			dataSource = new PoolingDataSource<PoolableConnection>(connectionPool);
+		} catch (ClassNotFoundException e) {
+			out("Driver non trovato: " + e.getMessage(), e);
+		} catch (LinkageError e) {
+			out("Dipendenza non rispettata o errore in inizializzazione: " + e.getMessage(), e);
+		}	
+	}
+	
+	private static void out(String message) {
+		if (logger != null)
+			logger.info(message);
+		System.out.println(message);
+	}
+	
+	private static void out(String message, Throwable e) {
+		if (logger != null)
+			logger.error(message, e);
+		System.out.println(message);
+		e.printStackTrace();
+	}
+	
+	private void setConnectionProperties() {
+		connectionProperties = new Properties();
+		connectionProperties.put("user", userName);
+		connectionProperties.put("password", password);
+		if (dbms.equals("mysql")) {
+			connectionProperties.put("useSSL", useSSL);
+		} else {
+			connectionProperties.put("databaseName", nomeDB);
+		}
+	}
+	
+	/**
+	 * Set della url in base al dbms
+	 */
+	private void setConnectionURL() {
+		connectionURL = "jdbc:" + dbms + "://" + serverName + ":" + portNumber;
+		if (dbms.equals("mysql")) {
+			connectionURL += "/" + nomeDB + "?";
+		}
+	}
+	
+	/**
+	 * Permette di specificare un logger da utilizzare, di default non se ha nessuno.
+	 * @param l il logger che si vuole utilizzare per monitorare la classe DBManager.
+	 */
+	public static void setLogger(Logger l) {
+		logger = l;
+	}
+
+}
+

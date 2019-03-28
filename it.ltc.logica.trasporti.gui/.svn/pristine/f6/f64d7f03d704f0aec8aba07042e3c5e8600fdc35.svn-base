@@ -1,0 +1,334 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Ordine;
+import it.ltc.logica.database.model.centrale.Tracking;
+import it.ltc.logica.database.model.centrale.Valuta;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.database.model.centrale.indirizzi.Nazione;
+import it.ltc.logica.database.model.centrale.indirizzi.Provincia;
+import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioSpedizione;
+import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.database.model.centrale.trasporti.TipoContrassegno;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeContrassegno;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiOrdineDaSpedizione;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiSpedizione;
+import it.ltc.logica.trasporti.gui.composite.CompositeIndirizzo;
+import it.ltc.logica.trasporti.controller.SpedizioniController;
+import it.ltc.logica.trasporti.controller.TrackingController;
+
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class SpedizioneDialog extends DialogModel<Spedizione> {
+
+	public static final String DEFAULT_TITLE = "Dettaglio Spedizione";
+
+	private final SpedizioniController controller;
+	private final TrackingController controllerTracking;
+	
+	private final boolean modifica;
+
+	private final Ordine ordine;
+	private final Spedizione spedizione;
+	private final Contrassegno contrassegno;
+	private final Indirizzo destinazione;
+	private final Indirizzo mittente;
+
+	private CTabFolder tabFolder;
+	
+	private CompositeDatiSpedizione compositeDatiSpedizione;
+	private CompositeDatiOrdineDaSpedizione compositeOrdine;
+	private CompositeContrassegno compositeContrassegno;
+	private CompositeIndirizzo compositeDestinatario;
+	private CompositeIndirizzo compositeMittente;
+
+	public SpedizioneDialog(Spedizione s) {
+		super(DEFAULT_TITLE, s);
+		controller = SpedizioniController.getInstance();
+		controllerTracking = TrackingController.getInstance();
+		spedizione = s;
+		if (spedizione.getContrassegno())
+			contrassegno = controller.getContrassegno(spedizione.getId());
+		else
+			contrassegno = null;
+		destinazione = controller.getIndirizzo(spedizione.getIdIndirizzoDestinazione());
+		mittente = controller.getIndirizzo(spedizione.getIdIndirizzoPartenza());
+		ordine = controller.getOrdine(spedizione.getIdOrdine());
+		modifica = ControllerUtente.getInstance().isAllowed(Permessi.SPEDIZIONI_MODIFICA.getID());
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+
+		tabFolder = new CTabFolder(container, SWT.BORDER);
+		tabFolder.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		tabFolder.setSelectionBackground(Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND_GRADIENT));
+
+		CTabItem tbtmDatiSpedizione = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDatiSpedizione.setText("Dettagli Spedizione");
+
+		Composite compositeSpedizione = new Composite(tabFolder, SWT.NONE);
+		compositeSpedizione.setLayout(new GridLayout(1, false));
+		
+		
+		compositeDatiSpedizione = new CompositeDatiSpedizione(compositeSpedizione, SWT.NONE);
+		compositeDatiSpedizione.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeDatiSpedizione.enableInputElements(modifica);
+		addChild(compositeDatiSpedizione);
+		
+		tbtmDatiSpedizione.setControl(compositeSpedizione);
+		
+		Button btnMostraTracking = new Button(compositeSpedizione, SWT.NONE);
+		btnMostraTracking.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				mostraTracking();
+			}
+		});
+		btnMostraTracking.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false, 1, 1));
+		btnMostraTracking.setBounds(0, 0, 75, 25);
+		btnMostraTracking.setText("Mostra Tracking");
+		
+		if (contrassegno != null) {
+			CTabItem tbtmDatiContrassegno = new CTabItem(tabFolder, SWT.NONE);
+			tbtmDatiContrassegno.setText("Contrassegno");
+			compositeContrassegno = new CompositeContrassegno(tabFolder, SWT.NONE);
+			compositeContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+			compositeContrassegno.enableInputElements(modifica);
+			addChild(compositeContrassegno);
+			tbtmDatiContrassegno.setControl(compositeContrassegno);
+		}
+		
+		CTabItem tbtmDettagliOrdine = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDettagliOrdine.setText("Dettagli Ordine");
+		
+		compositeOrdine = new CompositeDatiOrdineDaSpedizione(tabFolder, SWT.NONE);
+		compositeOrdine.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeOrdine.enableInputElements(modifica);
+		addChild(compositeOrdine);
+		tbtmDettagliOrdine.setControl(compositeOrdine);
+
+		CTabItem tbtmDestinatario = new CTabItem(tabFolder, SWT.NONE);
+		tbtmDestinatario.setText("Destinatario");
+
+		Composite compositeDatiDestinatario = new Composite(tabFolder, SWT.NONE);
+		tbtmDestinatario.setControl(compositeDatiDestinatario);
+		compositeDatiDestinatario.setLayout(new GridLayout(1, false));
+
+		compositeDestinatario = new CompositeIndirizzo(compositeDatiDestinatario, SWT.NONE,	CompositeIndirizzo.TipoIndirizzo.DESTINATARIO);
+		compositeDestinatario.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeDestinatario.enableInputElements(modifica);
+		addChild(compositeDestinatario);
+
+		CTabItem tbtmMittente = new CTabItem(tabFolder, SWT.NONE);
+		tbtmMittente.setText("Mittente");
+
+		Composite compositeDatiMittente = new Composite(tabFolder, SWT.NONE);
+		tbtmMittente.setControl(compositeDatiMittente);
+		compositeDatiMittente.setLayout(new GridLayout(1, false));
+
+		compositeMittente = new CompositeIndirizzo(compositeDatiMittente, SWT.NONE, CompositeIndirizzo.TipoIndirizzo.MITTENTE);
+		compositeMittente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeMittente.enableInputElements(modifica);
+		addChild(compositeMittente);
+		
+	}
+
+	@Override
+	public void loadModel() {
+		// Dati spedizione
+		compositeDatiSpedizione.setCorriere(Corriere.getCorriere(spedizione.getIdCorriere()));
+		compositeDatiSpedizione.setServizio(ServizioSpedizione.getServizio(spedizione.getServizio()));
+		String letteraDiVettura = spedizione.getLetteraDiVettura() != null ? spedizione.getLetteraDiVettura() : "";
+		compositeDatiSpedizione.setLetteraDiVettura(letteraDiVettura);
+		compositeDatiSpedizione.setColli(spedizione.getColli());
+		compositeDatiSpedizione.setVolume(spedizione.getVolume());
+		compositeDatiSpedizione.setPeso(spedizione.getPeso());
+		compositeDatiSpedizione.setDataSpedizione(spedizione.getData());
+		//Dati Ordine
+		compositeOrdine.setCommessa(Commessa.getCommessa(spedizione.getIdCommessa()));
+		String riferimentoCliente = spedizione.getRiferimentoCliente() != null ? spedizione.getRiferimentoCliente() : "";
+		compositeOrdine.setRiferimentoCliente(riferimentoCliente);
+		String riferimentoInterno = spedizione.getRiferimentoMittente() != null ? spedizione.getRiferimentoMittente() : "";
+		compositeOrdine.setRiferimentoInterno(riferimentoInterno);
+		compositeOrdine.setPezzi(spedizione.getPezzi());
+		String note = spedizione.getNote() != null ? spedizione.getNote() : "";
+		compositeOrdine.setNote(note);
+		//Contrassegno
+		if (contrassegno != null) {
+			compositeContrassegno.setValore(contrassegno.getValore());
+			compositeContrassegno.setValuta(Valuta.getValuta(contrassegno.getValuta()));
+			compositeContrassegno.setTipoContrassegno(TipoContrassegno.getTipoContrassegno(contrassegno.getTipo()));
+			compositeContrassegno.setAnnullato(contrassegno.getAnnullato());
+		}
+		// Destinatario
+		compositeDestinatario.setIndirizzo(destinazione.getIndirizzo());
+		compositeDestinatario.setCap(destinazione.getCap());
+		compositeDestinatario.setRagioneSociale(destinazione.getRagioneSociale());
+		compositeDestinatario.setLocalita(destinazione.getLocalita());
+		compositeDestinatario.setNazione(Nazione.getNazione(destinazione.getNazione()));
+		compositeDestinatario.setProvincia(Provincia.getProvincia(destinazione.getProvincia()));
+		compositeDestinatario.setPiano(destinazione.getConsegnaPiano());
+		compositeDestinatario.setPrivato(destinazione.getConsegnaPrivato());
+		compositeDestinatario.setGDO(destinazione.getConsegnaGDO());
+		compositeDestinatario.setAppuntamento(destinazione.getConsegnaAppuntamento());
+		// Mittente
+		compositeMittente.setIndirizzo(mittente.getIndirizzo());
+		compositeMittente.setCap(mittente.getCap());
+		compositeMittente.setRagioneSociale(mittente.getRagioneSociale());
+		compositeMittente.setLocalita(mittente.getLocalita());
+		compositeMittente.setNazione(Nazione.getNazione(mittente.getNazione()));
+		compositeMittente.setProvincia(Provincia.getProvincia(mittente.getProvincia()));
+		compositeMittente.setPiano(mittente.getConsegnaPiano());
+		compositeMittente.setPrivato(mittente.getConsegnaPrivato());
+		compositeMittente.setGDO(mittente.getConsegnaGDO());
+		compositeMittente.setAppuntamento(mittente.getConsegnaAppuntamento());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// Dati spedizione
+		spedizione.setIdCorriere(compositeDatiSpedizione.getCorriere().getId());
+		spedizione.setServizio(compositeDatiSpedizione.getServizio().getCodice());
+		spedizione.setLetteraDiVettura(compositeDatiSpedizione.getLetteraDiVettura());
+		spedizione.setColli(compositeDatiSpedizione.getColli());
+		spedizione.setVolume(compositeDatiSpedizione.getVolume());
+		spedizione.setPeso(compositeDatiSpedizione.getPeso());
+		spedizione.setData(compositeDatiSpedizione.getDataSpedizione());
+		//Dati ordine
+		int idCommessa = compositeOrdine.getCommessa().getId();
+		String riferimentoCliente = compositeOrdine.getRiferimentoCliente();
+		String riferimentoMittente = compositeOrdine.getRiferimentoInterno();
+		String note = compositeOrdine.getNote().isEmpty() ? null : compositeOrdine.getNote();
+		spedizione.setIdCommessa(idCommessa);
+		if (ordine != null) {
+			ordine.setIdCommessa(idCommessa);
+			ordine.setRiferimentoCliente(riferimentoCliente);
+			ordine.setRiferimentoInterno(riferimentoMittente);
+			ordine.setNote(note);
+		}
+		spedizione.setRiferimentoCliente(riferimentoCliente);
+		spedizione.setRiferimentoMittente(riferimentoMittente);
+		spedizione.setPezzi(compositeOrdine.getPezzi());
+		spedizione.setNote(note);
+		//Controllo la completezza dei dati
+		Integer colli = spedizione.getColli();
+		Integer pezzi = spedizione.getPezzi();
+		Double volume = spedizione.getVolume();
+		Double peso = spedizione.getPeso();
+		if (colli != null && colli > 0 && pezzi != null && pezzi > 0 && volume != null && volume > 0 && peso != null && peso > 0) {
+			spedizione.setDatiCompleti(true);
+		}
+		//Contrassegno
+		if (contrassegno != null) {
+			contrassegno.setValore(compositeContrassegno.getValore());
+			contrassegno.setValuta(compositeContrassegno.getValuta().getCodice());
+			contrassegno.setTipo(compositeContrassegno.getTipoContrassegno().getCodice());
+			contrassegno.setAnnullato(compositeContrassegno.getAnnullato());
+		}
+		// Destinatario
+		destinazione.setIndirizzo(compositeDestinatario.getIndirizzo());
+		destinazione.setCap(compositeDestinatario.getCap());
+		destinazione.setRagioneSociale(compositeDestinatario.getRagioneSociale());
+		destinazione.setLocalita(compositeDestinatario.getLocalita());
+		destinazione.setNazione(compositeDestinatario.getNazione().getCodiceISO3());
+		destinazione.setProvincia(compositeDestinatario.getProvincia().getSigla());
+		destinazione.setConsegnaPiano(compositeDestinatario.getPiano());
+		destinazione.setConsegnaPrivato(compositeDestinatario.getPrivato());
+		destinazione.setConsegnaGDO(compositeDestinatario.getGDO());
+		destinazione.setConsegnaAppuntamento(compositeDestinatario.getAppuntamento());
+		// Mittente
+		mittente.setIndirizzo(compositeMittente.getIndirizzo());
+		mittente.setCap(compositeMittente.getCap());
+		mittente.setRagioneSociale(compositeMittente.getRagioneSociale());
+		mittente.setLocalita(compositeMittente.getLocalita());
+		mittente.setNazione(compositeMittente.getNazione().getCodiceISO3());
+		mittente.setProvincia(compositeMittente.getProvincia().getSigla());
+		mittente.setConsegnaPiano(compositeMittente.getPiano());
+		mittente.setConsegnaPrivato(compositeMittente.getPrivato());
+		mittente.setConsegnaGDO(compositeMittente.getGDO());
+		mittente.setConsegnaAppuntamento(compositeMittente.getAppuntamento());
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateSpedizione = controller.aggiornaSpedizione(spedizione);
+		boolean updateOrdine = true;
+		if (ordine != null)
+			updateOrdine = controller.aggiornaOrdine(ordine);
+		boolean updateContrassegno = true;
+		if (contrassegno != null)
+			updateContrassegno = controller.aggiornaContrassegno(contrassegno);
+		boolean updateDestinatario = controller.aggiornaIndirizzo(destinazione);
+		boolean updateMittente = controller.aggiornaIndirizzo(mittente);
+		boolean update = updateSpedizione && updateOrdine && updateContrassegno && updateDestinatario && updateMittente;
+		return update;
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modificaSpedizione = compositeDatiSpedizione.isDirty();
+		boolean modificaOrdine = compositeOrdine.isDirty();
+		boolean modificaContrassegno = false;
+		if (compositeContrassegno != null)
+			compositeContrassegno.isDirty();
+		boolean modificaDestinatario = compositeDestinatario.isDirty();
+		boolean modificaMittente = compositeMittente.isDirty();
+		return modificaSpedizione || modificaOrdine || modificaContrassegno || modificaDestinatario || modificaMittente;
+	}
+
+	@Override
+	public Spedizione getValore() {
+		return spedizione;
+	}
+
+	@Override
+	public Spedizione createNewModel() {
+		Spedizione spedizione = new Spedizione();
+		return spedizione;
+	}
+
+	@Override
+	public boolean insertModel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoSpedizione = spedizione.validate();
+		errors.addAll(esitoSpedizione.getMessages());
+		ValidationResult esitoMittente = mittente.validate();
+		errors.addAll(esitoMittente.getMessages());
+		ValidationResult esitoDestinatario = destinazione.validate();
+		errors.addAll(esitoDestinatario.getMessages());
+		return errors;
+	}
+	
+	private void mostraTracking() {
+		List<Tracking> lista = controllerTracking.getTracking(spedizione.getIdOrdine());
+		TrackingDialog dialog = new TrackingDialog(spedizione.getRiferimentoCliente(), lista);
+		dialog.open();
+	}
+}

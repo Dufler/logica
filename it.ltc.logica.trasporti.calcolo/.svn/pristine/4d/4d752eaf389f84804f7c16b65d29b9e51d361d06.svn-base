@@ -1,0 +1,23 @@
+package it.ltc.logica.trasporti.calcolo.ambiti.simulazione;
+
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.trasporti.calcolo.ambiti.common.NoloSud;
+
+public class NoloSUDSimulazione extends NoloSud {
+	
+	public static final int ID = 77;
+	
+	private static NoloSUDSimulazione instance;
+
+	private NoloSUDSimulazione(SottoAmbitoFattura ambito) {
+		super(ambito);
+	}
+
+	public static NoloSUDSimulazione getInstance(SottoAmbitoFattura ambito) {
+		if (instance == null) {
+			instance = new NoloSUDSimulazione(ambito);
+		}
+		return instance;
+	}
+
+}

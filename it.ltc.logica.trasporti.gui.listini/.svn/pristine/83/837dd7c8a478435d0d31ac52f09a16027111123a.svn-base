@@ -1,0 +1,89 @@
+package it.ltc.logica.trasporti.gui.listini.elements;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+import it.ltc.logica.container.controller.Permessi;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.gui.listini.dialogs.cliente.ProprietaListinoCommessa;
+
+public class TabellaListiniClienti extends Tabella<ListinoCommessa> {
+
+	private String filtroListini;
+	
+	public TabellaListiniClienti(Composite parent) {
+		super(parent, Tabella.STILE_SELEZIONE_SINGOLA, new OrdinatoreListiniClienti());
+		
+		aggiungiColonna("Listino", 100, new EtichettatoreListiniClienti(), 0);
+		aggiungiColonna("Tipo", 100, new EtichettatoreListiniClienti(), 1);
+		aggiungiColonna("Descrizione", 100, new EtichettatoreListiniClienti(), 2);
+	}
+	
+	public void setFiltro(String filtro) {
+		filtroListini = filtro;
+	}
+
+	@Override
+	protected void setFiltro() {
+		addFilter(new ViewerFilter() {
+			public boolean select(Viewer viewer, Object parentElement, Object element) {
+				boolean toShow = true;
+				ListinoCommessa listino = (ListinoCommessa) element;
+				String nome = listino.getNome().toUpperCase();
+				if (filtroListini != null)
+					toShow = nome.contains(filtroListini);
+				return toShow;
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Propriet\u00E0");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	}
+	
+	private void apriDialogModifica() {
+		ListinoCommessa listinoSelezionato = getListinoSelezionato();
+		if (listinoSelezionato != null) {
+			int idPermesso = listinoSelezionato.isSimulazione() ? Permessi.LISTINI_CLIENTI_SIMULAZIONE_MODIFICA.getID() : Permessi.LISTINI_CLIENTI_FATTURAZIONE_MODIFICA.getID();
+			boolean permessoGestione = ControllerUtente.getInstance().isAllowed(idPermesso);
+			ProprietaListinoCommessa proprieta = new ProprietaListinoCommessa(listinoSelezionato, permessoGestione);
+			int esito = proprieta.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+	
+	private ListinoCommessa getListinoSelezionato() {
+		ListinoCommessa listinoSelezionato = null;
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			listinoSelezionato = (ListinoCommessa) selectedItem.getData();
+		}
+		return listinoSelezionato;
+	}
+
+}

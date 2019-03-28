@@ -1,0 +1,202 @@
+package it.ltc.logica.ufficio.gui.ingressi.wizard.nuovo;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
+import it.ltc.logica.database.model.centrale.ingressi.Ingresso.TipoIngresso;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.DateField;
+import it.ltc.logica.gui.input.TextForString;
+import it.ltc.logica.gui.wizard.PaginaWizard;
+import it.ltc.logica.ufficio.gui.elements.fornitore.DialogSelezioneFornitore;
+
+public class PaginaTestata extends PaginaWizard {
+
+	private static final String title = "Nuovo Carico";
+	private static final String description = "Inserisci le informazioni generali sul carico.";
+	
+	private static final String TOOLTIP_FORNITORE = "Doppio click per inserire il fornitore.";
+	//private static final String TOOLTIP_DOCUMENTO = "Doppio click per inserire il documento d'ingresso.";
+	
+	private static final String TITLE_SELEZIONE_COMMESSA = "Selezione necessaria";
+	private static final String MESSAGE_SELEZIONE_COMMESSA = "\u00C8 necessario selezionare una commessa per poter scegliere o inserire un fornitore.";
+	private static final String MESSAGE_SELEZIONE_FORNITORE = "\u00C8 necessario selezionare un nuovo fornitore per la commessa selezionata.";
+	
+	private final Ingresso ingresso;
+	private Fornitore fornitore;
+	//private Documento documento;
+	
+	private final ControllerCommesse controllerCommesse;
+	
+	private boolean dettaglioPerCollo;
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<TipoIngresso> comboTipo;
+	private TextForString textFornitore;
+	private TextForString textDocumento;
+	private DateField dateTime;
+	private Label lblDettaglio;
+	private Button btnPerCollo;
+	
+	protected PaginaTestata(Ingresso ingresso) {
+		super(title, description);
+		this.ingresso = ingresso;
+		controllerCommesse = ControllerCommesse.getInstance();
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblCommessa = new Label(container, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(container);
+		comboCommessa.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkCommessaFornitore();
+			}
+		});
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(controllerCommesse.getCommesse());
+		addChild(comboCommessa);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblFornitore = new Label(container, SWT.NONE);
+		lblFornitore.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblFornitore.setText("Fornitore: ");
+		
+		textFornitore = new TextForString(container, SWT.BORDER);
+		textFornitore.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				selezionaFornitore();
+			}
+		});
+		textFornitore.setEditable(false);
+		textFornitore.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		textFornitore.setToolTipText(TOOLTIP_FORNITORE);
+		textFornitore.setMessage(TOOLTIP_FORNITORE);
+		addChild(textFornitore);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblTipo = new Label(container, SWT.NONE);
+		lblTipo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblTipo.setText("Tipo: ");
+		
+		comboTipo = new ComboBox<TipoIngresso>(container);
+		comboTipo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboTipo.setItems(TipoIngresso.values());
+		addChild(comboTipo);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDocumento = new Label(container, SWT.NONE);
+		lblDocumento.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDocumento.setText("Documento: ");
+		
+//		textDocumento = new Text(container, SWT.BORDER);
+//		textDocumento.addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void mouseDoubleClick(MouseEvent e) {
+//				selezionaDocumento();
+//			}
+//		});
+//		textDocumento.setEditable(false);
+//		textDocumento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+//		textDocumento.setToolTipText(TOOLTIP_DOCUMENTO);
+//		textDocumento.setMessage(TOOLTIP_DOCUMENTO);
+		
+		textDocumento = new TextForString(container, SWT.BORDER);
+		textDocumento.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(textDocumento);
+
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblDataArrivo = new Label(container, SWT.NONE);
+		lblDataArrivo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblDataArrivo.setText("Data arrivo: ");
+		
+		dateTime = new DateField(container);
+		addChild(dateTime);
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblDettaglio = new Label(container, SWT.NONE);
+		lblDettaglio.setText("Dettaglio: ");
+		
+		btnPerCollo = new Button(container, SWT.CHECK);
+		btnPerCollo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dettaglioPerCollo = btnPerCollo.getSelection();
+			}
+		});
+		btnPerCollo.setSelection(false);
+		btnPerCollo.setText("per collo");
+		
+		new SpacerLabel(container, SWT.NONE, SpacerLabel.SHORT);
+
+	}
+
+	private void selezionaFornitore() {
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		if (commessaSelezionata != null) {
+			DialogSelezioneFornitore dialog = new DialogSelezioneFornitore(commessaSelezionata);
+			Fornitore f = dialog.apri();
+			if (f != null) {
+				fornitore = f;
+				textFornitore.setText(fornitore.getNome());
+			}
+		} else {
+			DialogMessaggio.openError(TITLE_SELEZIONE_COMMESSA, MESSAGE_SELEZIONE_COMMESSA);
+		}
+		
+	}
+	
+	private void checkCommessaFornitore() {
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		if (commessaSelezionata != null && fornitore != null && fornitore.getIdCommessa() != commessaSelezionata.getId()) {
+			//Notifico l'utente che la nuova selezione di commessa prevede il cambiamento del fornitore
+			fornitore = null;
+			textFornitore.setText("");
+			DialogMessaggio.openInformation(TITLE_SELEZIONE_COMMESSA, MESSAGE_SELEZIONE_FORNITORE);
+		}
+	}
+	
+//	private void selezionaDocumento() {}
+
+	@Override
+	public void copyDataToModel() {
+		ingresso.setDataArrivo(dateTime.getValue());
+		ingresso.setIdCommessa(comboCommessa.getSelectedValue().getId());
+		ingresso.setIdFornitore(fornitore.getId());
+		ingresso.setRiferimentoCliente(textDocumento.getText());
+		ingresso.setRiferimentoInterno(textDocumento.getText());
+		ingresso.setStato("INSERITO");
+		ingresso.setTipo(comboTipo.getSelectedValue().name());
+	}
+
+	public boolean isDettaglioPerCollo() {
+		return dettaglioPerCollo;
+	}
+
+}

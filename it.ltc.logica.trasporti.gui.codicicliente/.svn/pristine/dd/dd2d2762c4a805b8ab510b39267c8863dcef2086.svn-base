@@ -1,0 +1,246 @@
+ 
+package it.ltc.logica.trasporti.gui.codicicliente.parts;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.database.model.centrale.CodiceClienteCorriere;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.gui.container.DialogWizard;
+import it.ltc.logica.trasporti.gui.codicicliente.dialogs.DialogCodiceCliente;
+import it.ltc.logica.trasporti.gui.codicicliente.wizard.NuovoCodiceClienteWizard;
+import it.ltc.logica.trasporti.controller.CodiciClienteController;
+import it.ltc.logica.trasporti.controller.ListiniClientiController;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+
+public class CodiciClientePart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.codicicliente.part.codicicliente";
+	
+	private ListiniCorrieriController controllerCorriere;
+	private ListiniClientiController controllerCliente;
+	private CodiciClienteController controller;
+	
+	private TableViewer tableViewer;
+	private Table table;
+	private Button btnEliminaCodiceCliente;
+	
+	@Inject
+	public CodiciClientePart() {
+		controller = CodiciClienteController.getInstance();
+		controllerCorriere = ListiniCorrieriController.getInstance();
+		controllerCliente = ListiniClientiController.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Composite composite = new Composite(parent, SWT.NONE);
+		composite.setLayout(new GridLayout(2, false));
+		
+		Button btnNuovoCodiceCliente = new Button(composite, SWT.NONE);
+		btnNuovoCodiceCliente.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				aggiungiCodiceCliente();
+			}
+		});
+		btnNuovoCodiceCliente.setText("Nuovo Codice Cliente");
+		
+		btnEliminaCodiceCliente = new Button(composite, SWT.NONE);
+		btnEliminaCodiceCliente.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean conferma = mostraMessaggioConferma("Conferma eliminazione", "Sei sicuro di voler eliminare il codice cliente selezionato?");
+				if (conferma) {
+					eliminaCodiceCliente();
+				}
+			}
+		});
+		btnEliminaCodiceCliente.setText("Elimina Codice Cliente");
+		btnEliminaCodiceCliente.setEnabled(false);
+		
+		tableViewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		tableViewer.setContentProvider(ArrayContentProvider.getInstance());
+		
+		table = tableViewer.getTable();
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+		table.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				int selectedIndex = table.getSelectionIndex();
+				boolean selection = selectedIndex != -1;
+				btnEliminaCodiceCliente.setEnabled(selection);
+			}
+		});
+		table.setLinesVisible(true);
+		table.setHeaderVisible(true);
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn colonnaCodice = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaCodice.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				return c.getCodiceCliente();
+			}
+		});
+		
+		TableColumn tblclmnCodice = colonnaCodice.getColumn();
+		tblclmnCodice.setWidth(100);
+		tblclmnCodice.setText("Codice");
+		
+		TableViewerColumn colonnaCorriere = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaCorriere.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				Corriere corriere = Corriere.getCorriere(c.getIdCorriere());
+				return corriere.getNome();
+			}
+		});
+		
+		TableColumn tblclmnCorriere = colonnaCorriere.getColumn();
+		tblclmnCorriere.setWidth(100);
+		tblclmnCorriere.setText("Corriere");
+		
+		TableViewerColumn colonnaListinoCorriere = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaListinoCorriere.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				ListinoCorriere listino = controllerCorriere.getListinoCorriere(c.getIdListinoCorriere());
+				return listino.getNome();
+			}
+		});
+		
+		TableColumn tblclmnListinoCorriere = colonnaListinoCorriere.getColumn();
+		tblclmnListinoCorriere.setWidth(100);
+		tblclmnListinoCorriere.setText("Listino Corriere");
+		
+		TableViewerColumn colonnaCliente = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaCliente.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				Commessa commessa = Commessa.getCommessa(c.getIdCommessa());
+				return commessa.getNome();
+			}
+		});
+		
+		TableColumn tblclmnCliente = colonnaCliente.getColumn();
+		tblclmnCliente.setWidth(100);
+		tblclmnCliente.setText("Cliente");
+		
+		TableViewerColumn colonnaListinoCliente = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaListinoCliente.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				ListinoCommessa listino = controllerCliente.getListinoCliente(c.getIdListinoCommessa());
+				return listino.getNome();
+			}
+		});
+		
+		TableColumn tblclmnListinoCliente = colonnaListinoCliente.getColumn();
+		tblclmnListinoCliente.setWidth(100);
+		tblclmnListinoCliente.setText("Listino Cliente");
+		
+		TableViewerColumn colonnaDescrizione = new TableViewerColumn(tableViewer, SWT.NONE);
+		colonnaDescrizione.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				CodiceClienteCorriere c = (CodiceClienteCorriere) element;
+				return c.getDescrizione();
+			}
+		});
+		
+		TableColumn tblclmnDescrizione = colonnaDescrizione.getColumn();
+		tblclmnDescrizione.setWidth(100);
+		tblclmnDescrizione.setText("Descrizione");
+		
+		aggiornaCodici();
+	}
+	
+	private void aggiornaCodici() {
+		tableViewer.setInput(controller.getCodiciCliente());
+		for (TableColumn column : table.getColumns()) {
+			column.pack();
+		}
+	}
+	
+	private void apriDialogModifica() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			CodiceClienteCorriere codiceSelezionato = (CodiceClienteCorriere) selectedItem.getData();
+			DialogCodiceCliente dialog = new DialogCodiceCliente(codiceSelezionato);
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				tableViewer.refresh();
+			}
+		}
+	}
+	
+	private void aggiungiCodiceCliente() {
+		DialogWizard wizard = new DialogWizard(new NuovoCodiceClienteWizard(), DialogWizard.WIZARD_LISTINO);
+		int esito = wizard.open();
+		if (esito == WizardDialog.OK) {
+			aggiornaCodici();
+		}
+	}
+	
+	private void eliminaCodiceCliente() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			CodiceClienteCorriere codiceSelezionato = (CodiceClienteCorriere) selectedItem.getData();
+			boolean eliminazione = controller.elimina(codiceSelezionato);
+			if (eliminazione) {
+				btnEliminaCodiceCliente.setEnabled(false);
+				aggiornaCodici();
+			} else {
+				mostraMessaggioErrore("Eliminazione fallita", "Impossibile eliminare il codice cliente selezionato.");
+			}
+		}
+	}
+	
+	private void mostraMessaggioErrore(String titolo, String messaggio) {
+		Display display = Display.getCurrent();
+		Shell messageShell = display.getActiveShell();
+		MessageDialog.openError(messageShell, titolo, messaggio);
+	}
+	
+	private boolean mostraMessaggioConferma(String titolo, String messaggio) {
+		Display display = Display.getCurrent();
+		Shell messageShell = display.getActiveShell();
+		boolean scelta = MessageDialog.openConfirm(messageShell, titolo, messaggio);
+		return scelta;
+	}
+	
+}

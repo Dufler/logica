@@ -1,0 +1,110 @@
+package it.ltc.logica.trasporti.gui.spedizioni.wizard;
+
+import java.util.Date;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.gui.wizard.PaginaWizard;
+import it.ltc.logica.trasporti.gui.composite.CompositeContrassegno;
+import it.ltc.logica.trasporti.gui.composite.CompositeDatiSpedizione;
+
+public class InserimentoDatiSpedizioneWizardPage extends PaginaWizard {
+	
+	private static final String titolo = "Inserisci una nuova spedizione";
+	private static final String descrizione = "Inserisci i dati sulla spedizione";
+	
+	private CompositeDatiSpedizione compositeDatiSpedizione;
+	private CompositeContrassegno compositeContrassegno;
+	private Button btnContrassegno;
+
+	public InserimentoDatiSpedizioneWizardPage() {
+		super(titolo, descrizione);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeDatiSpedizione = new CompositeDatiSpedizione(container, SWT.NONE);
+		compositeDatiSpedizione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(compositeDatiSpedizione);
+		
+		Composite compositeDomanda = new Composite(container, SWT.NONE);
+		compositeDomanda.setLayout(new GridLayout(1, false));
+		compositeDomanda.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		btnContrassegno = new Button(compositeDomanda, SWT.CHECK);
+		btnContrassegno.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				setContrassegno();
+				validate();
+			}
+		});
+		btnContrassegno.setText("Contrassegno");
+		
+		compositeContrassegno = new CompositeContrassegno(container, SWT.NONE);
+		compositeContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeContrassegno.enableInputElements(false);
+		addChild(compositeContrassegno);
+	}
+	
+	private void setContrassegno() {
+		boolean contrassegno = btnContrassegno.getSelection();
+		compositeContrassegno.enableInputElements(contrassegno);
+	}
+	
+	@Override
+	public boolean validate() {
+		boolean checkDatiSpedizione = compositeDatiSpedizione.isValid();
+		boolean contrassegno = btnContrassegno.getSelection();
+		boolean checkContrassegno = (contrassegno && compositeContrassegno.isValid()) || !contrassegno;
+		boolean valido = checkDatiSpedizione && checkContrassegno;
+		setPageComplete(valido);
+		return valido;
+	}
+	
+	public int getColli() {
+		return compositeDatiSpedizione.getColli();
+	}
+	
+	public double getPeso() {
+		return compositeDatiSpedizione.getPeso();
+	}
+	
+	public double getVolume() {
+		return compositeDatiSpedizione.getVolume();
+	}
+	
+	public Date getData() {
+		return compositeDatiSpedizione.getDataSpedizione();
+	}
+	
+	public boolean isContrassegno() {
+		return btnContrassegno.getSelection();
+	}
+	
+	public double getValoreContrassegno() {
+		return compositeContrassegno.getValore();
+	}
+	
+	public String getValutaContrassegno() {
+		return compositeContrassegno.getValuta().getCodice();
+	}
+	
+	public String getTipoContrassegno() {
+		return compositeContrassegno.getTipoContrassegno().getCodice();
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// TODO Auto-generated method stub
+		
+	}
+}

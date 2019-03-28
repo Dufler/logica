@@ -1,0 +1,69 @@
+package it.ltc.logica.gui.elements;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Image;
+
+/**
+ * Etichettatore per le tabelle.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ * @param <T>
+ */
+public abstract class Etichettatore<T> extends ColumnLabelProvider {
+
+	private int index;
+	
+	protected final SimpleDateFormat sdf;
+	protected final DecimalFormat formatEuro;
+	
+	public Etichettatore() {
+		sdf = new SimpleDateFormat("dd/MM/yyyy");
+		formatEuro = new DecimalFormat();
+		formatEuro.applyPattern("#,##0.000 €");
+	}
+	
+	protected void setColumnIndex(int columnIndex) {
+		index = columnIndex;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String getText(Object element) {
+		T oggetto = (T) element;
+		String testo = getTesto(oggetto, index);
+		return testo;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String getToolTipText(Object element) {
+		T oggetto = (T) element;
+		String testo = getTestoTooltip(oggetto, index);
+		return testo;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Image getImage(Object element) {
+		T oggetto = (T) element;
+		Image icona = getIcona(oggetto, index);
+		return icona;
+	}
+	
+	public abstract String getTesto(T oggetto, int colonna);
+	
+	public abstract String getTestoTooltip(T oggetto, int colonna);
+	
+	public abstract Image getIcona(T oggetto, int colonna);
+	
+	public int getToolTipTimeDisplayed(Object object) {
+		return 10000;
+	}
+	
+	public int getToolTipDisplayDelayTime(Object object) {
+		return 450;
+	}
+}

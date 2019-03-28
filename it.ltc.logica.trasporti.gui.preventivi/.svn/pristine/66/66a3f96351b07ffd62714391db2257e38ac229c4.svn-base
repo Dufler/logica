@@ -1,0 +1,56 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.IWizardPage;
+
+import it.ltc.logica.gui.container.PaginaWizardRisultati;
+import it.ltc.logica.gui.container.WizardConRisultati;
+
+public class PreventivoSpedizioneFittiziaSuColliWizard extends WizardConRisultati {
+	
+	private static final LinkedList<PaginaWizardRisultati> fine = new LinkedList<PaginaWizardRisultati>();
+	
+	private PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage selezioneCorrieriPage;
+	private PreventivoSpedizioneFittiziaSelezioneClientiWizardPage selezioneClientiPage;
+	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
+	private PreventivoSpedizioneFittiziaRisultatoWizardPage risultatoPage;
+
+	public PreventivoSpedizioneFittiziaSuColliWizard() {
+		setWindowTitle("Preventivo di costo per una spedizione fittizia");
+		selezioneCorrieriPage = new PreventivoSpedizioneFittiziaSelezioneCorrieriWizardPage();
+		selezioneClientiPage = new PreventivoSpedizioneFittiziaSelezioneClientiWizardPage();
+		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
+		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(datiPage);
+		addPage(selezioneCorrieriPage);
+		addPage(selezioneClientiPage);
+		addPage(risultatoPage);
+	}
+	
+	@Override
+	public IWizardPage getNextPage(IWizardPage currentPage) {
+		IWizardPage nextPage = null;
+		if (currentPage.equals(datiPage)) {
+			nextPage = selezioneCorrieriPage;
+		} else if (currentPage.equals(selezioneCorrieriPage)) {
+			nextPage = selezioneClientiPage;
+		} else if (currentPage.equals(selezioneClientiPage)) {
+			nextPage = risultatoPage;
+		}
+		return nextPage;
+	}
+
+	@Override
+	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
+		if (fine.isEmpty()) {
+			fine.add(risultatoPage);
+		}
+		return fine;
+	}
+
+}

@@ -1,0 +1,239 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.model.Assicurazione;
+import it.ltc.logica.database.model.Contrassegno;
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.database.model.ParticolaritaSpedizione;
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class SpedizioneModel {
+	
+	private static final EntityManager<Spedizione> managerSpedizioni = new EntityManager<Spedizione>(Spedizione.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Contrassegno> managerContrassegni = new EntityManager<Contrassegno>(Contrassegno.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Assicurazione> managerAssicurazioni = new EntityManager<Assicurazione>(Assicurazione.class, ConfigurationManager.getDefault());
+	private static final EntityManager<Indirizzo> managerIndirizzi = new EntityManager<Indirizzo>(Indirizzo.class, ConfigurationManager.getDefault());
+	private static final EntityManager<ParticolaritaSpedizione> managerParticolarita = new EntityManager<ParticolaritaSpedizione>(ParticolaritaSpedizione.class, ConfigurationManager.getDefault());
+	
+	private String label;
+	
+	private Spedizione spedizione;
+	private Contrassegno contrassegno;
+	private Assicurazione assicurazione;
+	private Indirizzo destinazione;
+	private Indirizzo partenza;
+	private ParticolaritaSpedizione particolarita;
+	
+	private final LinkedList<CommessaCalcolata> preventivoRicavo;
+	private final LinkedList<CorriereCalcolato> preventiviCosti;
+
+	public SpedizioneModel(Spedizione s, Contrassegno c, Assicurazione a, Indirizzo d, Indirizzo p, ParticolaritaSpedizione ps) {
+		spedizione = s;
+		contrassegno = c;
+		assicurazione = a;
+		destinazione = d;
+		partenza = p;
+		particolarita = ps;
+		preventivoRicavo = new LinkedList<CommessaCalcolata>();
+		preventiviCosti = new LinkedList<CorriereCalcolato>();
+		setLabel("");
+	}
+	
+	public static SpedizioneModel caricaSpedizione(int id) {
+		SpedizioneModel spedizione = null;
+		Spedizione filtroSpedizione = new Spedizione();
+		filtroSpedizione.setId(id);
+		Spedizione s = managerSpedizioni.getEntity(filtroSpedizione);
+		if (s != null) {
+			Contrassegno c = caricaContrassegno(s);
+			Assicurazione a = caricaAssicurazione(s);
+			Indirizzo d = caricaDestinazione(s);
+			Indirizzo p = caricaPartenza(s);
+			ParticolaritaSpedizione ps = caricaParticolarita(s);
+			spedizione = new SpedizioneModel(s, c, a, d, p, ps);
+		}
+		return spedizione;
+	}
+	
+	public static SpedizioneModel caricaSpedizione(Spedizione s) {
+		SpedizioneModel spedizione = null;
+		if (s != null) {
+			Contrassegno c = caricaContrassegno(s);
+			Assicurazione a = caricaAssicurazione(s);
+			Indirizzo d = caricaDestinazione(s);
+			Indirizzo p = caricaPartenza(s);
+			ParticolaritaSpedizione ps = caricaParticolarita(s);
+			spedizione = new SpedizioneModel(s, c, a, d, p, ps);
+		}
+		return spedizione;
+	}
+	
+	private static Contrassegno caricaContrassegno(Spedizione s) {
+		Contrassegno c = null;
+		if (s.getContrassegno()) {
+			Contrassegno filtroContrassegno = new Contrassegno();
+			filtroContrassegno.setIdSpedizione(s.getId());
+			c = managerContrassegni.getEntity(filtroContrassegno);
+		}
+		return c;
+	}
+	
+	private static Assicurazione caricaAssicurazione(Spedizione s) {
+		Assicurazione a = null;
+		if (s.getAssicurazione()) {
+			Assicurazione filtroAssicurazione = new Assicurazione();
+			filtroAssicurazione.setIdSpedizione(s.getId());
+			a = managerAssicurazioni.getEntity(filtroAssicurazione);
+		}
+		return a;
+	}
+	
+	private static Indirizzo caricaDestinazione(Spedizione s) {
+		Indirizzo filtroIndirizzo = new Indirizzo();
+		filtroIndirizzo.setId(s.getIdIndirizzoDestinazione());
+		Indirizzo d = managerIndirizzi.getEntity(filtroIndirizzo);
+		return d;
+	}
+	
+	private static Indirizzo caricaPartenza(Spedizione s) {
+		Indirizzo filtroIndirizzo = new Indirizzo();
+		filtroIndirizzo.setId(s.getIdIndirizzoPartenza());
+		Indirizzo p = managerIndirizzi.getEntity(filtroIndirizzo);
+		return p;
+	}
+	
+	private static ParticolaritaSpedizione caricaParticolarita(Spedizione s) {
+		ParticolaritaSpedizione ps = null;
+		if (s.getParticolarita() != null && s.getParticolarita()) {
+			ParticolaritaSpedizione filtroParticolarita = new ParticolaritaSpedizione();
+			filtroParticolarita.setIdSpedizione(s.getId());
+			ps = managerParticolarita.getEntity(filtroParticolarita);
+		}
+		return ps;
+	}
+	
+	public Spedizione getSpedizione() {
+		return spedizione;
+	}
+	public void setSpedizione(Spedizione spedizione) {
+		this.spedizione = spedizione;
+	}
+	public Contrassegno getContrassegno() {
+		return contrassegno;
+	}
+	public void setContrassegno(Contrassegno contrassegno) {
+		this.contrassegno = contrassegno;
+	}
+	public Assicurazione getAssicurazione() {
+		return assicurazione;
+	}
+	public void setAssicurazione(Assicurazione assicurazione) {
+		this.assicurazione = assicurazione;
+	}
+
+	public Indirizzo getDestinazione() {
+		return destinazione;
+	}
+
+	public void setDestinazione(Indirizzo destinazione) {
+		this.destinazione = destinazione;
+	}
+
+	public Indirizzo getPartenza() {
+		return partenza;
+	}
+
+	public void setPartenza(Indirizzo partenza) {
+		this.partenza = partenza;
+	}
+
+	public ParticolaritaSpedizione getParticolarita() {
+		return particolarita;
+	}
+
+	public void setParticolarita(ParticolaritaSpedizione particolarita) {
+		this.particolarita = particolarita;
+	}
+
+	public CommessaCalcolata getPreventivoRicavo() {
+		CommessaCalcolata ricavo = preventivoRicavo.isEmpty() ? null : preventivoRicavo.getLast();
+		return ricavo;
+	}
+	
+	public List<CommessaCalcolata> getPreventiviRicavo() {
+		return preventivoRicavo;
+	}
+
+	public void aggiungiPreventivoRicavo(CommessaCalcolata ricavo) {
+		preventivoRicavo.add(ricavo);
+	}
+	
+	public CorriereCalcolato getPreventivoCosto() {
+		CorriereCalcolato costo = preventiviCosti.isEmpty() ? null : preventiviCosti.getLast();
+		return costo;
+	}
+
+	public List<CorriereCalcolato> getPreventiviCosti() {
+		return preventiviCosti;
+	}
+	
+	public void aggiungiPreventivoCosto(CorriereCalcolato costo) {
+		preventiviCosti.add(costo);
+	}
+	
+	public double getCostoNoloBasePerRicavo() {
+		double totale = preventivoRicavo.getLast().getCostoNoloBase();
+		return totale;
+	}
+	
+	public double getCostoNoloBasePerCosto() {
+		CorriereCalcolato corriere = preventiviCosti.getLast();
+		double totale = corriere.getCostoNoloBase();
+		return totale;
+	}
+	
+	public double getCostoContrassegnoPerRicavo() {
+		double totale = preventivoRicavo.getLast().getCostoContrassegno();
+		return totale;
+	}
+	
+	public double getCostoContrassegnoPerCosto() {
+		double totale = preventiviCosti.getLast().getCostoContrassegno();
+		return totale;
+	}
+
+	public double getCostoNoloPerRicavo() {
+		double totale = preventivoRicavo.getLast().getCostoNolo();
+		return totale;
+	}
+	
+	public double getCostoNoloPerCosto() {
+		CorriereCalcolato corriere = preventiviCosti.getLast();
+		double totale = corriere.getCostoNolo();
+		return totale;
+	}
+	
+	public double getCostoTotalePerRicavo() {
+		double totale = preventivoRicavo.getLast().getTotale();
+		return totale;
+	}
+	
+	public double getCostoTotalePerCosto() {
+		CorriereCalcolato corriere = preventiviCosti.getLast();
+		double totale = corriere.getTotale();
+		return totale;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+}

@@ -1,0 +1,99 @@
+package it.ltc.logica.amministrazione.gui.commesse.dialogs;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.amministrazione.gui.commesse.elements.preferenze.TabellaPreferenzeFatturazione;
+import it.ltc.logica.amministrazione.gui.composite.CompositeCommessa;
+import it.ltc.logica.common.controller.ControllerClienti;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.common.controller.sistema.ControllerSedi;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.gui.dialog.DialogModel;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+
+public class DialogCommessa extends DialogModel<Commessa> {
+
+	public static final String title = "Commessa";
+	
+	private CompositeCommessa composite;
+	private TabellaPreferenzeFatturazione tabellaPreferenze;
+	
+	private final ControllerSedi controllerSedi;
+	private final ControllerClienti controllerClienti;
+	private final ControllerPreferenzeFatturazione controllerPreferenze;
+	
+	public DialogCommessa(Commessa value) {
+		super(title, value);
+		controllerSedi = ControllerSedi.getInstance();
+		controllerClienti = ControllerClienti.getInstance();
+		controllerPreferenze = ControllerPreferenzeFatturazione.getInstance();
+	}
+
+	@Override
+	public void loadModel() {
+		composite.setNome(valore.getNome());
+		composite.setDescrizione(valore.getDescrizione());
+		composite.setCliente(controllerClienti.getCliente(valore.getIdCliente()));
+		composite.setSede(controllerSedi.getSede(valore.getIdSede()));
+		tabellaPreferenze.setElementi(controllerPreferenze.getPreferenzePerCommessa(valore.getId()));
+	}
+
+	@Override
+	public void prefillModel() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void copyDataToModel() {
+		valore.setNome(composite.getNome());
+		valore.setDescrizione(composite.getDescrizione());
+		valore.setIdCliente(composite.getCliente().getId());
+		valore.setIdSede(composite.getSede().getId());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		return true;
+	}
+
+	@Override
+	public boolean insertModel() {
+		return false;
+	}
+
+	@Override
+	public Commessa createNewModel() {
+		return null;
+	}
+
+	@Override
+	public boolean isDirty() {
+		return false;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		composite = new CompositeCommessa(container, SWT.NONE);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		Label lblFatturazione = new Label(container, SWT.NONE);
+		lblFatturazione.setText("Preferenze di fatturazione:");
+		
+		tabellaPreferenze = new TabellaPreferenzeFatturazione(container, valore.getId());
+		Table table = tabellaPreferenze.getTable();
+		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+	}
+
+}

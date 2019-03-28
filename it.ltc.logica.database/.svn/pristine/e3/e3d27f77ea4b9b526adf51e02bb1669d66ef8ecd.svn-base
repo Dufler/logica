@@ -1,0 +1,133 @@
+package it.ltc.logica.database.model;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class Cap extends Entity {
+	
+	public static final String NOME_TABELLA = "cap";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static final List<Cap> listaCap = new ArrayList<Cap>();
+	private static final HashMap<String, Cap> mappaCap = new HashMap<String, Cap>();
+	private static final EntityManager<Cap> manager = new EntityManager<Cap>(Cap.class);
+	
+	private String cap;
+	private String localita;
+	private String provincia;
+	private String regione;
+	private Integer giorniConcessi;
+	private Boolean tntOre10;
+	private Boolean tntOre12;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.add(new Column("cap", Column.STRING, "cap", true, false));
+			variabili.addColumnString("localita", "localita");
+			variabili.addColumnString("provincia", "provincia");
+			variabili.addColumnString("regione", "regione");
+			variabili.addColumnInt("giorni_max_concessi", "giorniConcessi");
+			variabili.addColumnBoolean("tnt_ore_dieci", "tntOre10");
+			variabili.addColumnBoolean("tnt_ore_dodici", "tntOre12");
+		}
+		return variabili;
+	}
+	
+	public String toString() {
+		return cap;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof Cap) {
+			Cap c = (Cap) o;
+			uguali = cap.equalsIgnoreCase(c.getCap());
+		}
+		return uguali;
+	}
+	
+	public static List<Cap> getListaCap() {
+		if (listaCap.isEmpty()) {
+			listaCap.addAll(manager.getEntities());
+		}
+		return listaCap;
+	}
+	
+	public static Cap getInfoCap(String cap) {
+		if (mappaCap.isEmpty()) {
+			for (Cap entity : getListaCap()) {
+				mappaCap.put(entity.getCap(), entity);
+			}
+		}
+		return mappaCap.get(cap);
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getLocalita() {
+		return localita;
+	}
+
+	public void setLocalita(String localita) {
+		this.localita = localita;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getRegione() {
+		return regione;
+	}
+
+	public void setRegione(String regione) {
+		this.regione = regione;
+	}
+
+	public Integer getGiorniConcessi() {
+		return giorniConcessi;
+	}
+
+	public void setGiorniConcessi(Integer giorniConcessi) {
+		this.giorniConcessi = giorniConcessi;
+	}
+
+	public Boolean getTntOre10() {
+		return tntOre10;
+	}
+
+	public void setTntOre10(Boolean tntOre10) {
+		this.tntOre10 = tntOre10;
+	}
+
+	public Boolean getTntOre12() {
+		return tntOre12;
+	}
+
+	public void setTntOre12(Boolean tntOre12) {
+		this.tntOre12 = tntOre12;
+	}
+
+}

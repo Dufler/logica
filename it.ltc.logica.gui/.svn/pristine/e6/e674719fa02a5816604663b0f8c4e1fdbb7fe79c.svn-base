@@ -1,0 +1,172 @@
+package it.ltc.logica.gui.input;
+
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.gui.decoration.Decorator;
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+public abstract class TextField<T> extends Text implements InputElement, ValidationHandler {
+	
+	public static final String DEFAULT_ERROR_MESSAGE = "Il valore inserito non \u00E8 corretto.";
+	public static final String DEAFULT_REQUIRED_MESSAGE = "L'inserimento di un valore \u00E8 obbligatorio.";
+	
+	protected ControlDecoration wrongDecoration;
+	protected ControlDecoration requiredDecoration;
+	
+	private boolean required;
+	private boolean dirty;
+	private boolean valid;
+	
+	private String regex;
+	
+	private ParentValidationHandler successor;
+
+	public TextField(Composite parent, int style) {
+		super(parent, style);
+		if (parent instanceof ParentValidationHandler) {
+			successor = (ParentValidationHandler) parent;
+			successor.addChild(this);
+		} else {
+			successor = null;
+		}
+		regex = null;
+		required = true;
+		addDecoration();
+		addListener();
+	}
+	
+	public void checkSubclass() {
+		//DO NOTHING!
+	}
+	
+	public abstract T getValue();
+	
+	public abstract void setValue(T value);
+	
+	@Override
+	public boolean isRequired() {
+		return required;
+	}
+
+	@Override
+	public void setRequired(boolean required) {
+		this.required = required;
+		validate();
+	}
+	
+	@Override
+	public boolean isDirty() {
+		return dirty;
+	}
+	
+	protected void resetDirty() {
+		dirty = false;
+	}
+	
+	protected void showErrorDecoration() {
+		setDefaultErrorMessage();
+		wrongDecoration.show();
+	}
+	
+	/**
+	 * Imposta manualmente la validazione a false e mostra il messaggio d'errore specificato.
+	 * @param errorMessage il messaggio da mostrare sul tooltip.
+	 */
+	public void showErrorDecoration(String errorMessage) {
+		valid = false;
+		wrongDecoration.setDescriptionText(errorMessage);
+		wrongDecoration.show();
+	}
+	
+	protected void showRequiredDecoration() {
+		setDefaultRequiredMessage();
+		requiredDecoration.show();
+	}
+	
+	/**
+	 * Imposta manualmente la validazione a false, l'obbligatorietà a true e mostra il messaggio d'errore specificato.
+	 * @param requiredMessage il messaggio da mostrare sul tooltip.
+	 */
+	public void showRequiredDecoration(String requiredMessage) {
+		valid = false;
+		required = true;
+		requiredDecoration.setDescriptionText(requiredMessage);
+		requiredDecoration.show();
+	}
+	
+	private void hideDecorations() {
+		wrongDecoration.hide();
+		requiredDecoration.hide();
+	}
+	
+	private void addDecoration() {
+		wrongDecoration = new ControlDecoration(this, SWT.RIGHT);
+		Image imageWrong = Decorator.getImage(Decorator.RED_MARK_12X20);
+		wrongDecoration.setImage(imageWrong);
+		requiredDecoration = new ControlDecoration(this, SWT.RIGHT);
+		Image imageRequired = Decorator.getImage(Decorator.YELLOW_MARK_12X20);
+		requiredDecoration.setImage(imageRequired);
+		hideDecorations();
+	}
+	
+	protected abstract void setDefaultRequiredMessage();
+	
+	protected abstract void setDefaultErrorMessage();
+	
+	private void addListener() {
+		addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				validate();
+				dirty = true;			
+			}		
+		});
+	}
+
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		successor = parent;
+	}
+	
+	protected void setRegex(String regularExpression) {
+		regex = regularExpression;
+	}
+
+	@Override
+	public boolean validate() {
+		hideDecorations();
+		valid = true;
+		String valore = getText();
+		if (valore.isEmpty()) {
+			if (required) {
+				valid = false;
+				showRequiredDecoration();
+			}
+		} else if (regex != null) {
+			valid = valore.matches(regex);
+			if (!valid)
+				showErrorDecoration();
+		}
+		forwardValidation();
+		return valid;
+	}
+
+	@Override
+	public void forwardValidation() {
+		if (successor != null)
+			successor.validate();
+	}
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
+}

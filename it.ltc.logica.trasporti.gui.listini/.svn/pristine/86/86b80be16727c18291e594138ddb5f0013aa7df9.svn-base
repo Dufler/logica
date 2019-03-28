@@ -1,0 +1,106 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.corriere;
+
+import java.util.List;
+
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.Corriere;
+import it.ltc.logica.database.model.ListinoCorriere;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+import it.ltc.logica.trasporti.gui.composite.CompositeProprietaListinoCorriere;
+
+public class ProprietaListinoCorriere extends DialogModel<ListinoCorriere> {
+	
+	private static final String titolo = "Propriet\u00E0 - Listino corriere";
+	private static final String STAMPA_LABEL = "Stampa";
+	
+	private static ProprietaListinoCorriere instance;
+	
+	private ListiniCorrieriController controller;
+	
+	private ListinoCorriere listino;
+	
+	private CompositeProprietaListinoCorriere compositeListino;
+
+	public static ProprietaListinoCorriere getInstance(ListinoCorriere listinoCorriere) {
+		instance = new ProprietaListinoCorriere(listinoCorriere);
+		return instance;
+	}
+	
+	private ProprietaListinoCorriere(ListinoCorriere listinoCorriere) {
+		super(titolo, listinoCorriere);
+		controller = ListiniCorrieriController.getInstance();
+		listino = listinoCorriere;
+	}
+
+	@Override
+	protected Point getInitialSize() {
+		return new Point(450, 300);
+	}
+	
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		super.createButtonsForButtonBar(parent);
+		createButton(parent, IDialogConstants.DETAILS_ID, STAMPA_LABEL, false);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeListino = new CompositeProprietaListinoCorriere(container, SWT.NONE);
+		compositeListino.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		addChild(compositeListino);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return compositeListino.isDirty();
+	}
+
+	@Override
+	public void loadModel() {
+		compositeListino.setCorriere(Corriere.getCorriere(listino.getIdCorriere()));
+		compositeListino.setNome(listino.getNome());
+		compositeListino.setDescrizione(listino.getDescrizione());
+	}
+
+	@Override
+	public void copyDataToModel() {
+		listino.setIdCorriere(compositeListino.getCorriere().getId());
+		listino.setNome(compositeListino.getNome());
+		listino.setDescrizione(compositeListino.getDescrizione());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ValidationResult esito = listino.validate();
+		return esito.getMessages();
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean update = controller.aggiornaListino(listino);
+		return update;
+	}
+
+	@Override
+	public boolean insertModel() {
+		boolean insert = controller.creaNuovoListino(listino);
+		return insert;
+	}
+
+	@Override
+	public ListinoCorriere createNewModel() {
+		ListinoCorriere listino = new ListinoCorriere();
+		return listino;
+	}
+
+}

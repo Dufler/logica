@@ -1,0 +1,66 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.DateField;
+
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Text;
+
+public class CompositeGiacenza extends Gruppo {
+	
+	public static final String title = "Giacenza";
+	
+	private DateField dataApertura;
+	private DateField dataChiusura;
+	private Text textLDV;
+	private Text textLDVOriginale;
+
+	public CompositeGiacenza(Composite parent, int style) {
+		super(parent, style, title);
+		setLayout(new GridLayout(3, false));
+		
+		Label lblApertura = new Label(this, SWT.NONE);
+		lblApertura.setText("Apertura: ");
+		
+		dataApertura = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		
+		Label lblChiusura = new Label(this, SWT.NONE);
+		lblChiusura.setText("Chiusura: ");
+		
+		dataChiusura = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblLdv = new Label(this, SWT.NONE);
+		lblLdv.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblLdv.setText("LDV: ");
+		
+		textLDV = new Text(this, SWT.BORDER);
+		textLDV.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(this, SWT.NONE);
+		
+		Label lblLdvOriginale = new Label(this, SWT.NONE);
+		lblLdvOriginale.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblLdvOriginale.setText("LDV Originale: ");
+		
+		textLDVOriginale = new Text(this, SWT.BORDER);
+		textLDVOriginale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(this, SWT.NONE);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

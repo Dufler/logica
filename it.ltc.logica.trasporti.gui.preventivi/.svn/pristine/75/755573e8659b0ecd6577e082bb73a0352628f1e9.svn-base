@@ -1,0 +1,148 @@
+package it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti;
+
+import java.util.Date;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.centrale.Corriere;
+import it.ltc.logica.database.model.centrale.Nazione;
+import it.ltc.logica.database.model.centrale.ServizioCorriere;
+import it.ltc.logica.gui.composite.CompositeDate;
+import it.ltc.logica.gui.container.PaginaWizard;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.trasporti.controller.PreventivoEsistentiController;
+
+public class PreventivoSpedizioniEsistentiFiltroSpedizioni extends PaginaWizard {
+	
+	private static final String titolo = "Preventivo di costo e fatturazione per spedizioni gi\u00E0 esistenti";
+	private static final String descrizione = "Seleziona i criteri di filtraggio per le spedizioni da simulare.";
+	
+	private PreventivoEsistentiController controllerPreventivo;
+	
+	private ComboBox<Corriere> comboCorriere;
+	private ComboBox<ServizioCorriere> comboServizio;
+	private ComboBox<Nazione> comboNazione;
+	private Button btnSi;
+	private Button btnNo;
+	private Button btnIndifferente;
+	private CompositeDate compositeDate;
+
+	protected PreventivoSpedizioniEsistentiFiltroSpedizioni() {
+		super(titolo, descrizione);
+		controllerPreventivo = PreventivoEsistentiController.getInstance();
+		setPageComplete(true);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		Label lblSelezionaIlPeriodo = new Label(container, SWT.NONE);
+		lblSelezionaIlPeriodo.setText("Seleziona il periodo su cui filtrare le spedizioni: ");
+		
+		Composite compositeFiltroData = new Composite(container, SWT.NONE);
+		compositeFiltroData.setLayout(new GridLayout(2, false));
+		
+		compositeDate = new CompositeDate(compositeFiltroData, SWT.NONE, true);
+		compositeDate.setInizioEFineMeseCorrente();
+		addChild(compositeDate);
+		
+		Label lblSelezionaIDati = new Label(container, SWT.NONE);
+		lblSelezionaIDati.setBounds(0, 0, 55, 15);
+		lblSelezionaIDati.setText("Seleziona i dati opzionali di filtraggio:");
+		
+		Composite compositeFiltroCorriere = new Composite(container, SWT.NONE);
+		compositeFiltroCorriere.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeFiltroCorriere.setLayout(new GridLayout(2, false));
+		
+		Label lblCorriere = new Label(compositeFiltroCorriere, SWT.NONE);
+		lblCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCorriere.setText("Corriere:");
+		
+		comboCorriere = new ComboBox<Corriere>(compositeFiltroCorriere);
+		comboCorriere.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Corriere c = comboCorriere.getSelectedValue();
+				if (c != null) {
+					comboServizio.setEnabled(true);
+					comboServizio.setItems(ServizioCorriere.getServiziPerCorriere(c.getId()));
+				} else {
+					comboServizio.setEnabled(false);
+				}
+			}
+		});
+		comboCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCorriere.setItems(Corriere.getCorrieri());
+		comboCorriere.setRequired(false);
+		addChild(comboCorriere);
+		
+		Label lblServizio = new Label(compositeFiltroCorriere, SWT.NONE);
+		lblServizio.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblServizio.setText("Servizio: ");
+		
+		comboServizio = new ComboBox<ServizioCorriere>(compositeFiltroCorriere);
+		comboServizio.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboServizio.setEnabled(false);
+		comboServizio.setRequired(false);
+		addChild(comboServizio);
+		
+		Label lblContrassegno = new Label(compositeFiltroCorriere, SWT.NONE);
+		lblContrassegno.setText("Contrassegno: ");
+		
+		Composite compositeContrassegno = new Composite(compositeFiltroCorriere, SWT.NONE);
+		compositeContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		compositeContrassegno.setLayout(new GridLayout(3, false));
+		
+		btnSi = new Button(compositeContrassegno, SWT.RADIO);
+		btnSi.setBounds(0, 0, 90, 16);
+		btnSi.setText("Si");
+		
+		btnNo = new Button(compositeContrassegno, SWT.RADIO);
+		btnNo.setText("No");
+		
+		btnIndifferente = new Button(compositeContrassegno, SWT.RADIO);
+		btnIndifferente.setText("Indifferente");
+		
+		Label lblNazione = new Label(compositeFiltroCorriere, SWT.NONE);
+		lblNazione.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblNazione.setText("Nazione: ");
+		
+		comboNazione = new ComboBox<Nazione>(compositeFiltroCorriere);
+		comboNazione.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboNazione.setItems(Nazione.getNazioni());
+		comboNazione.setRequired(false);
+		addChild(comboNazione);
+	}
+
+	@Override
+	public void copyDataToModel() {
+		Date da = null;
+		Date a = null;
+		if (!compositeDate.getIndifferente()) {
+			da = compositeDate.getDaSoloGiorno();
+			a = compositeDate.getASoloGiorno();
+		}
+		Corriere corriere = comboCorriere.getSelectedValue();
+		ServizioCorriere servizio = comboServizio.getSelectedValue();
+		Nazione nazione = comboNazione.getSelectedValue();
+		Boolean contrassegno = null;
+		if (btnSi.getSelection()) {
+			contrassegno = true;
+		} else if (btnNo.getSelection()) {
+			contrassegno = false;
+		}
+		controllerPreventivo.setDataDa(da);
+		controllerPreventivo.setDataA(a);
+		controllerPreventivo.setCorriere(corriere);
+		controllerPreventivo.setServizio(servizio);
+		controllerPreventivo.setNazione(nazione);
+		controllerPreventivo.setContrassegno(contrassegno);
+	}
+}

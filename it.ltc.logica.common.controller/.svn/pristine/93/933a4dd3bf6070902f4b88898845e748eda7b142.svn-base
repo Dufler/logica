@@ -1,0 +1,119 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
+import it.ltc.logica.database.model.centrale.fatturazione.CoordinateBancarie;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerCoordinateBancarie {
+	
+	private static final String title = "Coordinate Bancarie";
+	private static final String resource = "coordinatebancarie";
+	
+	private static ControllerCoordinateBancarie instance;
+	
+	private final HashMap<Integer, CoordinateBancarie> coordinate;
+
+	private ControllerCoordinateBancarie() {
+		coordinate = new HashMap<>();
+		caricaDati();
+	}
+
+	public static ControllerCoordinateBancarie getInstance() {
+		if (instance == null) {
+			instance = new ControllerCoordinateBancarie();
+		}
+		return instance;
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoCoordinate processo = new ProcessoCaricamentoCoordinate();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		if (processo.getEsito()) {
+			coordinate.clear();
+			for (CoordinateBancarie coordinata : processo.getLista())
+				coordinate.put(coordinata.getId(), coordinata);
+		}
+	}
+	
+	public Collection<CoordinateBancarie> getCoordinate() {
+		return coordinate.values();
+	}
+	
+	public CoordinateBancarie getCoordinata(int id) {
+		return coordinate.get(id);
+	}
+	
+	public boolean inserisci(CoordinateBancarie coordinateFatturazione) {
+		ProcessoInserimentoCoordinate processo = new ProcessoInserimentoCoordinate(coordinateFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			CoordinateBancarie coordinata = processo.getObject();
+			coordinate.put(coordinata.getId(), coordinata);
+		}
+		return esito;
+	}
+	
+	public boolean aggiorna(CoordinateBancarie coordinateFatturazione) {
+		ProcessoAggiornamentoCoordinate processo = new ProcessoAggiornamentoCoordinate(coordinateFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (!esito) {
+			//TODO - ricarica i dati
+		}
+		return esito;
+	}
+	
+	public boolean elimina(CoordinateBancarie coordinateFatturazione) {
+		ProcessoEliminazioneCoordinate processo = new ProcessoEliminazioneCoordinate(coordinateFatturazione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		boolean esito = processo.getEsito();
+		if (esito) {
+			coordinate.remove(coordinateFatturazione.getId());
+		}
+		return esito;
+	}
+	
+	private class ProcessoCaricamentoCoordinate extends ProcessoCaricamentoDati<CoordinateBancarie> {
+
+		public ProcessoCaricamentoCoordinate() {
+			super(title, resource, CoordinateBancarie.class);
+		}
+		
+	}
+	
+	private class ProcessoInserimentoCoordinate extends ProcessoInserimentoDati<CoordinateBancarie> {
+
+		public ProcessoInserimentoCoordinate(CoordinateBancarie object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoAggiornamentoCoordinate extends ProcessoAggiornamentoDati<CoordinateBancarie> {
+
+		public ProcessoAggiornamentoCoordinate(CoordinateBancarie object) {
+			super(title, resource, object);
+		}
+		
+	}
+	
+	private class ProcessoEliminazioneCoordinate extends ProcessoCancellazioneDati<CoordinateBancarie> {
+
+		public ProcessoEliminazioneCoordinate(CoordinateBancarie object) {
+			super(title, resource, object);
+		}
+		
+	}
+
+}

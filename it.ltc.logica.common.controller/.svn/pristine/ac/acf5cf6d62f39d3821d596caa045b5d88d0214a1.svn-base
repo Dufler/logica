@@ -1,0 +1,62 @@
+package it.ltc.logica.common.controller.sistema;
+
+import java.util.Collection;
+import java.util.HashMap;
+
+import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
+import it.ltc.logica.database.model.centrale.Valuta;
+import it.ltc.logica.gui.task.DialogProgresso;
+
+public class ControllerValute {
+
+	private static ControllerValute instance;
+	
+	private final HashMap<String, Valuta> valute;
+
+	private ControllerValute() {
+		valute = new HashMap<String, Valuta>();
+		caricaDati();
+	}
+
+	public static ControllerValute getInstance() {
+		if (instance == null) {
+			instance = new ControllerValute();
+		}
+		return instance;
+	}
+	
+	public Valuta getValuta(String nome) {
+		return valute.get(nome);
+	}
+	
+	public Collection<Valuta> getValute() {
+		return valute.values();
+	}
+	
+	/**
+	 * Forza il sistema a ricaricare i dati sulle commesse.
+	 */
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoValuta pcc = new ProcessoCaricamentoValuta();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+		if (pcc.getEsito()) {
+			valute.clear();
+			for (Valuta valuta : pcc.getLista()) {
+				valute.put(valuta.getCodice(), valuta);
+			}
+		}
+	}
+	
+	private class ProcessoCaricamentoValuta extends ProcessoCaricamentoDati<Valuta> {
+
+		private static final String title = "Caricamento feature";
+		private static final String resource = "valuta";
+		
+		public ProcessoCaricamentoValuta() {
+			super(title, resource, Valuta.class);
+		}
+		
+	}
+	
+}

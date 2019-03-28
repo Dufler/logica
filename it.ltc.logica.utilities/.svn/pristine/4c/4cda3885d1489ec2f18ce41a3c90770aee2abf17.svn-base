@@ -1,0 +1,49 @@
+package it.ltc.logica.utilities.excel.model.csv;
+
+public abstract class CampoCSV {
+	
+	public enum Tipo {
+		
+		STRING,
+		BOOLEAN,
+		DATE,
+		INTEGER,
+		DECIMAL;
+		
+	}
+	
+	private final String nome;
+	private final int posizione;
+	private final Tipo tipo;
+	
+	public CampoCSV(String nome, int posizione, Tipo tipo) {
+		this.nome = nome;
+		this.posizione = posizione;
+		this.tipo = tipo;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public int getPosizione() {
+		return posizione;
+	}
+
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	@Override
+	public String toString() {
+		return getAsString();
+	}
+	
+	/**
+	 * Metodo di convenienza per costringere ad implementare una rappresentazione come stringa del tipo.
+	 * Tale stringa verrà usata direttamente nel .csv
+	 * @return una stringa che rappresenta il dato.
+	 */
+	public abstract String getAsString();
+
+}

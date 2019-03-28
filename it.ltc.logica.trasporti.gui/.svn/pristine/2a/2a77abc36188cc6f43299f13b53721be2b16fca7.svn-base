@@ -1,0 +1,153 @@
+package it.ltc.logica.trasporti.gui.elements.fatturazione;
+
+import java.util.Date;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.trasporti.gui.elements.spedizionemodel.DialogSpedizioneModel;
+import it.ltc.logica.trasporti.gui.elements.spedizionemodel.OrdinatoreSpedizioniModel;
+
+public abstract class TabellaFatturazione extends Tabella<SpedizioneModel> {
+	
+	protected final ControllerListiniClienti controller;
+	
+	protected MenuItem modify;
+	
+	protected Menu colorLabelMenu;
+	protected MenuItem labelCascade;
+	protected MenuItem labelGreen;
+	protected MenuItem labelRed;
+	protected MenuItem labelYellow;
+	protected MenuItem labelRemoveColor;
+	
+	protected FiltroSpedizioniFatturazione filtro;
+
+	public TabellaFatturazione(Composite parent, ListinoCommessa listino, boolean modify) {
+		super(parent, new OrdinatoreSpedizioniModel());
+		
+		controller = ControllerListiniClienti.getInstance();
+		copy.dispose();
+	}
+
+	@Override
+	protected void setFiltro() {
+		filtro = new FiltroSpedizioniFatturazione();
+		setFilters(filtro);
+	}
+	
+	public void filtra(Date da, Date a, Boolean contrassegno, Boolean datiCompleti, String riferimento) {
+		filtro.setDa(da);
+		filtro.setA(a);
+		filtro.setContrassegno(contrassegno);
+		filtro.setDatiCompleti(datiCompleti);
+		filtro.setRiferimento(riferimento);
+		refresh();
+	}
+	
+	@Override
+	protected void CopiaSelezione() {
+		//DO NOTHING! - Non voglio che sia copiabile.
+	}
+	
+	@Override
+	protected void copiaSelezioneConRichText() {
+		//DO NOTHING! - Non voglio che sia copiabile.
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });
+	    
+	    labelCascade = new MenuItem(menu, SWT.CASCADE);
+	    colorLabelMenu = new Menu(labelCascade);
+	    
+	    labelCascade.setText("Colora");
+	    labelCascade.setMenu(colorLabelMenu);
+	    
+	    labelGreen = new MenuItem(colorLabelMenu, SWT.PUSH);
+	    labelGreen.setText("Verde");
+	    labelGreen.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		coloraRigaSelezionata(SWT.COLOR_DARK_GREEN);
+	    	}
+	    });
+	    
+	    labelRed = new MenuItem(colorLabelMenu, SWT.PUSH);
+	    labelRed.setText("Rosso");
+	    labelRed.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		coloraRigaSelezionata(SWT.COLOR_RED);
+	    	}
+	    });
+	    
+	    labelYellow = new MenuItem(colorLabelMenu, SWT.PUSH);
+	    labelYellow.setText("Blu");
+	    labelYellow.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		coloraRigaSelezionata(SWT.COLOR_DARK_BLUE);
+	    	}
+	    });
+	    
+	    labelRemoveColor = new MenuItem(colorLabelMenu, SWT.PUSH);
+	    labelRemoveColor.setText("Rimuovi colore");
+	    labelRemoveColor.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		coloraRigaSelezionata(SWT.COLOR_BLACK);
+	    		//coloraRigaSelezionata(SWT.COLOR_LIST_BACKGROUND);
+	    	}
+	    });
+	}
+	
+	protected void coloraRigaSelezionata(int SWTColorCode) {
+		Display display = Display.getCurrent();
+		Color color = display.getSystemColor(SWTColorCode);
+		for (TableItem item : table.getSelection()) {
+			item.setForeground(color);
+			//item.setBackground(color);
+		}
+		color.dispose();
+	}
+	
+	protected void apriDialogModifica() {
+		SpedizioneModel selezione = getRigaSelezionata();
+		if (selezione != null) {
+			DialogSpedizioneModel dialog = new DialogSpedizioneModel(selezione, true /*modifica*/); //FIXME - è stato fissato a true perchè non sono riuscito a passare il valore correttamente.
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

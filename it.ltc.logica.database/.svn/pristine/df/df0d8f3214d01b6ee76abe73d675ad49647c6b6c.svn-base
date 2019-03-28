@@ -1,0 +1,97 @@
+package it.ltc.logica.database.model;
+
+import java.util.List;
+
+import it.ltc.logica.database.orm.Column;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class Ordine extends Entity {
+	
+	public static final String NOME_TABELLA = "ordine";
+	private static final ColumnList variabili = new ColumnList();
+
+	private Integer id;
+	private Integer idCommessa;
+	private String riferimentoInterno;
+	private String riferimentoCliente;
+	private String note;
+	private String poNumber;
+	private String tipo;
+	
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public List<Column> getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addColumnInt("id_commessa", "idCommessa");
+			variabili.addColumnString("riferimento_interno", "riferimentoInterno");
+			variabili.addColumnString("riferimento_cliente", "riferimentoCliente");
+			variabili.addColumnString("note", "note");
+			variabili.addColumnString("po_number", "poNumber");
+			variabili.addColumnString("tipo", "tipo");
+		}
+		return variabili;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getIdCommessa() {
+		return idCommessa;
+	}
+
+	public void setIdCommessa(Integer idCommessa) {
+		this.idCommessa = idCommessa;
+	}
+
+	public String getRiferimentoInterno() {
+		return riferimentoInterno;
+	}
+
+	public void setRiferimentoInterno(String riferimentoInterno) {
+		this.riferimentoInterno = riferimentoInterno;
+	}
+
+	public String getRiferimentoCliente() {
+		return riferimentoCliente;
+	}
+
+	public void setRiferimentoCliente(String riferimentoCliente) {
+		this.riferimentoCliente = riferimentoCliente;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	public String getPoNumber() {
+		return poNumber;
+	}
+
+	public void setPoNumber(String poNumber) {
+		this.poNumber = poNumber;
+	}
+
+	public String getTipo() {
+		return tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+}

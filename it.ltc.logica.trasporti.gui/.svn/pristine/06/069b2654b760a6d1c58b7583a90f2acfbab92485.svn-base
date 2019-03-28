@@ -1,0 +1,20 @@
+package it.ltc.logica.trasporti.gui.elements.indirizzo;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+
+import it.ltc.logica.database.model.centrale.Indirizzo;
+
+public class IndirizzoLabelProvider extends ColumnLabelProvider {
+	
+	public String getText(Object element) {
+		Indirizzo indirizzo = (Indirizzo) element;
+		String text = indirizzo.getIndirizzo();
+		text += " " + indirizzo.getLocalita();
+		String provincia = indirizzo.getProvincia();
+		if (provincia != null && !provincia.isEmpty())
+			text += " (" + provincia + ") ";
+		text += " - " + indirizzo.getCap();
+		return text;
+	}
+
+}

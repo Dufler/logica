@@ -1,0 +1,34 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.util.Date;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
+
+import it.ltc.logica.database.model.centrale.Spedizione;
+
+public class SpedizioniComparator extends ViewerComparator {
+	
+	public int compare(Viewer viewer, Object e1, Object e2) {
+		Spedizione s1 = (Spedizione) e1;
+		Spedizione s2 = (Spedizione) e2;
+		Date d1 = s1.getData();
+		Date d2 = s2.getData();
+		int order;
+		if (d1 == null) {
+			if (d2 == null) {
+				order = 0;
+			} else {
+				order = 1;
+			}
+		} else {
+			if (d2 == null) {
+				order = -1;
+			} else {
+				order = d1.compareTo(d2);
+			}
+		}
+		return order * -1;
+	}
+
+}

@@ -1,0 +1,132 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.corriere;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.centrale.AmbitoDiTrasporto;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriere;
+import it.ltc.logica.database.model.centrale.VoceDiListinoCorriereProporzionale;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceProporzionale;
+
+public class ProprietaVoceListinoCorriereProporzionale extends DialogModel<VoceDiListinoCorriere> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino corriere proporzionale";
+	
+	private ListiniCorrieriController controller;
+	
+	private VoceDiListinoCorriere voce;
+	private VoceDiListinoCorriereProporzionale voceProporzionale;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceProporzionale compositeProporzionale;
+	
+	private final boolean permessoGestione;
+
+	public ProprietaVoceListinoCorriereProporzionale(VoceDiListinoCorriere voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		controller = ListiniCorrieriController.getInstance();
+		voce = voceDiListino;
+		voceProporzionale = controller.caricaVoceProporzionale(voce);
+		permessoGestione = permesso;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.TIPO_CORRIERE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeVoce.enableInputElements(permessoGestione);
+		addChild(compositeVoce);
+		
+		compositeProporzionale = new CompositeVoceProporzionale(container, SWT.NONE);
+		compositeProporzionale.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+		compositeProporzionale.enableInputElements(permessoGestione);
+		addChild(compositeProporzionale);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyProporzionale = compositeProporzionale.isDirty();
+		return modifyVoce || modifyProporzionale;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		compositeVoce.setNome(nome);
+		String descrizione = voce.getDescrizione();
+		compositeVoce.setDescrizione(descrizione);
+		String ambito = voce.getAmbito();
+		AmbitoDiTrasporto ambitoDiTrasporto = AmbitoDiTrasporto.getAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		if (voceProporzionale != null) {
+			String tipo = voceProporzionale.getTipo();
+			compositeProporzionale.setTipo(tipo);
+			Double valore = voceProporzionale.getValore();
+			compositeProporzionale.setValore(valore);
+			Double minimo = voceProporzionale.getMinimo();
+			compositeProporzionale.setMinimo(minimo);
+			Double massimo = voceProporzionale.getMassimo();
+			compositeProporzionale.setMassimo(massimo);
+		}
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		String ambito = compositeVoce.getAmbito().getCodice();
+		voce.setAmbito(ambito);
+		String tipo = compositeProporzionale.getTipo();
+		voceProporzionale.setTipo(tipo);
+		Double valore = compositeProporzionale.getValore();
+		voceProporzionale.setValore(valore);
+		Double minimo = compositeProporzionale.getMinimo();
+		voceProporzionale.setMinimo(minimo);
+		Double massimo = compositeProporzionale.getMassimo();
+		voceProporzionale.setMassimo(massimo);
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoProporzionale = voceProporzionale.validate();
+		errors.addAll(esitoProporzionale.getMessages());
+		return errors;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoceDiListino(voce);
+		boolean updateProporzionale = controller.aggiornaVoceDiListinoProporzionale(voceProporzionale);
+		return updateVoce && updateProporzionale;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+
+	@Override
+	public VoceDiListinoCorriere createNewModel() {
+		VoceDiListinoCorriere voce = new VoceDiListinoCorriere();
+		return voce;
+	}
+
+}

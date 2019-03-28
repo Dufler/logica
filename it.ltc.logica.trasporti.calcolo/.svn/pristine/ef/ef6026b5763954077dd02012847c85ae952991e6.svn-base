@@ -1,0 +1,132 @@
+package it.ltc.logica.trasporti.calcolo.algoritmi;
+
+public class AlgoritmoPercentuale implements IAlgoritmo {
+
+	public static final String VERSIONE = "1.0";
+	public static final String NOME = "Percentuale";
+	
+	private static AlgoritmoPercentuale instance;
+	
+	/**
+	 * Indica lo scopo del calcolo per una determinata spedizione: ricavo oppure costo. 
+	 * @author Damiano Bellucci - damiano.bellucci@gmail.com
+	 *
+	 */
+	public enum Scopo {
+		
+		RICAVO,
+		COSTO,
+		NESSUNO;
+	
+	}
+	
+	/**
+	 * Indica il tipo di strategia da utilizzare per il calcolo
+	 * @author Damiano Bellucci - damiano.bellucci@gmail.com
+	 *
+	 */
+	public enum Tipo {
+		
+		SOLO_NOLO_BASE("SOLO_NOLO_BASE", "Solo Nolo base"),
+		SOLO_NOLO("SOLO_NOLO", "Solo Nolo completo"),
+		SOLO_AGGIUNTIVI("SOLO_AGGIUNTIVI", "Solo Costi Aggiuntivi"),
+		SOLO_CONTRASSEGNO("SOLO_CONTRASSEGNO", "Solo Contrassegno"),
+		TUTTO("TUTTO", "Su Tutto");
+		
+		private final String codice;
+		private final String nome;
+		
+		private Tipo(String codice, String nome) {
+			this.codice = codice;
+			this.nome = nome;
+		}
+		
+		public String toString() {
+			return nome;
+		}
+
+		public String getCodice() {
+			return codice;
+		}
+
+		public String getNome() {
+			return nome;
+		}
+	}
+	
+	private String nome;
+	private Tipo tipo;
+	private Scopo scopo;
+	
+	private AlgoritmoPercentuale(Tipo type, Scopo scope) {
+		nome = type.getNome();
+		tipo = type;
+		scopo = scope;
+	}
+	
+	public Tipo getTipo() {
+		return tipo;
+	}
+	
+	public Scopo getScopo() {
+		return scopo;
+	}
+	
+	public String toString() {
+		String toString = (nome != null && !nome.isEmpty()) ? nome : NOME;
+		return toString;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o != null && o instanceof AlgoritmoPercentuale) {
+			AlgoritmoPercentuale algoritmo = (AlgoritmoPercentuale) o;
+			if (algoritmo.getTipo() == tipo)
+				uguali = true;
+		}
+		return uguali;
+	}
+	
+	public static AlgoritmoPercentuale getInstance(Tipo tipo, Scopo scopo) {
+		if (instance == null) {
+			instance = new AlgoritmoPercentuale(tipo, scopo);
+		} else {
+			instance.tipo = tipo;
+			instance.scopo = scopo;
+		}
+		return instance;
+	}
+	
+	@Override
+	public String getVersione() {
+		return VERSIONE;
+	}
+
+	@Override
+	public String getNome() {
+		return NOME;
+	}
+
+	@Override
+	public double calcolaCosto(SpedizioneModel spedizione, VoceModel voce) {
+		double costo = 0;
+		if (voce.getAmbito().isApplicabile(spedizione)) {
+			double base = voce.getAmbito().getValore(spedizione, this);
+			double percentuale = voce.getValore();
+			costo = base * (percentuale / 100);
+			Double minimo = voce.getMinimo();
+			Double massimo = voce.getMassimo();
+			if (minimo != null && minimo > costo)
+				costo = minimo;
+			if (massimo != null && massimo < costo)
+				costo = massimo;
+		}
+		return costo;
+	}
+
+	@Override
+	public TipoAlgoritmo getTipoAlgoritmo() {
+		return TipoAlgoritmo.PERCENTUALE;
+	}
+
+}

@@ -1,0 +1,34 @@
+package it.ltc.logica.database.model.locale;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.LocalEntity;
+
+public class PreferenzeFatturaAllegatoSpedizioni extends Entity implements LocalEntity {
+	
+	public static final String NOME_TABELLA = "listino_simulazione";
+	private static final ColumnList variabili = new ColumnList();
+
+	@Override
+	public String getTableDefinition() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addDefaultIDColumn();
+			variabili.addInt("tipo", "tipo");
+			variabili.addString("nome", "nome");
+			variabili.addString("descrizione", "descrizione");
+		}
+		return variabili;
+	}
+
+}

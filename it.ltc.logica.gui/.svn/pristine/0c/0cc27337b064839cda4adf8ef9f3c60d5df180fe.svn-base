@@ -1,0 +1,36 @@
+package it.ltc.logica.gui.input;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+public class TextForSelection<T> extends TextField<T> {
+
+	public TextForSelection(Composite parent) {
+		super(parent, SWT.BORDER | SWT.SEARCH | SWT.ICON_SEARCH | SWT.READ_ONLY);
+	}
+
+	@Override
+	public T getValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setValue(T value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void setDefaultRequiredMessage() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void setDefaultErrorMessage() {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

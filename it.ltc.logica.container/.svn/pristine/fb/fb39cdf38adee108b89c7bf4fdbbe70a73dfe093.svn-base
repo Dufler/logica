@@ -1,0 +1,121 @@
+package it.ltc.logica.container.controller;
+
+import it.ltc.logica.database.model.centrale.utenti.Permesso;
+
+/**
+ * Lista statica dei permessi all'interno dell'applicazione.
+ * @author Damiano
+ *
+ */
+public enum Permessi {
+	
+	/**
+	 * Permesso per poter utilizzare tutte le funzioni di Logica
+	 */
+	LOGICA(3),
+	
+	/**
+	 * Permesso per poter utilizzare il modulo dei trasporti
+	 */
+	TRASPORTI(8),
+	
+	/**
+	 * Permesso per poter fruire del plugin spedizioni
+	 */
+	SPEDIZIONI(9),
+	
+	SPEDIZIONI_INSERISCI(4),
+	SPEDIZIONI_MODIFICA(5),
+	SPEDIZIONI_ELIMINA(6),
+	
+	/**
+	 * Permesso per poter vedere i listini dei clienti
+	 */
+	LISTINI_CLIENTI(11),
+	
+	LISTINI_CLIENTI_SIMULAZIONE_INSERISCI(14),
+	LISTINI_CLIENTI_SIMULAZIONE_MODIFICA(15),
+	LISTINI_CLIENTI_SIMULAZIONE_ELIMINA(16),
+	LISTINI_CLIENTI_DUPLICA(32),
+	LISTINI_CLIENTI_RINCARA(33),
+	
+	LISTINI_CLIENTI_FATTURAZIONE_INSERISCI(17),
+	LISTINI_CLIENTI_FATTURAZIONE_MODIFICA(18),
+	LISTINI_CLIENTI_FATTURAZIONE_ELIMINA(19),
+	
+	/**
+	 * Permesso per poter vedere i listini dei corrieri
+	 */
+	LISTINI_CORRIERI(20),
+	
+	LISTINI_CORRIERI_SIMULAZIONE_INSERISCI(23),
+	LISTINI_CORRIERI_SIMULAZIONE_MODIFICA(24),
+	LISTINI_CORRIERI_SIMULAZIONE_ELIMINA(25),
+	LISTINI_CORRIERI_DUPLICA(35),
+	
+	LISTINI_CORRIERI_FATTURAZIONE_INSERISCI(26),
+	LISTINI_CORRIERI_FATTURAZIONE_MODIFICA(27),
+	LISTINI_CORRIERI_FATTURAZIONE_ELIMINA(28),
+	
+	/**
+	 * Permesso per poter vedere i codici cliente
+	 */
+	CODICI_CLIENTE(29),
+	CODICI_CLIENTE_GESTIONE(43),
+	
+	/**
+	 * Permesso per poter vedere i CAP
+	 */
+	CAP(30),
+	CAP_GESTIONE(44),
+	
+	/**
+	 * Permesso per poter vedere gli indirizzi
+	 */
+	INDIRIZZI(31),
+	INDIRIZZI_GESTIONE(45),
+	
+	/**
+	 * Permesso per poter vedere i report
+	 */
+	REPORT(37),
+	
+	/**
+	 * Permesso per poter vedere i preventivi
+	 */
+	PREVENTIVI(38),
+	
+	/**
+	 * Permesso per poter vedere la fatturazione
+	 */
+	FATTURAZIONE_TRASPORTI(47),
+	
+	/**
+	 * Permesso per poter vedere la perspective degli Admin
+	 */
+	ADMIN(46),
+	
+	/**
+	 * Permesso speciale che garantisce la possibilità di fare tutto ma ti fa lavorare nell'ambiente di test
+	 */
+	TEST(1);
+	
+	private final int id;
+	
+	private Permessi(int id) {
+		this.id = id;
+	}
+	
+	public int getID() {
+		return id;
+	}
+
+	public Permesso getPermesso() {
+		return Permesso.getPermesso(id);
+	}
+	
+	public String toString() {
+		return name() + " ID: " + id;
+	}
+
+}

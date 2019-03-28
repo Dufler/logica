@@ -1,0 +1,45 @@
+ 
+package it.ltc.logica.trasporti.gui.report.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.SWT;
+
+public class ReportPart {
+	
+	public static final String partID = "it.ltc.logica.trasporti.gui.report.part.report";
+	
+	@Inject
+	public ReportPart() {
+		
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Label lblReport = new Label(parent, SWT.NONE);
+		lblReport.setText("Report");
+		
+		Label lblFiltriSuCliente = new Label(parent, SWT.NONE);
+		lblFiltriSuCliente.setText("Filtri su: cliente, data, listino cliente");
+		
+		Label lblMediaPezzi = new Label(parent, SWT.NONE);
+		lblMediaPezzi.setText("- media pezzi a collo");
+		
+		Label lblMediaColli = new Label(parent, SWT.NONE);
+		lblMediaColli.setText("- media colli per spedizione");
+		
+		Label lblMediaPeso = new Label(parent, SWT.NONE);
+		lblMediaPeso.setText("- media peso, volume e rapporto peso/volume per spedizione");
+		
+		Label lblGraficoSullaDistrubuzione = new Label(parent, SWT.NONE);
+		lblGraficoSullaDistrubuzione.setText("grafico sulla distrubuzione delle spedizioni nei scaglioni di peso");
+		
+	}
+	
+	
+}

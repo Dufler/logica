@@ -1,0 +1,323 @@
+package it.ltc.logica.trasporti.controller;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.Assicurazione;
+import it.ltc.logica.database.model.centrale.Contrassegno;
+import it.ltc.logica.database.model.centrale.Indirizzo;
+import it.ltc.logica.database.model.centrale.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.database.model.centrale.ParticolaritaSpedizione;
+import it.ltc.logica.database.model.centrale.Spedizione;
+import it.ltc.logica.trasporti.calcolo.algoritmi.Calcolatore;
+import it.ltc.logica.trasporti.calcolo.algoritmi.CommessaCalcolata;
+import it.ltc.logica.trasporti.calcolo.algoritmi.CorriereCalcolato;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+import it.ltc.logica.utilities.chart.DatiGraficoSemplice;
+
+public class PreventivoFittiziaController {
+
+	private static PreventivoFittiziaController instance;
+
+	private int pezzi;
+	private int colli;
+	private double peso;
+	private double volume;
+	private boolean inContrassegno;
+	private double valoreContrassegno;
+
+	private List<ListinoCommessa> listiniCliente;
+	private List<ListinoCorriere> listiniCorriere;
+
+	private PreventivoFittiziaController() {
+		listiniCliente = new ArrayList<ListinoCommessa>();
+		listiniCorriere = new ArrayList<ListinoCorriere>();
+	}
+
+	public static PreventivoFittiziaController getInstance() {
+		if (instance == null) {
+			instance = new PreventivoFittiziaController();
+		}
+		return instance;
+	}
+
+	public void setListiniCorriere(List<ListinoCorriere> listiniSelezionati) {
+		listiniCorriere.clear();
+		listiniCorriere.addAll(listiniSelezionati);
+	}
+
+	public List<ListinoCorriere> getListiniCorriere() {
+		return listiniCorriere;
+	}
+
+	public void setListiniCliente(List<ListinoCommessa> listiniSelezionati) {
+		listiniCliente.clear();
+		listiniCliente.addAll(listiniSelezionati);
+	}
+
+	public List<ListinoCommessa> getListiniCliente() {
+		return listiniCliente;
+	}
+
+	public int getPezzi() {
+		return pezzi;
+	}
+
+	public void setPezzi(int pezzi) {
+		this.pezzi = pezzi;
+	}
+
+	public int getColli() {
+		return colli;
+	}
+
+	public void setColli(int colli) {
+		this.colli = colli;
+	}
+
+	public double getPeso() {
+		return peso;
+	}
+
+	public void setPeso(double peso) {
+		this.peso = peso;
+	}
+
+	public double getVolume() {
+		return volume;
+	}
+
+	public void setVolume(double volume) {
+		this.volume = volume;
+	}
+
+	public boolean isContrassegno() {
+		return inContrassegno;
+	}
+
+	public void setContrassegno(boolean contrassegno) {
+		this.inContrassegno = contrassegno;
+	}
+
+	public double getValoreContrassegno() {
+		return valoreContrassegno;
+	}
+
+	public void setValoreContrassegno(double valoreContrassegno) {
+		this.valoreContrassegno = valoreContrassegno;
+	}
+
+	public List<SpedizioneModel> calcolaSpedizioniFittizie() {
+		List<SpedizioneModel> preventivi = new LinkedList<SpedizioneModel>();
+		if (listiniCorriere.size() > 0 && listiniCliente.size() > 0) {
+			//Aggiungo la base su cui eseguire i calcoli
+			aggiungiBaseModel(preventivi);
+			// Calcolo i preventivi per ogni spedizione
+			Calcolatore calcolatore = Calcolatore.getInstance();
+			for (SpedizioneModel spedizione : preventivi) {
+				//Calcolo dei costi
+				for (ListinoCorriere listino : listiniCorriere) {
+					calcolatore.calcolaCosto(spedizione, listino);
+				}
+				//Calcolo dei ricavi
+				for (ListinoCommessa listino : listiniCliente) {
+					calcolatore.calcolaRicavo(spedizione, listino);
+				}
+			}
+			
+		}
+		return preventivi;
+	}
+	
+	public DatiGraficoSemplice calcolaSpedizioniFittizieSuColli() {
+		DatiGraficoSemplice dati = new DatiGraficoSemplice("Costi e Ricavi per le spedizioni", "Numero di Colli", "Costo");
+		List<SpedizioneModel> preventivi = new LinkedList<SpedizioneModel>();
+		if (listiniCorriere.size() > 0 && listiniCliente.size() > 0) {
+			//Aggiungo i modelli base su cui eseguire la simulazione
+			aggiungiSpedizioniSuColliModel(preventivi);
+			//Eseguo il calcolo dei preventivi
+			Calcolatore calcolatore = Calcolatore.getInstance();
+			for (SpedizioneModel spedizione : preventivi) {
+				//Calcolo dei costi
+				for (ListinoCorriere listino : listiniCorriere) {
+					calcolatore.calcolaCosto(spedizione, listino);
+				}
+				//Calcolo dei ricavi
+				for (ListinoCommessa listino : listiniCliente) {
+					calcolatore.calcolaRicavo(spedizione, listino);
+				}
+			}
+			//Aggiungo i risultati trovati ai dati per il grafico
+			for (SpedizioneModel spedizione : preventivi) {
+				int colli = spedizione.getSpedizione().getColli();
+				//Dati sui costi
+				for (CorriereCalcolato c : spedizione.getPreventiviCosti()) {
+					dati.aggiungiValore(c.getTotale(), "Costo: " + c.getListino().getNome(), colli + " Collo/i");
+				}
+				//Dati sui ricavi
+				for (CommessaCalcolata c : spedizione.getPreventiviRicavo()) {
+					dati.aggiungiValore(c.getTotale(), "Ricavo: " + c.getListino().getNome(), colli + " Collo/i");
+				}
+			}
+		}
+		return dati;
+	}
+	
+	private void aggiungiSpedizioniSuColliModel(List<SpedizioneModel> preventivi) {
+		for (int index = 1; index < 11; index++) {
+			Spedizione spedizione = new Spedizione();
+			spedizione.setData(new Date());
+			spedizione.setId(-1);
+			spedizione.setIdCommessa(-1);
+			spedizione.setIdCorriere(-1);
+			spedizione.setIdOrdine(-1);
+			spedizione.setPezzi(pezzi);
+			spedizione.setColli(index);
+			spedizione.setPeso(peso * index);
+			spedizione.setVolume(volume * index);
+			spedizione.setServizio("DEF");
+			spedizione.setValoreMerce(0.0);
+			//Preparo le condizioni di contorno: assicurazione, contrassegno e particolarita'
+			spedizione.setGiacenza(false);
+			spedizione.setAssicurazione(false);
+			Assicurazione assicurazione = null;
+			spedizione.setContrassegno(false);
+			Contrassegno contrassegno = null;
+			if (inContrassegno) {
+				contrassegno = new Contrassegno();
+				contrassegno.setAnnullato(false);
+				contrassegno.setIdSpedizione(-1);
+				contrassegno.setTipo("BM");
+				contrassegno.setValore(valoreContrassegno);
+				contrassegno.setValuta("EUR");
+			}
+			spedizione.setParticolarita(false);
+			ParticolaritaSpedizione particolarita = null;
+			// Indirizzo di partenza, fisso per la sede di Perugia
+			Indirizzo partenza = getIndirizzoDiPartenza();
+			// Indirizzo di destinazione per una spedizione con nolo normale
+			Indirizzo noloItalia = getIndirizzoNoloItalia();
+			SpedizioneModel italia = new SpedizioneModel(spedizione, contrassegno, assicurazione, noloItalia, partenza, particolarita);
+			italia.setLabel("Italia - " + index + " collo/i");
+			preventivi.add(italia);
+		}
+	}
+
+	private void aggiungiBaseModel(List<SpedizioneModel> preventivi) {
+		// Preparo le informazioni base per la spedizione in base ai criteri inseriti dall'utente
+		Spedizione spedizione = new Spedizione();
+		spedizione.setData(new Date());
+		spedizione.setId(-1);
+		spedizione.setIdCommessa(-1);
+		spedizione.setIdCorriere(-1);
+		spedizione.setIdOrdine(-1);
+		spedizione.setPezzi(pezzi);
+		spedizione.setColli(colli);
+		spedizione.setPeso(peso * colli);
+		spedizione.setVolume(volume * colli);
+		spedizione.setServizio("DEF");
+		spedizione.setValoreMerce(0.0);
+		//Preparo le condizioni di contorno: assicurazione, contrassegno e particolarita'
+		spedizione.setGiacenza(false);
+		spedizione.setAssicurazione(false);
+		Assicurazione assicurazione = null;
+		spedizione.setContrassegno(false);
+		Contrassegno contrassegno = null;
+		if (inContrassegno) {
+			contrassegno = new Contrassegno();
+			contrassegno.setAnnullato(false);
+			contrassegno.setIdSpedizione(-1);
+			contrassegno.setTipo("BM");
+			contrassegno.setValore(valoreContrassegno);
+			contrassegno.setValuta("EUR");
+		}
+		spedizione.setParticolarita(false);
+		ParticolaritaSpedizione particolarita = null;
+		// Indirizzo di partenza, fisso per la sede di Perugia
+		Indirizzo partenza = getIndirizzoDiPartenza();
+		// Indirizzo di destinazione per una spedizione con nolo normale
+		Indirizzo noloItalia = getIndirizzoNoloItalia();
+		// Indirizzo di destinazione per una spedizione con nolo disagiato
+		Indirizzo noloDisagiate = getIndirizzoNoloDisagiate();
+		// Indirizzo di destinazione per una spedizione con nolo estero
+		Indirizzo noloEstero = getIndirizzoNoloEstero();
+		// Aggiungo le spedizioni su cui eseguire il calcolo
+		SpedizioneModel italia = new SpedizioneModel(spedizione, contrassegno, assicurazione, noloItalia, partenza, particolarita);
+		italia.setLabel("Italia");
+		preventivi.add(italia);
+		SpedizioneModel sud = new SpedizioneModel(spedizione, contrassegno, assicurazione, noloDisagiate, partenza, particolarita);
+		sud.setLabel("Zone Disagiate");
+		preventivi.add(sud);
+		SpedizioneModel estero = new SpedizioneModel(spedizione, contrassegno, assicurazione, noloEstero, partenza, particolarita);
+		estero.setLabel("Estero");
+		preventivi.add(estero);
+	}
+	
+	private Indirizzo getIndirizzoDiPartenza() {
+		Indirizzo perugia = new Indirizzo();
+		perugia.setCap("06073");
+		perugia.setConsegnaAppuntamento(false);
+		perugia.setConsegnaGDO(false);
+		perugia.setConsegnaPiano(false);
+		perugia.setConsegnaPrivato(false);
+		perugia.setId(-1);
+		perugia.setIndirizzo("Via Firenze, 41");
+		perugia.setLocalita("CORCIANO");
+		perugia.setNazione("ITA");
+		perugia.setProvincia("PG");
+		perugia.setRagioneSociale("LTC");
+		return perugia;
+	}
+	
+	private Indirizzo getIndirizzoNoloItalia() {
+		Indirizzo destinazione = new Indirizzo();
+		destinazione.setCap("06073");
+		destinazione.setConsegnaAppuntamento(false);
+		destinazione.setConsegnaGDO(false);
+		destinazione.setConsegnaPiano(false);
+		destinazione.setConsegnaPrivato(false);
+		destinazione.setId(-1);
+		destinazione.setIndirizzo("Via Firenze, 41");
+		destinazione.setLocalita("CORCIANO");
+		destinazione.setNazione("ITA");
+		destinazione.setProvincia("PG");
+		destinazione.setRagioneSociale("LTC");
+		return destinazione;
+	}
+	
+	private Indirizzo getIndirizzoNoloDisagiate() {
+		Indirizzo disagiato = new Indirizzo();
+		disagiato.setCap("93010");
+		disagiato.setConsegnaAppuntamento(false);
+		disagiato.setConsegnaGDO(false);
+		disagiato.setConsegnaPiano(false);
+		disagiato.setConsegnaPrivato(false);
+		disagiato.setId(-1);
+		disagiato.setIndirizzo("Via Disagiati, 1");
+		disagiato.setLocalita("ACQUAVIVA PLATANI");
+		disagiato.setNazione("ITA");
+		disagiato.setProvincia("CL");
+		disagiato.setRagioneSociale("Disagiati & Co.");
+		return disagiato;
+	}
+	
+	private Indirizzo getIndirizzoNoloEstero() {
+		Indirizzo estero = new Indirizzo();
+		estero.setCap("00000");
+		estero.setConsegnaAppuntamento(false);
+		estero.setConsegnaGDO(false);
+		estero.setConsegnaPiano(false);
+		estero.setConsegnaPrivato(false);
+		estero.setId(-1);
+		estero.setIndirizzo("Trump Tower, 1");
+		estero.setLocalita("");
+		estero.setNazione("USA");
+		estero.setProvincia("XX");
+		estero.setRagioneSociale("Trump");
+		return estero;
+	}
+
+}

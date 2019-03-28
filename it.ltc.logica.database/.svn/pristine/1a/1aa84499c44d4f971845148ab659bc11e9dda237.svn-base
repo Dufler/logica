@@ -1,0 +1,159 @@
+package it.ltc.logica.database.wsconsumer;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+/**
+ * Classe che permette di centralizzare le chiamate ai Web Services.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class WSConsumer {
+	
+	/**
+	 * Contiene l'elenco dei possibili metodi http con cui effettuare le richieste REST
+	 * @author Damiano Bellucci - damiano.bellucci@gmail.com
+	 *
+	 */
+	public enum Method { GET, POST, PUT, DELETE }
+	
+	public static final String TEST_DOMAIN = "http://test.services.ltc-logistics.it";
+	public static final String WS_DOMAIN = "http://ws.services.ltc-logistics.it";
+	
+	public static final String CONTEXT_PATH = "/logica/rest/"; //"/wslogica/rest/";
+	
+	private static WSConsumer instance;
+	
+	private String authString;
+	private String domain;
+	private String contextPath;
+
+	private WSConsumer() {
+		domain = WS_DOMAIN;
+		contextPath = CONTEXT_PATH;
+	}
+
+	public static WSConsumer getInstance() {
+		if (instance == null) {
+			instance = new WSConsumer();
+		}
+		return instance;
+	}
+	
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+	
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
+	
+	/**
+	 * Esegue la chiamata con il metodo indicato alla risorsa indicata e restituisce un oggetto contenente il codice e la risposta. In caso di errore la stringa restituita è nulla e il codice -1.
+	 * @param method Una delle possibili enum della classe: GET, POST, PUT o DELETE.
+	 * @param urlPath la url completa della risorsa con tanto di protocollo.
+	 * @param input l'input sottoforma di stringa, null se non necessario.
+	 * @param authString la stringa necessaria per l'autenticazione secondo BASE64 (username:password)
+	 * @return un oggetto che incarta la risposta ricevuta dal server.
+	 */
+	public WSAnswer call(Method method, String urlPath, String input, String authString) {
+		WSAnswer wsAnswer;
+		StringBuilder answer = new StringBuilder();
+		try {
+			URL url = new URL(urlPath);
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setDoOutput(true);
+			conn.setRequestMethod(method.name());
+			conn.setRequestProperty("Content-Type", "application/json");
+			conn.setRequestProperty("Authorization", "Basic " + authString);
+
+			if (input != null && !input.isEmpty()) {
+				OutputStream os = conn.getOutputStream();
+				os.write(input.getBytes());
+				os.flush();
+			}
+			
+			BufferedReader br;
+			
+			int responseCode = conn.getResponseCode();
+			
+			if (responseCode == 400 || responseCode == 404 || responseCode == 500) {
+				br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+			} else {
+				br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			}
+			
+			String line = br.readLine();
+			while (line != null) {
+				answer.append(line);
+				line = br.readLine();
+			}
+			br.close();
+
+			conn.disconnect();
+			
+			wsAnswer = new WSAnswer(responseCode, answer.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			wsAnswer = new WSAnswer(-1, e.getMessage());
+		}
+		return wsAnswer;
+	}
+	
+	/**
+	 * Metodo di convenienza per l'autenticazione.
+	 * @param authString
+	 * @return
+	 */
+	public WSAnswer login(String authString) {
+		WSAnswer answer = call(Method.GET, domain + contextPath + "utente/login", null, authString);
+		if (answer.getStatus() == 200) {
+			this.authString = authString;
+		}
+		return answer;
+	}
+	
+	/**
+	 * Metodo di convenienza per le chiamate GET
+	 * @param resource
+	 * @return
+	 */
+	public WSAnswer get(String resource) {
+		return call(Method.GET, domain + contextPath + resource, null, authString);
+	}
+	
+	/**
+	 * Metodo di convenienza per le chiamate POST
+	 * @param resource
+	 * @param input
+	 * @return
+	 */
+	public WSAnswer post(String resource, String input) {
+		return call(Method.POST, domain + contextPath + resource, input, authString);
+	}
+	
+	/**
+	 * Metodo di convenienza per le chiamate PUT
+	 * @param resource
+	 * @param input
+	 * @return
+	 */
+	public WSAnswer put(String resource, String input) {
+		return call(Method.PUT, domain + contextPath + resource, input, authString);
+	}
+	
+	/**
+	 * Metodo di convenienza per le chiamate DELETE
+	 * @param resource
+	 * @param input
+	 * @return
+	 */
+	public WSAnswer delete(String resource, String input) {
+		return call(Method.DELETE, domain + contextPath + resource, input, authString);
+	}
+
+}

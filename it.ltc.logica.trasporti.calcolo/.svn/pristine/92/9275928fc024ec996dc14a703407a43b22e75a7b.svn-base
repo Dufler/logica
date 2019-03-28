@@ -1,0 +1,54 @@
+package it.ltc.logica.trasporti.calcolo.ambiti;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import it.ltc.logica.database.model.Indirizzo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.IAlgoritmo;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class SupplementoElba implements IAmbito {
+
+	private static final List<String> listaCap = new ArrayList<String>();
+	
+	public static final String CODICE = "NOLO_ELBA";
+	private static SupplementoElba instance;
+	
+	private SupplementoElba() {}
+	
+	public static SupplementoElba getInstance() {
+		if (instance == null) {
+			instance = new SupplementoElba();
+		}
+		return instance;
+	}
+
+	@Override
+	public boolean isApplicabile(SpedizioneModel spedizione) {
+		Indirizzo destinazione = spedizione.getDestinazione();
+		boolean applicabile = getListaCapIsoleMinori().contains(destinazione.getCap());
+		return applicabile;
+	}
+
+	@Override
+	public double getValore(SpedizioneModel spedizione, IAlgoritmo algoritmo) {
+		double valore = 0;
+		if (isApplicabile(spedizione))
+			valore += 1;
+		return valore;
+	}
+	
+	public static List<String> getListaCapIsoleMinori() {
+		if (listaCap.isEmpty()) {
+			//TODO - Aggiungi i cap richiesti
+			//listaCap.add("");
+		}
+		return listaCap;
+	}
+	
+	@Override
+	public String toString() {
+		return CODICE;
+	}
+
+}

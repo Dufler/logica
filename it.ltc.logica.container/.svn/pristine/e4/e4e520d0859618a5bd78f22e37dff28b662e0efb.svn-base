@@ -1,0 +1,129 @@
+package it.ltc.logica.container.controller;
+
+import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.List;
+
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.ui.di.UISynchronize;
+
+import it.ltc.logica.database.model.LogUtente;
+import it.ltc.logica.database.model.TipoEventoUtente;
+import it.ltc.logica.database.model.Utente;
+import it.ltc.logica.database.orm.DBManager;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class ControllerUtente {
+	
+	public static final int STATUS_SUCCESSO = 0;
+	public static final int STATUS_UTENTE_NON_TROVATO = 1;
+	public static final int STATUS_PASSWORD_ERRATA = 2;
+	
+	private static ControllerUtente instance;
+	private final UISynchronize sync;
+	
+	private static final String HASH_TYPE = "SHA-256";
+	
+	private MessageDigest md;
+	private final EntityManager<Utente> managerUtenti;
+	private final EntityManager<LogUtente> managerEventi;
+	
+	private Utente utente;
+	
+	private ControllerUtente(UISynchronize uisync) {
+		sync = uisync;
+		DBManager.setTestDevelopmentSettings();
+		managerUtenti = new EntityManager<Utente>(Utente.class);
+		managerEventi = new EntityManager<LogUtente>(LogUtente.class);
+		try {
+			md = MessageDigest.getInstance(HASH_TYPE);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void createInstance(UISynchronize uisync) {
+		instance = new ControllerUtente(uisync);
+	}
+	
+	public static ControllerUtente getInstance() {
+//		if (instance == null) {
+//			instance = new ControllerUtente();
+//		}
+		return instance;
+	}
+	
+	public int login(String username, String password) {
+		int returnCode;
+		Utente filtro = new Utente();
+		filtro.setUsername(username);
+		utente = managerUtenti.getEntity(filtro, true);
+		if (utente != null) {
+			String hashedPassword = getHash(password);
+			if (hashedPassword.equals(utente.getPassword())) {
+				returnCode = STATUS_SUCCESSO;
+			} else {
+				returnCode = STATUS_PASSWORD_ERRATA;
+				utente = null;
+			}
+		} else {
+			returnCode = STATUS_UTENTE_NON_TROVATO;
+		}
+		return returnCode;
+	}
+	
+	public Utente getUtente() {
+		return utente;
+	}
+	
+	private String getHash(String toBeHashed) {
+		md.update(toBeHashed.getBytes());
+	    byte byteData[] = md.digest();
+	    StringBuffer sb = new StringBuffer();
+	    for (int i = 0; i < byteData.length; i++) {
+	    	sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+	     }
+	    String hash = sb.toString();
+		return hash;
+	}
+	
+	public boolean inserisciEvento(TipoEventoUtente tipoEvento, String note) {
+		boolean inserimento = false;
+		if (utente != null && tipoEvento != null) {
+			LogUtente evento = new LogUtente();
+			evento.setData(new Date());
+			evento.setEvento(tipoEvento.getCodice());
+			evento.setNote(note);
+			evento.setUtente(utente.getUsername());
+			inserimento = managerEventi.insert(evento);
+		}
+		return inserimento;
+	}
+	
+	public List<LogUtente> getEventi() {
+		List<LogUtente> eventi = null;
+		if (utente != null) {
+			LogUtente filtro = new LogUtente();
+			filtro.setUtente(utente.getUsername());
+			eventi = managerEventi.getEntities(filtro);
+		}
+		return eventi;
+	}
+
+	public UISynchronize getSync() {
+		return sync;
+	}
+	
+	public File getWorkSpaceFolder() {
+		File workspaceDirectory = new File(Platform.getInstanceLocation().getURL().getFile());
+		return workspaceDirectory;
+	}
+
+	public boolean modificaSpedizioni() {
+		//TODO - implementare logica per i permessi.
+		return true;
+	}
+
+}

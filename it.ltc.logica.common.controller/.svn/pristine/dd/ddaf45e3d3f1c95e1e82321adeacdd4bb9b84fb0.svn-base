@@ -1,0 +1,78 @@
+package it.ltc.logica.common.controller.fatturazione.documento;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+
+import it.ltc.logica.common.controller.ControllerClienti;
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
+import it.ltc.logica.common.controller.trasporti.ControllerContrassegni;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+
+public abstract class RealizzatoreDocumentoDiFatturazione {
+	
+	protected String filePath;
+	protected DocumentoFattura documento;
+	protected boolean bozza;
+	protected List<VoceFattura> voci;
+	
+	protected final ControllerCommesse controllerCommesse;
+	protected final ControllerClienti controllerClienti;
+	protected final ControllerIndirizzi controllerIndirizzi;
+	protected final ControllerSpedizioni controllerSpedizioni;
+	protected final ControllerContrassegni controllerContrassegni;
+	protected final ControllerListiniClienti controllerListiniClienti;
+	protected final ControllerPreferenzeFatturazione controllerPreferenze;
+	
+	protected final SimpleDateFormat semplice;
+	protected final DecimalFormat formatNumeri;
+	protected final DecimalFormat formatEuro;
+	
+	public RealizzatoreDocumentoDiFatturazione() {
+		controllerCommesse = ControllerCommesse.getInstance();
+		controllerClienti = ControllerClienti.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+		controllerSpedizioni = ControllerSpedizioni.getInstance();
+		controllerContrassegni = ControllerContrassegni.getInstance();
+		controllerListiniClienti = ControllerListiniClienti.getInstance();
+		controllerPreferenze = ControllerPreferenzeFatturazione.getInstance();
+		
+		semplice = new SimpleDateFormat("dd/MM/yyyy");
+		formatNumeri = new DecimalFormat();
+		formatNumeri.applyPattern("0.#");
+		formatEuro = new DecimalFormat();
+		formatEuro.applyPattern("#,##0.000 €");
+	}
+	
+	public void setFile(String filePath) {
+		this.filePath = filePath;		
+	}
+	
+	public void setDocumento(DocumentoFattura documento) {
+		this.documento = documento;
+	}
+
+	public void setVoci(List<VoceFattura> voci) {
+		this.voci = voci;
+	}
+	
+	public void setBozza(boolean bozza) {
+		this.bozza = bozza;		
+	}
+	
+	protected String getNomeFile(String path, String estensione) {
+		String tipoFile = "Fatturazione";
+		String nomeCommessa = controllerCommesse.getCommessa(documento.getIdCommessa()).getNome();
+		String periodo = documento.getMeseAnno();
+		String nomeFile = path  + "\\"  + tipoFile + " " + nomeCommessa + " " + periodo + estensione;
+		return nomeFile;
+	}
+	
+	public abstract void elaboraDocumento();
+	
+}

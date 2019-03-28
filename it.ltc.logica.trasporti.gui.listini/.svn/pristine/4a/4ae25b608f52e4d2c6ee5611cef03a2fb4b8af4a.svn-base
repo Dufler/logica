@@ -1,0 +1,32 @@
+package it.ltc.logica.trasporti.gui.listini.wizards.corriere;
+
+import org.eclipse.jface.wizard.Wizard;
+
+import it.ltc.logica.database.model.centrale.ListinoCorriere;
+import it.ltc.logica.trasporti.controller.ListiniCorrieriController;
+
+public class NuovoListinoCorriereWizard extends Wizard {
+	
+	private ListiniCorrieriController controller;
+		
+	private NuovoListinoCorriereProprietaWizardPage paginaProprieta;
+
+	public NuovoListinoCorriereWizard() {
+		setWindowTitle("Nuovo listino per corriere");
+		paginaProprieta = new NuovoListinoCorriereProprietaWizardPage();
+		controller = ListiniCorrieriController.getInstance();
+	}
+
+	@Override
+	public void addPages() {
+		addPage(paginaProprieta);
+	}
+
+	@Override
+	public boolean performFinish() {
+		ListinoCorriere listino = paginaProprieta.getListino();
+		boolean esito = controller.creaNuovoListino(listino);
+		return esito;
+	}
+
+}

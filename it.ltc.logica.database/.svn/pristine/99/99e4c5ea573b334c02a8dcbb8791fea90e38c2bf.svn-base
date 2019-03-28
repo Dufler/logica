@@ -1,0 +1,74 @@
+package it.ltc.logica.database.model.sqlserver.cliente;
+
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+
+public class ArtiBar extends Entity {
+	
+	public static final String NOME_TABELLA = "dbo.ArtiBar";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private Integer idArtiBar;
+	private String codiceArticolo;
+	private String barcodeEAN;
+	private String barcodeUPC;
+	private String idUniArticolo;
+
+	@Override
+	public String getNomeTabella() {
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addAutoincrement("IdArtiBar", "idArtiBar");
+			variabili.addString("CodiceArticolo", "codiceArticolo");
+			variabili.addString("BarraEAN", "barcodeEAN");
+			variabili.addString("BarraUPC", "barcodeUPC");
+			variabili.addString("IdUniArticolo", "idUniArticolo");
+		}
+		return variabili;
+	}
+
+	public Integer getIdArtiBar() {
+		return idArtiBar;
+	}
+
+	public void setIdArtiBar(Integer idArtiBar) {
+		this.idArtiBar = idArtiBar;
+	}
+
+	public String getCodiceArticolo() {
+		return codiceArticolo;
+	}
+
+	public void setCodiceArticolo(String codiceArticolo) {
+		this.codiceArticolo = codiceArticolo;
+	}
+
+	public String getBarcodeEAN() {
+		return barcodeEAN;
+	}
+
+	public void setBarcodeEAN(String barcodeEAN) {
+		this.barcodeEAN = barcodeEAN;
+	}
+
+	public String getBarcodeUPC() {
+		return barcodeUPC;
+	}
+
+	public void setBarcodeUPC(String barcodeUPC) {
+		this.barcodeUPC = barcodeUPC;
+	}
+
+	public String getIdUniArticolo() {
+		return idUniArticolo;
+	}
+
+	public void setIdUniArticolo(String idUniArticolo) {
+		this.idUniArticolo = idUniArticolo;
+	}
+
+}

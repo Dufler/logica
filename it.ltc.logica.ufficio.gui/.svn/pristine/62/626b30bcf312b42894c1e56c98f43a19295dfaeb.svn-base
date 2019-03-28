@@ -1,0 +1,71 @@
+package it.ltc.logica.ufficio.gui.elements.documento;
+
+import java.util.List;
+
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.database.model.centrale.documenti.Documento;
+import it.ltc.logica.gui.dialog.DialogModel;
+
+public class DialogDocumento extends DialogModel<Documento> {
+
+	private static final String title = "Documento";
+	
+	public DialogDocumento(Documento value) {
+		super(title, value);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isDirty() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void loadModel() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<String> validateModel() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean insertModel() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Documento createNewModel() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!
+	}
+
+}

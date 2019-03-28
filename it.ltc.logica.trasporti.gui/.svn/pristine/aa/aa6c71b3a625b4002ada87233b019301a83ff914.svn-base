@@ -1,0 +1,52 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
+
+import it.ltc.logica.database.model.centrale.Cap;
+
+public class FiltroCAP extends ViewerFilter {
+	
+	private String capFiltro;
+	private String localitaFiltro;
+
+	@Override
+	public boolean select(Viewer viewer, Object parentElement, Object element) {
+		Cap cap = (Cap) element;
+		boolean toShow = checkCAP(cap);
+		if (toShow)
+			toShow = checkLocalita(cap);
+		return toShow;
+	}
+
+	private boolean checkLocalita(Cap cap) {
+		boolean check = true;
+		if (localitaFiltro != null && !localitaFiltro.isEmpty()) {
+			String localita = cap.getLocalita().toUpperCase();
+			check = localita.contains(localitaFiltro);
+		}
+		return check;
+	}
+
+	private boolean checkCAP(Cap cap) {
+		boolean check = true;
+		if (capFiltro != null && !capFiltro.isEmpty()) {
+			String c = cap.getCap();
+			check = capFiltro.equals(c);
+		}
+		return check;
+	}
+	
+	public void setCap(String c) {
+		if (c != null)
+			c = c.toUpperCase();
+		capFiltro = c;
+	}
+
+	public void setLocalita(String l) {
+		if (l != null)
+			l = l.toUpperCase();
+		localitaFiltro = l;	
+	}
+
+}

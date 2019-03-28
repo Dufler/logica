@@ -1,0 +1,18 @@
+package it.ltc.logica.common.controller.fatturazione;
+
+import java.util.List;
+
+import it.ltc.logica.database.model.centrale.fatturazione.DocumentoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.VoceFattura;
+
+public interface RealizzatoreDocumentoDiFatturazione {
+	
+	public void setFile(String filePath);
+	
+	public void setDocumento(DocumentoFattura documento);
+	
+	public void setVoci(List<VoceFattura> voci);
+	
+	public void elaboraDocumento();
+
+}

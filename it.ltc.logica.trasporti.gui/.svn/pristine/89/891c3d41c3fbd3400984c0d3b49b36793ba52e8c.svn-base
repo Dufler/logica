@@ -1,0 +1,165 @@
+package it.ltc.logica.trasporti.gui.composite;
+
+import java.util.Date;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.database.model.centrale.trasporti.Corriere;
+import it.ltc.logica.database.model.centrale.trasporti.ServizioSpedizione;
+import it.ltc.logica.gui.container.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.DateField;
+import it.ltc.logica.gui.input.TextForDouble;
+import it.ltc.logica.gui.input.TextForInteger;
+import it.ltc.logica.gui.input.TextForString;
+
+public class CompositeDatiSpedizione extends Gruppo {
+	
+	private static final String titolo = "Dati Spedizione";
+	private TextForInteger textColli;
+	private TextForDouble textPeso;
+	private TextForDouble textVolume;
+	private Label lblData;
+	private DateField dateTime;
+	private ComboBox<Corriere> comboCorriere;
+	private Label lblServizio;
+	private ComboBox<ServizioSpedizione> comboServizio;
+	private Label lblLetteraDiVettura;
+	private TextForString textLetteraDiVettura;
+
+	public CompositeDatiSpedizione(Composite parent, int style) {
+		super(parent, style, titolo);		
+	}
+	
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		Label lbCorriere = new Label(this, SWT.NONE);
+		lbCorriere.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lbCorriere.setText("Corriere: ");
+		
+		comboCorriere = new ComboBox<Corriere>(this);
+		comboCorriere.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCorriere.setItems(Corriere.getCorrieri());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblServizio = new Label(this, SWT.NONE);
+		lblServizio.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblServizio.setText("Servizio: ");
+		
+		comboServizio = new ComboBox<ServizioSpedizione>(this);
+		comboServizio.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboServizio.setItems(ServizioSpedizione.getServizi());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblLetteraDiVettura = new Label(this, SWT.NONE);
+		lblLetteraDiVettura.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblLetteraDiVettura.setText("Lettera di vettura: ");
+		
+		textLetteraDiVettura = new TextForString(this, SWT.BORDER);
+		textLetteraDiVettura.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblColli = new Label(this, SWT.NONE);
+		lblColli.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblColli.setText("Colli: ");
+		
+		textColli = new TextForInteger(this, SWT.BORDER);
+		textColli.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblPeso = new Label(this, SWT.NONE);
+		lblPeso.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPeso.setText("Peso: ");
+		
+		textPeso = new TextForDouble(this, SWT.BORDER);
+		textPeso.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblVolume = new Label(this, SWT.NONE);
+		lblVolume.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblVolume.setText("Volume: ");
+		
+		textVolume = new TextForDouble(this, SWT.BORDER);
+		textVolume.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		lblData = new Label(this, SWT.NONE);
+		lblData.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblData.setText("Data:");
+		
+		dateTime = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+	
+	public Corriere getCorriere() {
+		return comboCorriere.getSelectedValue();
+	}
+	
+	public void setCorriere(Corriere value) {
+		comboCorriere.setSelectedValue(value);
+	}
+	
+	public ServizioSpedizione getServizio() {
+		return comboServizio.getSelectedValue();
+	}
+	
+	public void setServizio(ServizioSpedizione value) {
+		comboServizio.setSelectedValue(value);
+	}
+	
+	public String getLetteraDiVettura() {
+		return textLetteraDiVettura.getText();
+	}
+	
+	public void setLetteraDiVettura(String value) {
+		textLetteraDiVettura.setText(value);
+	}
+	
+	public Integer getColli() {
+		return textColli.getValue();
+	}
+	
+	public void setColli(Integer value) {
+		textColli.setValue(value);
+	}
+	
+	public Double getPeso() {
+		return textPeso.getValue();
+	}
+	
+	public void setPeso(Double value) {
+		textPeso.setValue(value);
+	}
+	
+	public Double getVolume() {
+		return textVolume.getValue();
+	}
+	
+	public void setVolume(Double value) {
+		textVolume.setValue(value);
+	}
+	
+	public Date getDataSpedizione() {
+		return dateTime.getValue();
+	}
+	
+	public void setDataSpedizione(Date value) {
+		if (value != null)
+			dateTime.setValue(value);
+	}
+
+}

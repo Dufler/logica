@@ -1,0 +1,104 @@
+package it.ltc.logica.container.dialogs;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+
+import it.ltc.logica.container.controller.ControllerUtente;
+
+import org.eclipse.swt.layout.GridData;
+
+public class PasswordDialog extends Dialog {
+	
+	private static final String titolo = "Logica - Log In";
+	private static final String OK_LABEL = "Log In";
+	private static final String CANCEL_LABEL = "Annulla";
+	private static final String MESSAGE_WRONG_PASSWORD = "Password errata";
+	private static final String MESSAGE_WRONG_USERNAME = "Utente non esistente";
+	
+	private final ControllerUtente controller;
+	
+	private Composite container;
+	private Text textUsername;
+	private Text textPassword;
+	private Label lblMessage;
+
+	public PasswordDialog(Shell parentShell) {
+		super(parentShell);
+		controller = ControllerUtente.getInstance();
+		//setDefaultImage(immagine);
+	}
+	
+	@Override
+    protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText(titolo);
+    }
+	
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		container = (Composite) super.createDialogArea(parent);
+		container.setLayout(new GridLayout(2, false));
+		
+		Label lblUsername = new Label(container, SWT.NONE);
+		lblUsername.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblUsername.setText("Username: ");
+		
+		textUsername = new Text(container, SWT.BORDER);
+		textUsername.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Label lblPassword = new Label(container, SWT.NONE);
+		lblPassword.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblPassword.setText("Password: ");
+		
+		textPassword = new Text(container, SWT.BORDER | SWT.PASSWORD);
+		textPassword.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(container, SWT.NONE);
+		
+		lblMessage = new Label(container, SWT.NONE);
+		lblMessage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		/*TESTING*/
+		textUsername.setText("test");
+		textPassword.setText("test");
+
+		return container;
+	}
+
+	@Override
+	protected void createButtonsForButtonBar(Composite parent) {
+		createButton(parent, IDialogConstants.OK_ID, OK_LABEL, true);
+		createButton(parent, IDialogConstants.CANCEL_ID, CANCEL_LABEL, false);
+	}
+	
+	@Override
+	protected void okPressed() {
+		boolean validazione = login();
+		if (validazione)
+			super.okPressed();
+	}
+	
+	private boolean login() {
+		boolean success = false;
+		String username = textUsername.getText();
+		String password = textPassword.getText();
+		int returnCode = controller.login(username, password);
+		switch (returnCode) {
+			case ControllerUtente.STATUS_SUCCESSO : success = true; break;
+			case ControllerUtente.STATUS_PASSWORD_ERRATA : mostraMessaggio(MESSAGE_WRONG_PASSWORD); break;
+			case ControllerUtente.STATUS_UTENTE_NON_TROVATO : mostraMessaggio(MESSAGE_WRONG_USERNAME); break;
+		}
+		return success;
+	}
+	
+	private void mostraMessaggio(String message) {
+		lblMessage.setText(message);
+	}
+
+}

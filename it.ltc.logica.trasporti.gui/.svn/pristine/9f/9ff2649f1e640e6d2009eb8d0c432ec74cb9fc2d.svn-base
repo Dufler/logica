@@ -1,0 +1,28 @@
+package it.ltc.logica.trasporti.gui.elements.cap;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.centrale.trasporti.Cap;
+import it.ltc.logica.gui.decoration.Immagine;
+
+public class Ore12LabelProvider extends ColumnLabelProvider {
+	
+//	public String getText(Object element) {
+//		Cap cap = (Cap) element;
+//		String text = cap.getTntOre12() ? "Si" : "No";
+//		return text;
+//	}
+	
+	public String getText(Object element) {
+		return null;
+	}
+	
+	@Override
+	public Image getImage(Object element) {
+		Cap cap = (Cap) element;
+		Image iconToShow = cap.getTntOre12() ? Immagine.SPUNTAVERDE_16X50.getImage() : Immagine.CROCEROSSA_16X50.getImage();
+		return iconToShow;
+	}
+
+}

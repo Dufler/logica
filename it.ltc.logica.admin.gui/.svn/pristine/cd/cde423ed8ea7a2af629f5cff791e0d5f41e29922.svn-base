@@ -1,0 +1,335 @@
+ 
+package it.ltc.logica.admin.gui.parts;
+
+import javax.inject.Inject;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.SWT;
+import org.eclipse.wb.swt.SWTResourceManager;
+
+import it.ltc.logica.admin.gui.logic.ControllerUtenti;
+import it.ltc.logica.admin.gui.logic.PermessiContentProvider;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Feature;
+import it.ltc.logica.database.model.centrale.Permesso;
+import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.database.model.centrale.Utente;
+import it.ltc.logica.database.model.centrale.UtenteCommesseJoin;
+import it.ltc.logica.database.model.centrale.UtenteFeaturesJoin;
+import it.ltc.logica.database.model.centrale.UtentePermessiJoin;
+import it.ltc.logica.database.model.centrale.UtenteSediJoin;
+import it.ltc.logica.gui.input.ComboBox;
+
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+
+public class GestioneUtentiPart {
+	
+	public static final String partID = "it.ltc.logica.admin.gui.part.gestioneutenti";
+	
+	private ControllerUtenti controller;
+	
+	private ComboBox<Utente> comboUtenti;
+	
+	private CheckboxTableViewer checkboxSedi;
+	private Table tableSedi;
+	private Button btnSalvaSedi;
+	
+	private CheckboxTableViewer checkboxCommesse;
+	private Table tableCommesse;
+	private Button btnSalvaCommesse;
+	
+	private CheckboxTableViewer checkboxFeatures;
+	private Table tableFeatures;
+	private Button btnSalvaFeature;
+	
+	private CheckboxTreeViewer checkboxPermessi;
+	private Tree treePermessi;
+	private Button btnSalvaPermessi;
+	
+	@Inject
+	public GestioneUtentiPart() {
+		controller = ControllerUtenti.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(2, false));
+		
+		Label lblGestioneUtenti = new Label(parent, SWT.NONE);
+		lblGestioneUtenti.setFont(SWTResourceManager.getFont("Segoe UI", 16, SWT.BOLD));
+		lblGestioneUtenti.setText("Gestione Utenti");
+		new Label(parent, SWT.NONE);
+		
+		Label lblSelezionaUnUtente = new Label(parent, SWT.NONE);
+		lblSelezionaUnUtente.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				System.out.println("Refresh degli utenti!");
+				comboUtenti.getViewer().refresh();
+			}
+		});
+		lblSelezionaUnUtente.setText("seleziona un utente:");
+		lblSelezionaUnUtente.setToolTipText("Fai doppio click qui per aggiornare la lista degli utenti.");
+		new Label(parent, SWT.NONE);
+		
+		comboUtenti = new ComboBox<Utente>(parent);
+		comboUtenti.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				selezionaUtente();
+			}
+		});
+		comboUtenti.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		comboUtenti.setItems(controller.getUtenti());
+		new Label(parent, SWT.NONE);
+		
+		Label lblSedi = new Label(parent, SWT.NONE);
+		lblSedi.setText("Sedi");
+		
+		Label lblCommesse = new Label(parent, SWT.NONE);
+		lblCommesse.setText("Commesse");
+		
+		checkboxSedi = CheckboxTableViewer.newCheckList(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxSedi.addCheckStateListener(new ICheckStateListener() {
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				btnSalvaSedi.setEnabled(true);
+			}
+		});
+		checkboxSedi.setContentProvider(ArrayContentProvider.getInstance());
+		tableSedi = checkboxSedi.getTable();
+		tableSedi.setHeaderVisible(true);
+		tableSedi.setLinesVisible(true);
+		tableSedi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		TableViewerColumn colonnaSedi = new TableViewerColumn(checkboxSedi, SWT.NONE);
+		colonnaSedi.setLabelProvider(new ColumnLabelProvider());
+		TableColumn tblclmnSede = colonnaSedi.getColumn();
+		tblclmnSede.setWidth(350);
+		tblclmnSede.setText("Sede");
+		
+		checkboxSedi.setInput(Sede.getSedi());
+		
+		checkboxCommesse = CheckboxTableViewer.newCheckList(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxCommesse.addCheckStateListener(new ICheckStateListener() {
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				btnSalvaCommesse.setEnabled(true);
+			}
+		});
+		checkboxCommesse.setContentProvider(ArrayContentProvider.getInstance());
+		tableCommesse = checkboxCommesse.getTable();
+		tableCommesse.setLinesVisible(true);
+		tableCommesse.setHeaderVisible(true);
+		tableCommesse.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TableViewerColumn colonnaCommesse = new TableViewerColumn(checkboxCommesse, SWT.NONE);
+		colonnaCommesse.setLabelProvider(new ColumnLabelProvider());
+		TableColumn tblclmnNome = colonnaCommesse.getColumn();
+		tblclmnNome.setWidth(350);
+		tblclmnNome.setText("Nome");
+		
+		checkboxCommesse.setInput(Commessa.getCommesse());
+		
+		btnSalvaSedi = new Button(parent, SWT.NONE);
+		btnSalvaSedi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				salvaSedi();
+			}
+		});
+		btnSalvaSedi.setText("Salva Sedi");
+		btnSalvaSedi.setEnabled(false);
+		
+		btnSalvaCommesse = new Button(parent, SWT.NONE);
+		btnSalvaCommesse.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				salvaCommesse();
+			}
+		});
+		btnSalvaCommesse.setText("Salva Commesse");
+		btnSalvaCommesse.setEnabled(false);
+		
+		Label lblFeatures = new Label(parent, SWT.NONE);
+		lblFeatures.setText("Features");
+		
+		Label lblPermessi = new Label(parent, SWT.NONE);
+		lblPermessi.setText("Permessi");
+		
+		checkboxFeatures = CheckboxTableViewer.newCheckList(parent, SWT.BORDER | SWT.FULL_SELECTION);
+		checkboxFeatures.addCheckStateListener(new ICheckStateListener() {
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				btnSalvaFeature.setEnabled(true);
+			}
+		});
+		checkboxFeatures.setContentProvider(ArrayContentProvider.getInstance());
+		tableFeatures = checkboxFeatures.getTable();
+		tableFeatures.setLinesVisible(true);
+		tableFeatures.setHeaderVisible(true);
+		tableFeatures.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		
+		TableViewerColumn colonnaFeature = new TableViewerColumn(checkboxFeatures, SWT.NONE);
+		colonnaFeature.setLabelProvider(new ColumnLabelProvider());
+		TableColumn tblclmnFeature = colonnaFeature.getColumn();
+		tblclmnFeature.setWidth(350);
+		tblclmnFeature.setText("Nome");
+		
+		checkboxFeatures.setInput(Feature.getFeatures());
+		
+		checkboxPermessi = new CheckboxTreeViewer(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+		checkboxPermessi.setAutoExpandLevel(CheckboxTreeViewer.ALL_LEVELS);
+		checkboxPermessi.addCheckStateListener(new ICheckStateListener() {
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				btnSalvaPermessi.setEnabled(true);
+			}
+		});
+		checkboxPermessi.setContentProvider(new PermessiContentProvider());
+		treePermessi = checkboxPermessi.getTree();
+		treePermessi.setLinesVisible(true);
+		treePermessi.setHeaderVisible(true);
+		treePermessi.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		TreeViewerColumn treeViewerColumn = new TreeViewerColumn(checkboxPermessi, SWT.NONE);
+		treeViewerColumn.setLabelProvider(new ColumnLabelProvider());
+		TreeColumn trclmnPermesso = treeViewerColumn.getColumn();
+		trclmnPermesso.setWidth(350);
+		trclmnPermesso.setText("Permesso");
+		
+		checkboxPermessi.setInput(Permesso.getPermessiAdAlbero());
+		
+		btnSalvaFeature = new Button(parent, SWT.NONE);
+		btnSalvaFeature.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				salvaFeature();
+			}
+		});
+		btnSalvaFeature.setText("Salva");
+		btnSalvaFeature.setEnabled(false);
+		
+		btnSalvaPermessi = new Button(parent, SWT.NONE);
+		btnSalvaPermessi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				salvaPermessi();
+			}
+		});
+		btnSalvaPermessi.setText("Salva");
+		btnSalvaPermessi.setEnabled(false);
+		
+	}
+	
+	private void selezionaUtente() {
+		int selectionIndex = comboUtenti.getSelectionIndex();
+		if (selectionIndex != -1) {
+			String username = comboUtenti.getSelectedValue().getUsername();
+			//Sedi
+			btnSalvaSedi.setEnabled(false);
+			checkboxSedi.setAllChecked(false);
+			for (Sede sede : UtenteSediJoin.getSedi(username)) {
+				checkboxSedi.setChecked(sede, true);
+			}
+			//Commesse
+			btnSalvaCommesse.setEnabled(false);
+			checkboxCommesse.setAllChecked(false);
+			for (Commessa commessa : UtenteCommesseJoin.getCommesse(username)) {
+				checkboxCommesse.setChecked(commessa, true);
+			}
+			//Feature
+			btnSalvaFeature.setEnabled(false);
+			checkboxFeatures.setAllChecked(false);
+			for (Feature feature : UtenteFeaturesJoin.getFeatures(username)) {
+				checkboxFeatures.setChecked(feature, true);
+			}
+			//Permessi
+			btnSalvaPermessi.setEnabled(false);
+			checkboxPermessi.refresh();
+			for (Object o : checkboxPermessi.getCheckedElements()) {
+				checkboxPermessi.setChecked(o, false);
+			}
+			for (Permesso permesso : UtentePermessiJoin.getPermessi(username)) {
+				//checkboxPermessi.setSubtreeChecked(permesso, true);
+				checkboxPermessi.setChecked(permesso, true);
+			}
+		}
+	}
+	
+	private void salvaSedi() {
+		int selectionIndex = comboUtenti.getSelectionIndex();
+		if (selectionIndex != -1) {
+			String username = comboUtenti.getSelectedValue().getUsername();
+			List<Sede> sediSelezionate = new LinkedList<Sede>();
+			for (Object o : checkboxSedi.getCheckedElements()) {
+				Sede sede = (Sede) o;
+				sediSelezionate.add(sede);
+			}
+			controller.salvaSedi(username, sediSelezionate);
+			btnSalvaSedi.setEnabled(false);
+		}
+	}
+	
+	private void salvaCommesse() {
+		int selectionIndex = comboUtenti.getSelectionIndex();
+		if (selectionIndex != -1) {
+			String username = comboUtenti.getSelectedValue().getUsername();
+			List<Commessa> commesseSelezionate = new LinkedList<Commessa>();
+			for (Object o : checkboxCommesse.getCheckedElements()) {
+				Commessa commessa = (Commessa) o;
+				commesseSelezionate.add(commessa);
+			}
+			controller.salvaCommesse(username, commesseSelezionate);
+			btnSalvaCommesse.setEnabled(false);
+		}
+	}
+	
+	private void salvaFeature() {
+		int selectionIndex = comboUtenti.getSelectionIndex();
+		if (selectionIndex != -1) {
+			String username = comboUtenti.getSelectedValue().getUsername();
+			List<Feature> featureSelezionate = new LinkedList<Feature>();
+			for (Object o : checkboxFeatures.getCheckedElements()) {
+				Feature feature = (Feature) o;
+				featureSelezionate.add(feature);
+			}
+			controller.salvaFeature(username, featureSelezionate);
+			btnSalvaFeature.setEnabled(false);
+		}
+	}
+	
+	private void salvaPermessi() {
+		int selectionIndex = comboUtenti.getSelectionIndex();
+		if (selectionIndex != -1) {
+			String username = comboUtenti.getSelectedValue().getUsername();
+			List<Permesso> permessiSelezionati = new LinkedList<Permesso>();
+			for (Object o : checkboxPermessi.getCheckedElements()) {
+				Permesso permesso = (Permesso) o;
+				permessiSelezionati.add(permesso);
+			}
+			controller.salvaPermessi(username, permessiSelezionati);
+			btnSalvaPermessi.setEnabled(false);
+		}
+	}
+	
+}

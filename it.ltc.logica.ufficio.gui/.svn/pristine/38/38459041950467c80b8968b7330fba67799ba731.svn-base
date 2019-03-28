@@ -1,0 +1,81 @@
+package it.ltc.logica.ufficio.gui.elements.documento;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import it.ltc.logica.common.controller.ControllerCommesse;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.documenti.DocumentoTipo;
+import it.ltc.logica.gui.composite.Gruppo;
+import it.ltc.logica.gui.decoration.SpacerLabel;
+import it.ltc.logica.gui.input.ComboBox;
+import it.ltc.logica.gui.input.DateField;
+import it.ltc.logica.gui.input.TextForString;
+
+public class GruppoDocumento extends Gruppo {
+
+	private static final String title = "Documento";
+	
+	private ComboBox<Commessa> comboCommessa;
+	private ComboBox<DocumentoTipo> comboTipo;
+	private TextForString textRiferimentoInterno;
+	private TextForString textRiferimentoCliente;
+	private DateField dateTime;
+	
+	public GruppoDocumento(Composite parent, int style) {
+		super(parent, style, title);
+	}
+
+	@Override
+	public void aggiungiElementiGrafici() {
+		setLayout(new GridLayout(3, false));
+		
+		Label lblCommessa = new Label(this, SWT.NONE);
+		lblCommessa.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblCommessa.setText("Commessa: ");
+		
+		comboCommessa = new ComboBox<Commessa>(this);
+		comboCommessa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboCommessa.setItems(ControllerCommesse.getInstance().getCommesse());
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblTipo = new Label(this, SWT.NONE);
+		lblTipo.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblTipo.setText("Tipo: ");
+		
+		comboTipo = new ComboBox<DocumentoTipo>(this);
+		comboTipo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblRiferimentoInterno = new Label(this, SWT.NONE);
+		lblRiferimentoInterno.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimentoInterno.setText("Riferimento interno: ");
+		
+		textRiferimentoInterno = new TextForString(this, SWT.BORDER);
+		textRiferimentoInterno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblRiferimentoCliente = new Label(this, SWT.NONE);
+		lblRiferimentoCliente.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+		lblRiferimentoCliente.setText("Riferimento cliente: ");
+		
+		textRiferimentoCliente = new TextForString(this, SWT.BORDER);
+		textRiferimentoCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+		
+		Label lblData = new Label(this, SWT.NONE);
+		lblData.setText("Data:");
+		
+		dateTime = new DateField(this);
+		
+		new SpacerLabel(this, SWT.NONE, SpacerLabel.SHORT);
+	}
+
+}

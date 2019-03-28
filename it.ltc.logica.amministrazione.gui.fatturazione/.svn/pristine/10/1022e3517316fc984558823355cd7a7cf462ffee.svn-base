@@ -1,0 +1,71 @@
+ 
+package it.ltc.logica.amministrazione.gui.fatturazione.parts;
+
+import javax.inject.Inject;
+import javax.annotation.PostConstruct;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.SWT;
+
+import it.ltc.logica.amministrazione.gui.fatturazione.wizards.ingressi.FatturazioneIngressiWizard;
+import it.ltc.logica.amministrazione.gui.fatturazione.wizards.uscite.FatturazioneUsciteWizard;
+import it.ltc.logica.common.controller.ingressi.ControllerIngressi;
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
+import it.ltc.logica.common.controller.uscite.OrdiniController;
+import it.ltc.logica.gui.wizard.DialogWizard;
+
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+
+public class FatturazionePart {
+	@Inject
+	public FatturazionePart() {
+		//Caricamento dei controller
+		ControllerIngressi.getInstance();
+		ListiniClientiController.getInstance();
+		ControllerProdotti.getInstance();
+		OrdiniController.getInstance();
+	}
+	
+	@PostConstruct
+	public void postConstruct(Composite parent) {
+		parent.setLayout(new GridLayout(1, false));
+		
+		Button btnFatturaIngressi = new Button(parent, SWT.NONE);
+		btnFatturaIngressi.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneIngressi();
+			}
+		});
+		btnFatturaIngressi.setText("Fattura Ingressi");
+		
+		Button btnFatturaUscite = new Button(parent, SWT.NONE);
+		btnFatturaUscite.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				avviaFatturazioneUscite();
+			}
+		});
+		btnFatturaUscite.setText("Fattura Uscite");
+		
+	}
+
+	public void aggiornaTabellaDocumenti() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void avviaFatturazioneIngressi() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneIngressiWizard(this), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}
+	
+	private void avviaFatturazioneUscite() {
+		DialogWizard wizard = new DialogWizard(new FatturazioneUsciteWizard(this), DialogWizard.WIZARD_PREVENTIVO);
+		wizard.open();
+	}	
+	
+}

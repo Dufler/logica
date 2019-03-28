@@ -1,0 +1,71 @@
+package it.ltc.logica.common.controller.trasporti;
+
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.Tracking;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+public class ControllerTracking {
+	
+	private static ControllerTracking instance;
+	
+	private final HashMap<Integer, List<Tracking>> tracciamenti;
+
+	private ControllerTracking() {
+		tracciamenti = new HashMap<Integer, List<Tracking>>();
+	}
+
+	public static ControllerTracking getInstance() {
+		if (instance == null) {
+			instance = new ControllerTracking();
+		}
+		return instance;
+	}
+	
+	public List<Tracking> getTracking(int idSpedizione) {
+		return getTracking(idSpedizione, false);
+	}
+	
+	public List<Tracking> getTracking(int idSpedizione, boolean forceUpdate) {
+		if (forceUpdate || !tracciamenti.containsKey(idSpedizione)) {
+			ProcessoCaricamentoDati pcd = new ProcessoCaricamentoDati(idSpedizione);
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.esegui(pcd);
+		}
+		return tracciamenti.get(idSpedizione);
+	}
+	
+	private class ProcessoCaricamentoDati extends Processo {
+
+		private static final String title = "Caricamento del tracking";
+		
+		private final int id;
+
+		public ProcessoCaricamentoDati(int id) {
+			super(title, -1);
+			this.id = id;
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			WSConsumer c = WSConsumer.getInstance();
+			WSAnswer wsAnswer = c.get("tracking/" + id);
+			String answer = wsAnswer.getMessage();
+			if (wsAnswer.getStatus() != 200)
+				throw new RuntimeException("Errore durante il recupero del tracking: '" + wsAnswer.getMessage() + "'");
+
+			ObjectMapper mapper = new ObjectMapper();
+			List<Tracking> lista = mapper.readValue(answer, new TypeReference<List<Tracking>>() {});
+
+			tracciamenti.put(id, lista);
+		}
+	}
+
+}

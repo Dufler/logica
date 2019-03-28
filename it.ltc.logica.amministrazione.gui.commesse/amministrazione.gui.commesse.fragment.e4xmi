@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmi:id="_BxaXACerEeWxCPrV0pAZQQ">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_PqVVMND_Eeeia58oUiKWeQ" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partsashcontainer.listafunzioni">
+    <elements xsi:type="basic:Part" xmi:id="_SR_7AND_Eeeia58oUiKWeQ" elementId="it.ltc.logica.amministrazione.gui.commesse.part.funzionecommesse" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.commesse/it.ltc.logica.amministrazione.gui.commesse.parts.FunzioneCommessePart" label="Funzione - Commesse" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire le commesse"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_p7xosND_Eeeia58oUiKWeQ" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_sKmQsND_Eeeia58oUiKWeQ" elementId="it.ltc.logica.amministrazione.gui.commesse.part.commesse" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.commesse/it.ltc.logica.amministrazione.gui.commesse.parts.CommessePart" label="Gestione Commesse" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire le commesse"/>
+  </fragments>
+</fragment:ModelFragments>

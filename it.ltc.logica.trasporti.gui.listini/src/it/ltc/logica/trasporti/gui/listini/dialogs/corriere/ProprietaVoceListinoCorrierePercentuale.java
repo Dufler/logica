@@ -1,0 +1,137 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.corriere;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.listini.ControllerListiniCorrieri;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoCorriere;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListinoCorrierePercentuale;
+import it.ltc.logica.gui.dialog.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+import it.ltc.logica.trasporti.gui.composite.CompositeVocePercentuale;
+import it.ltc.logica.trasporti.gui.elements.ETipoListino;
+
+public class ProprietaVoceListinoCorrierePercentuale extends DialogModel<VoceDiListinoCorriere> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino corriere percentuale";
+	
+	private ControllerListiniCorrieri controller;
+	
+	private final VoceDiListinoCorriere voce;
+	private final VoceDiListinoCorrierePercentuale vocePercentuale;
+
+	private CompositeVoceListino compositeVoce;
+	private CompositeVocePercentuale compositePercentuale;
+	
+	private final boolean permessoGestione;
+
+	public ProprietaVoceListinoCorrierePercentuale(VoceDiListinoCorriere voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		voce = voceDiListino;
+		vocePercentuale = voce.getPercentuale();
+		controller = ControllerListiniCorrieri.getInstance();
+		permessoGestione = permesso;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		container.setLayout(new GridLayout(1, false));
+		
+		compositeVoce = new CompositeVoceListino(this, container, ETipoListino.CORRIERE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeVoce.enableElement(permessoGestione);
+		
+		compositePercentuale = new CompositeVocePercentuale(this, container);
+		compositePercentuale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+		compositePercentuale.enableElement(permessoGestione);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modifyVoce = compositeVoce.isDirty();
+		boolean modifyPercentuale = compositePercentuale.isDirty();
+		return modifyVoce || modifyPercentuale;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		compositeVoce.setNome(nome);
+		String descrizione = voce.getDescrizione();
+		compositeVoce.setDescrizione(descrizione);
+		String tipo = voce.getStrategiaCalcolo();
+		compositePercentuale.setTipo(tipo);
+		Integer ambito = voce.getIdSottoAmbito();
+		SottoAmbitoFattura ambitoDiTrasporto = ControllerAmbitiFatturazione.getInstance().getSottoAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		String valoreAmbito = voce.getValoreSottoAmbito();
+		if (valoreAmbito != null)
+			compositeVoce.setValoreAmbito(valoreAmbito);
+		if (vocePercentuale != null) {
+			Double valore = vocePercentuale.getValore();
+			compositePercentuale.setValore(valore);
+			Double minimo = vocePercentuale.getValoreMinimo();
+			compositePercentuale.setMinimo(minimo);
+			Double massimo = vocePercentuale.getValoreMassimo();
+			compositePercentuale.setMassimo(massimo);
+		}
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		Integer ambito = compositeVoce.getAmbito().getId();
+		voce.setIdSottoAmbito(ambito);
+		String valoreAmbito = compositeVoce.getValoreAmbito();
+		if (!valoreAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreAmbito);
+		String tipo = compositePercentuale.getTipo();
+		voce.setStrategiaCalcolo(tipo);
+		Double valore = compositePercentuale.getValore();
+		vocePercentuale.setValore(valore);
+		Double minimo = compositePercentuale.getMinimo();
+		vocePercentuale.setValoreMinimo(minimo);
+		Double massimo = compositePercentuale.getMassimo();
+		vocePercentuale.setValoreMassimo(massimo);
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateVoce = controller.aggiornaVoce(voce);
+		return updateVoce;
+//		boolean updatePercentuale = controller.aggiornaVoceDiListinoPercentuale(vocePercentuale);
+//		return updateVoce && updatePercentuale;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+	
+	@Override
+	public void prefillModel() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	public VoceDiListinoCorriere createNewModel() {
+		VoceDiListinoCorriere listino = new VoceDiListinoCorriere();
+		return listino;
+	}
+
+}

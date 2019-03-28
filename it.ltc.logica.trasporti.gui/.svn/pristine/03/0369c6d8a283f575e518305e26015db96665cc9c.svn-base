@@ -1,0 +1,47 @@
+package it.ltc.logica.trasporti.gui.elements.spedizione;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.swt.graphics.Image;
+
+import it.ltc.logica.database.model.Spedizione;
+import it.ltc.logica.gui.decoration.Immagine;
+
+public class SpedizioneDataLabelProvider extends ColumnLabelProvider {
+	
+	public static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
+	
+	private final SimpleDateFormat sdf;
+	
+	public SpedizioneDataLabelProvider() {
+		sdf = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+	}
+	
+	public SpedizioneDataLabelProvider(String dateFormat) {
+		sdf = new SimpleDateFormat(dateFormat);
+	}
+	
+	@Override
+	public Image getImage(Object element) {
+		Image iconToShow = null;
+		Spedizione spedizione = (Spedizione) element;
+		if (!spedizione.getDatiCompleti()) {
+			iconToShow = Immagine.RED_MARK_12X20.getImage();
+		}
+		return iconToShow;
+	}
+	
+	public String getText(Object element) {
+		Spedizione spedizione = (Spedizione) element;
+		String testo;
+		Date data = spedizione.getData();
+		if (data != null)
+			testo = sdf.format(data);
+		else
+			testo = "Non ancora partita.";
+		return testo;
+	}
+
+}

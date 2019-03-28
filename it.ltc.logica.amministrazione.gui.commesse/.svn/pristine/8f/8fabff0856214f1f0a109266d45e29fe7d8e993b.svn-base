@@ -1,0 +1,122 @@
+package it.ltc.logica.amministrazione.gui.commesse.elements.preferenze;
+
+import java.util.List;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+import it.ltc.logica.common.controller.fatturazione.ControllerAmbitiFatturazione;
+import it.ltc.logica.common.controller.fatturazione.ControllerPreferenzeFatturazione;
+import it.ltc.logica.database.model.centrale.fatturazione.AmbitoFattura;
+import it.ltc.logica.database.model.centrale.fatturazione.PreferenzeFatturazione;
+import it.ltc.logica.gui.common.dialogs.fatturazione.DialogPreferenzeFatturazione;
+import it.ltc.logica.gui.elements.Tabella;
+
+public class TabellaPreferenzeFatturazione extends Tabella<PreferenzeFatturazione> {
+	
+	private final int commessa;
+	
+	//private final ControllerAmbitiFatturazione controllerAmbiti;
+	//private final ControllerPreferenzeFatturazione controllerPreferenze;
+
+	public TabellaPreferenzeFatturazione(Composite parent, int commessa) {
+		super(parent, STILE_SELEZIONE_SINGOLA, new OrdinatorePreferenzeFatturazione());
+		
+		this.commessa = commessa;
+		
+		//controllerAmbiti = ControllerAmbitiFatturazione.getInstance();
+		//controllerPreferenze = ControllerPreferenzeFatturazione.getInstance();
+		
+		aggiungiColonna("Ambito", 120, new EtichettatorePreferenzeFatturazione(), 0);
+	}
+
+	@Override
+	protected void setFiltro() {
+		//DO NOTHING!		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem insert = new MenuItem(menu, SWT.CASCADE);
+		insert.setText("Nuovo");
+//		insert.addListener(SWT.Selection, new Listener() {
+//	    	public void handleEvent(Event event) {
+//	    		apriDialogInserimento();
+//	    	}
+//	    });
+		
+		Menu menuAmbiti = new Menu(insert);
+		insert.setMenu(menuAmbiti);
+		
+		//Trovo gli ambiti mancanti
+		ControllerAmbitiFatturazione controllerAmbiti = ControllerAmbitiFatturazione.getInstance();
+		ControllerPreferenzeFatturazione controllerPreferenze = ControllerPreferenzeFatturazione.getInstance();
+		List<PreferenzeFatturazione> preferenze = controllerPreferenze.getPreferenzePerCommessa(commessa);
+		for (AmbitoFattura ambito : controllerAmbiti.getAmbiti()) {
+			//Controllo se l'ambito è già stato registrato
+			boolean registrato = false;
+			for (PreferenzeFatturazione preferenza : preferenze) {
+				if (preferenza.getAmbito() == ambito.getId()) {
+					registrato = true;
+					break;
+				}
+			}
+			//Se è possibile farlo aggiungo la voce di menù
+			if (!registrato) {
+				MenuItem item = new MenuItem(menuAmbiti, SWT.PUSH);
+				item.setText(ambito.getNome());
+				item.addListener(SWT.Selection, new Listener() {
+			    	public void handleEvent(Event event) {
+			    		apriDialogInserimento(ambito.getId());
+			    	}
+			    });
+			}
+		}
+		
+		
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    }); 
+	}
+	
+	private void apriDialogInserimento(int ambito) {		
+		DialogPreferenzeFatturazione dialog = new DialogPreferenzeFatturazione(null, commessa, ambito); //TODO - Impostare i valori dinamicamente.
+		int returnCode = dialog.open();
+		if (returnCode == Dialog.OK) {
+			//Aggiorna
+		}
+	}
+
+	private void apriDialogModifica() {
+		PreferenzeFatturazione preferenze = getRigaSelezionata();
+		if (preferenze != null) {
+			DialogPreferenzeFatturazione dialog = new DialogPreferenzeFatturazione(preferenze);
+			int returnCode = dialog.open();
+			if (returnCode == Dialog.OK) {
+				//Aggiorna
+			}
+		}
+	}
+
+}

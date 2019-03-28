@@ -1,0 +1,128 @@
+package it.ltc.logica.amministrazione.gui.commesse.dialogs;
+
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.amministrazione.gui.composite.CompositeCliente;
+import it.ltc.logica.common.controller.ControllerClienti;
+import it.ltc.logica.common.controller.trasporti.ControllerIndirizzi;
+import it.ltc.logica.database.model.centrale.Cliente;
+import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
+import it.ltc.logica.gui.common.composite.CompositeIndirizzo;
+import it.ltc.logica.gui.common.composite.CompositeIndirizzo.TipoIndirizzo;
+import it.ltc.logica.gui.dialog.DialogModel;
+import org.eclipse.swt.layout.GridData;
+
+public class DialogCliente extends DialogModel<Cliente> {
+
+	private static final String title = "Cliente";
+
+	private CompositeCliente compositeCliente;
+	private CompositeIndirizzo compositeIndirizzo;
+
+	private final ControllerClienti controllerClienti;
+	private final ControllerIndirizzi controllerIndirizzi;
+
+	private final Indirizzo indirizzo;
+
+	public DialogCliente(Cliente value) {
+		super(title, value);
+
+		controllerClienti = ControllerClienti.getInstance();
+		controllerIndirizzi = ControllerIndirizzi.getInstance();
+
+		indirizzo = value != null ? controllerIndirizzi.getIndirizzo(value.getIndirizzo()) : new Indirizzo();
+	}
+
+	@Override
+	public void loadModel() {
+		// Info cliente
+		compositeCliente.setPIvaCF(valore.getPartitaIva());
+		compositeCliente.setRagioneSociale(valore.getRagioneSociale());
+		compositeCliente.setCodice(valore.getCodice());
+		// Info indirizzo
+		compositeIndirizzo.setRagioneSociale(indirizzo.getRagioneSociale());
+		compositeIndirizzo.setIndirizzo(indirizzo.getIndirizzo());
+		compositeIndirizzo.setCap(indirizzo.getCap());
+		compositeIndirizzo.setLocalita(indirizzo.getLocalita());
+		compositeIndirizzo.setProvincia(controllerIndirizzi.getProvincia(indirizzo.getProvincia()));
+		compositeIndirizzo.setNazione(controllerIndirizzi.getNazione(indirizzo.getNazione()));
+		compositeIndirizzo.setTelefono(indirizzo.getTelefono());
+		compositeIndirizzo.setEmail(indirizzo.getEmail());
+	}
+
+	@Override
+	public void prefillModel() {
+		compositeIndirizzo.setNazione(controllerIndirizzi.getNazione("ITA"));
+	}
+
+	@Override
+	public void copyDataToModel() {
+		// Info cliente
+		valore.setPartitaIva(compositeCliente.getPIvaCF());
+		valore.setRagioneSociale(compositeCliente.getRagioneSociale());
+		valore.setCodice(compositeCliente.getCodice());
+		// Info indirizzo
+		indirizzo.setRagioneSociale(compositeIndirizzo.getRagioneSociale());
+		indirizzo.setIndirizzo(compositeIndirizzo.getIndirizzo());
+		indirizzo.setCap(compositeIndirizzo.getCap());
+		indirizzo.setLocalita(compositeIndirizzo.getLocalita());
+		indirizzo.setProvincia(compositeIndirizzo.getProvincia().getSigla());
+		indirizzo.setNazione(compositeIndirizzo.getNazione().getCodiceIsoTre());
+		indirizzo.setTelefono(compositeIndirizzo.getTelefono());
+		indirizzo.setEmail(compositeIndirizzo.getEmail());
+	}
+
+	@Override
+	public List<String> validateModel() {
+		return null;
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean modificheIndirizzo = compositeIndirizzo.isDirty();
+		boolean updateIndirizzo = modificheIndirizzo ? controllerIndirizzi.update(indirizzo) : true;
+		boolean modificheCliente = compositeCliente.isDirty();
+		boolean updateCliente = true;
+		if (modificheCliente || (modificheIndirizzo && updateIndirizzo)) {
+			valore.setIndirizzo(indirizzo.getId());
+			updateCliente = controllerClienti.aggiorna(valore);
+		}
+		return updateIndirizzo && updateCliente;
+	}
+
+	@Override
+	public boolean insertModel() {
+		Indirizzo indirizzoCliente = controllerIndirizzi.insert(indirizzo);
+		valore.setIndirizzo(indirizzoCliente.getId());
+		boolean insert = controllerClienti.inserisci(valore);
+		return insert;
+	}
+
+	@Override
+	public Cliente createNewModel() {
+		Cliente cliente = new Cliente();
+		return cliente;
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean modificheIndirizzo = compositeIndirizzo.isDirty();
+		boolean modificheCliente = compositeCliente.isDirty();
+		return modificheIndirizzo || modificheCliente;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeCliente = new CompositeCliente(container, SWT.NONE);
+		compositeCliente.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(compositeCliente);
+		
+		compositeIndirizzo = new CompositeIndirizzo(container, SWT.NONE, TipoIndirizzo.SEMPLICE);
+		compositeIndirizzo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		addChild(compositeIndirizzo);
+	}
+
+}

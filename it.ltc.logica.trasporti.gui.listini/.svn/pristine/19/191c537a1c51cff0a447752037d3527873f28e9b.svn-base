@@ -1,0 +1,126 @@
+package it.ltc.logica.trasporti.gui.listini.dialogs.cliente;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.common.controller.listini.ListiniClientiController;
+import it.ltc.logica.database.model.centrale.VoceDiListino;
+import it.ltc.logica.database.model.centrale.VoceDiListinoFissa;
+import it.ltc.logica.database.model.centrale.fatturazione.SottoAmbitoFattura;
+import it.ltc.logica.database.orm.ValidationResult;
+import it.ltc.logica.gui.container.DialogModel;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceFissa;
+import it.ltc.logica.trasporti.gui.composite.CompositeVoceListino;
+
+public class ProprietaVoceListinoCommessaFissa extends DialogModel<VoceDiListino> {
+	
+	private static final String titolo = "Propriet\u00E0 - Voce di listino cliente fissa";
+	
+	private ListiniClientiController controller;
+	
+	private final VoceDiListino voce;
+	private final VoceDiListinoFissa voceFissa;
+	
+	private CompositeVoceListino compositeVoce;
+	private CompositeVoceFissa compositeFissa;
+	
+	private final boolean permessoGestione;
+	
+	public ProprietaVoceListinoCommessaFissa(VoceDiListino voceDiListino, boolean permesso) {
+		super(titolo, voceDiListino);
+		controller = ListiniClientiController.getInstance();
+		voce = voceDiListino;
+		voceFissa = controller.getVoceFissa(voce);
+		permessoGestione = permesso;
+	}
+
+	@Override
+	public void aggiungiElementiGrafici(Composite container) {
+		compositeVoce = new CompositeVoceListino(container, SWT.NONE, CompositeVoceListino.Tipo.CLIENTE);
+		compositeVoce.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		compositeVoce.enableInputElements(permessoGestione);
+		addChild(compositeVoce);
+		
+		compositeFissa = new CompositeVoceFissa(container, SWT.NONE);
+		compositeFissa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeFissa.enableInputElements(permessoGestione);
+		addChild(compositeFissa);
+	}
+
+	@Override
+	public boolean isDirty() {
+		boolean voceValida = compositeVoce.isDirty();
+		boolean fissaValida = compositeFissa.isDirty();
+		return voceValida || fissaValida;
+	}
+
+	@Override
+	public void loadModel() {
+		String nome = voce.getNome();
+		String descrizione = voce.getDescrizione();
+		compositeVoce.setNome(nome);
+		compositeVoce.setDescrizione(descrizione);
+		Integer ambito = voce.getIdsottoAmbito();
+		SottoAmbitoFattura ambitoDiTrasporto = SottoAmbitoFattura.getSottoAmbito(ambito);
+		compositeVoce.setAmbito(ambitoDiTrasporto);
+		String valoreAmbito = voce.getValoreSottoAmbito();
+		if (valoreAmbito != null)
+			compositeVoce.setValoreAmbito(valoreAmbito);
+		if (voceFissa != null) {
+			Double valore = voceFissa.getValore();
+			compositeFissa.setValore(valore);
+		}
+	}
+
+	@Override
+	public void copyDataToModel() {
+		String nome = compositeVoce.getNome();
+		voce.setNome(nome);
+		String descrizione = compositeVoce.getDescrizione();
+		voce.setDescrizione(descrizione);
+		Integer ambito = compositeVoce.getAmbito().getId();
+		voce.setIdsottoAmbito(ambito);
+		String valoreAmbito = compositeVoce.getValoreAmbito();
+		if (!valoreAmbito.isEmpty())
+			voce.setValoreSottoAmbito(valoreAmbito);
+		Double valore = compositeFissa.getValore();
+		voceFissa.setValore(valore);
+	}
+
+	@Override
+	public boolean updateModel() {
+		boolean updateListino = controller.aggiornaVoceDiListino(voce);
+		boolean updateFissa = controller.aggiornaVoceDiListinoFissa(voceFissa);
+		boolean update = updateListino && updateFissa;
+		return update;
+	}
+
+	@Override
+	public VoceDiListino createNewModel() {
+		VoceDiListino listino = new VoceDiListino();
+		return listino;
+	}
+
+	@Override
+	public boolean insertModel() {
+		//DO NOTHING!
+		return false;
+	}
+
+	@Override
+	public List<String> validateModel() {
+		ArrayList<String> errors = new ArrayList<String>();
+		ValidationResult esitoVoce = voce.validate();
+		if (!esitoVoce.isValid())
+			errors.addAll(esitoVoce.getMessages());
+		ValidationResult esitoFisso = voceFissa.validate();
+		if (!esitoFisso.isValid())
+			errors.addAll(esitoFisso.getMessages());
+		return errors;
+	}
+
+}

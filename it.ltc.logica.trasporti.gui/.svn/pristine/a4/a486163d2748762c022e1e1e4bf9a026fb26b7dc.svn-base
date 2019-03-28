@@ -1,0 +1,105 @@
+package it.ltc.logica.trasporti.gui.elements.spedizionemodel;
+
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.TableItem;
+
+import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
+import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
+import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
+import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.trasporti.calcolo.algoritmi.SpedizioneModel;
+
+public class TabellaFatturazione extends Tabella<SpedizioneModel> {
+	
+	private final ControllerListiniClienti controller;
+	
+	//private final boolean modifica;
+
+	public TabellaFatturazione(Composite parent, ListinoCommessa listino, boolean modify, boolean giacenze) {
+		super(parent, new OrdinatoreSpedizioniModel());
+		
+		controller = ControllerListiniClienti.getInstance();
+		
+		if (giacenze) {
+			aggiungiColonna("Data Apertura", 100, new EtichettatoreSpedizioniModel(), 9);
+			aggiungiColonna("Data Chiusura", 100, new EtichettatoreSpedizioniModel(), 10);
+			aggiungiColonna("Giorni di sosta", 100, new EtichettatoreSpedizioniModel(), 11);
+		} else {
+			aggiungiColonna("Data", 100, new EtichettatoreSpedizioniModel(), 0);
+		}
+		
+		
+		if (giacenze) {
+			aggiungiColonna("LDV Giacenza", 100, new EtichettatoreSpedizioniModel(), 13);
+			aggiungiColonna("LDV Originale", 100, new EtichettatoreSpedizioniModel(), 14);
+		} else {
+			aggiungiColonna("LDV", 100, new EtichettatoreSpedizioniModel(), 12);
+		}
+				
+		aggiungiColonna("Destinatario", 100, new EtichettatoreSpedizioniModel(), 1);
+		aggiungiColonna("Localit\u00E0", 100, new EtichettatoreSpedizioniModel(), 2);
+		aggiungiColonna("Riferimento", 100, new EtichettatoreSpedizioniModel(), 3);
+		
+		aggiungiColonna("Pezzi", 60, new EtichettatoreSpedizioniModel(), 6);
+		aggiungiColonna("Colli", 60, new EtichettatoreSpedizioniModel(), 7);
+		aggiungiColonna("Peso e Volume", 120, new EtichettatoreSpedizioniModel(), 8);
+		
+		aggiungiColonna("Totale", 100, new EtichettatoreFatturazioneModel(), 4);
+		
+		if (listino != null)
+		for (VoceDiListino voce : controller.getVociDiListino(listino.getId())) {
+			aggiungiColonna(voce.getNome(), 100, new EtichettatoreFatturazioneModel(voce), 5);
+		}
+		
+		//modifica = modify;
+	}
+
+	@Override
+	protected void setFiltro() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void aggiungiListener() {
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDoubleClick(MouseEvent e) {
+				apriDialogModifica();
+			}
+		});
+	}
+
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		MenuItem modify = new MenuItem(menu, SWT.PUSH);
+	    modify.setText("Modifica");
+	    modify.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogModifica();
+	    	}
+	    });	
+	}
+	
+	private void apriDialogModifica() {
+		int selectedIndex = table.getSelectionIndex();
+		if (selectedIndex != -1) {
+			TableItem selectedItem = table.getItem(selectedIndex);
+			SpedizioneModel selezione = (SpedizioneModel) selectedItem.getData();
+			DialogSpedizioneModel dialog = new DialogSpedizioneModel(selezione, true /*modifica*/); //FIXME - è stato fissato a true perchè non sono riuscito a passare il valore correttamente.
+			int esito = dialog.open();
+			if (esito == Dialog.OK) {
+				refresh();
+			}
+		}
+	}
+
+}

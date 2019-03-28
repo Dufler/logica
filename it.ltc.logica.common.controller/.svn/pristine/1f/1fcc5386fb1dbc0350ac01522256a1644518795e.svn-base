@@ -1,0 +1,78 @@
+package it.ltc.logica.common.controller.prodotti;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
+import it.ltc.logica.database.wsconsumer.WSAnswer;
+import it.ltc.logica.database.wsconsumer.WSConsumer;
+import it.ltc.logica.gui.task.DialogProgresso;
+import it.ltc.logica.gui.task.Processo;
+
+/**
+ * Controller adibito alla gestione delle categorie merceologiche.
+ * @author Damiano Bellucci - damiano.bellucci@gmail.com
+ *
+ */
+public class ControllerCategorieMerceologiche {
+	
+	private static ControllerCategorieMerceologiche instance;
+
+	private final HashMap<Integer, CategoriaMerceologica> categorie;
+	
+	private ControllerCategorieMerceologiche() {
+		categorie = new HashMap<Integer, CategoriaMerceologica>();
+		caricaDati();
+	}
+
+	public static ControllerCategorieMerceologiche getInstance() {
+		if (instance == null) {
+			instance = new ControllerCategorieMerceologiche();
+		}
+		return instance;
+	}
+	
+	public CategoriaMerceologica getCategoria(Integer categoriaMerceologica) {
+		return categorie.get(categoriaMerceologica);
+	}
+	
+	public Collection<CategoriaMerceologica> getCategorie() {
+		return categorie.values();
+	}
+	
+	public synchronized void caricaDati() {
+		ProcessoCaricamentoCategorie pcc = new ProcessoCaricamentoCategorie();
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(pcc);
+	}
+	
+	private class ProcessoCaricamentoCategorie extends Processo {
+		
+		private static final String title = "Caricamento categorie merceologiche";
+		
+		public ProcessoCaricamentoCategorie() {
+			super(title, -1);
+		}
+
+		@Override
+		public void eseguiOperazioni() throws Exception {
+			WSConsumer c = WSConsumer.getInstance();
+			ObjectMapper mapper = new ObjectMapper();
+			WSAnswer wsAnswer = c.get("categoriemerceologiche");
+			if (wsAnswer.getStatus() == 200) {
+				String answer = wsAnswer.getMessage();
+				List<CategoriaMerceologica> lista = mapper.readValue(answer, new TypeReference<List<CategoriaMerceologica>>() {});
+				for (CategoriaMerceologica categoria : lista) {
+					categorie.put(categoria.getId(), categoria);
+				}
+			} else {
+				throw new RuntimeException(wsAnswer.toString());
+			}	
+		}
+	}
+
+}

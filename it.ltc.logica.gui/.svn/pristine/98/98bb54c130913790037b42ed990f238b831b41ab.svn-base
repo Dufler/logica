@@ -1,0 +1,81 @@
+package it.ltc.logica.gui.container;
+
+import java.util.LinkedList;
+
+import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+
+import it.ltc.logica.gui.validation.ParentValidationHandler;
+import it.ltc.logica.gui.validation.ValidationHandler;
+
+public abstract class PaginaWizard extends WizardPage implements ParentValidationHandler {
+
+	protected boolean valid;
+	private Composite container;
+	private final LinkedList<ValidationHandler> children;
+	
+	protected PaginaWizard(String title, String description) {
+		super("");
+		setTitle(title);
+		setDescription(description);
+		setPageComplete(false);
+		children = new LinkedList<ValidationHandler>();
+	}
+	
+	@Override
+	public void createControl(Composite parent) {
+		container = new Composite(parent, SWT.NULL);
+		setControl(container);
+		
+		aggiungiElementiGrafici(container);
+	}
+	
+	/**
+	 * Aggiunge gli elemnti grafici
+	 * @param container
+	 */
+	public abstract void aggiungiElementiGrafici(Composite container);
+	
+	/**
+	 * Metodo che viene richiamato quando la validazione va a buon fine, serve a copiare i dati immessi dall'utente nei model manipolati.
+	 */
+	public abstract void copyDataToModel();
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
+	@Override
+	public boolean validate() {
+		valid = true;
+		for (ValidationHandler child : children) {
+			valid = child.isValid();
+			if (!valid)
+				break;
+		}
+		if (valid)
+			copyDataToModel();
+		setPageComplete(valid);
+		return valid;
+	}
+
+	@Override
+	public void forwardValidation() {
+		//DO NOTHING!		
+	}
+	
+	@Override
+	public void setParent(ParentValidationHandler parent) {
+		//DO NOTHING!
+		
+	}
+
+	@Override
+	public void addChild(ValidationHandler child) {
+		child.setParent(this);
+		children.add(child);
+	}
+
+}

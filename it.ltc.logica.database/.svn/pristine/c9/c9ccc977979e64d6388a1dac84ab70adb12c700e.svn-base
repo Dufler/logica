@@ -1,0 +1,105 @@
+package it.ltc.logica.database.model.centrale.trasporti;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import it.ltc.logica.database.configuration.ConfigurationManager;
+import it.ltc.logica.database.orm.ColumnList;
+import it.ltc.logica.database.orm.Entity;
+import it.ltc.logica.database.orm.EntityManager;
+
+public class ServizioCorriere extends Entity {
+	
+	public static final String NOME_TABELLA = "corriere_servizio";
+	private static final ColumnList variabili = new ColumnList();
+	
+	private static final EntityManager<ServizioCorriere> manager = new EntityManager<ServizioCorriere>(ServizioCorriere.class, ConfigurationManager.getDefault());
+	private static final LinkedList<ServizioCorriere> listaServizi = new LinkedList<ServizioCorriere>();
+	
+	private String codice;
+	private String nome;
+	private Integer idCorriere;
+	private String codificaCorriere;
+	
+	public String toString() {
+		return nome;
+	}
+	
+	public boolean equals(Object o) {
+		boolean uguali = false;
+		if (o instanceof ServizioCorriere) {
+			ServizioCorriere servizio = (ServizioCorriere) o;
+			boolean codiceUguale = codice.equals(servizio.getCodice());
+			boolean corriereUguale = idCorriere.equals(servizio.getIdCorriere());
+			boolean codificaUguale = codificaCorriere.equals(servizio.getCodificaCorriere());
+			uguali = codiceUguale && corriereUguale && codificaUguale;
+		}
+		return uguali;
+	}
+
+	@Override
+	public String getNomeTabella() {	
+		return NOME_TABELLA;
+	}
+
+	@Override
+	public ColumnList getVariabili() {
+		if (variabili.isEmpty()) {
+			variabili.addString("codice", "codice", true, false);
+			variabili.addInt("corriere", "idCorriere", true, false);
+			variabili.addString("codifica_corriere", "codificaCorriere", true, false);
+			variabili.addString("nome", "nome");
+		}
+		return variabili;
+	}
+	
+	public static List<ServizioCorriere> getServizi() {
+		if (listaServizi.isEmpty()) {
+			listaServizi.addAll(manager.getEntities());
+		}
+		return listaServizi;
+	}
+	
+	public static List<ServizioCorriere> getServiziPerCorriere(Integer idCorriere) {
+		ArrayList<ServizioCorriere> lista = new ArrayList<ServizioCorriere>();
+		for (ServizioCorriere servizio : getServizi()) {
+			if (servizio.getIdCorriere().equals(idCorriere))
+				lista.add(servizio);
+		}
+		return lista;
+	}
+
+	public String getCodice() {
+		return codice;
+	}
+
+	public void setCodice(String codice) {
+		this.codice = codice;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public Integer getIdCorriere() {
+		return idCorriere;
+	}
+
+	public void setIdCorriere(Integer idCorriere) {
+		this.idCorriere = idCorriere;
+	}
+
+	public String getCodificaCorriere() {
+		return codificaCorriere;
+	}
+
+	public void setCodificaCorriere(String codificaCorriere) {
+		this.codificaCorriere = codificaCorriere;
+	}
+
+}

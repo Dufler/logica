@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gui
+Bundle-SymbolicName: it.ltc.logica.gui
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: LTC
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.swt;bundle-version="3.103.2",
+ org.eclipse.jface
+Export-Package: it.ltc.logica.gui.composite,
+ it.ltc.logica.gui.container,
+ it.ltc.logica.gui.decoration,
+ it.ltc.logica.gui.input,
+ it.ltc.logica.gui.validation

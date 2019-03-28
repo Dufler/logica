@@ -1,0 +1,11 @@
+source.. = src/
+output.. = bin/
+bin.includes = META-INF/,\
+               .,\
+               lib/fontbox-2.0.8.jar,\
+               lib/pdfbox-2.0.8.jar,\
+               lib/pdfbox-debugger-2.0.8.jar,\
+               lib/pdfbox-tools-2.0.8.jar,\
+               lib/preflight-2.0.8.jar,\
+               lib/xmpbox-2.0.8.jar,\
+               lib/commons-logging-1.2.jar
