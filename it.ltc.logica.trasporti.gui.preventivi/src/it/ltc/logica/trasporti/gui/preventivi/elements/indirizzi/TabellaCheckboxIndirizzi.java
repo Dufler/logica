@@ -4,6 +4,8 @@ import org.eclipse.swt.widgets.Composite;
 
 import it.ltc.logica.common.controller.trasporti.ControllerIndirizziSimulazione;
 import it.ltc.logica.database.model.centrale.indirizzi.IndirizzoSimulazione;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;
 import it.ltc.logica.gui.elements.TabellaCheckBox;
 import it.ltc.logica.trasporti.gui.elements.indirizzosimulazione.EtichettatoreIndirizziSimulazione;
@@ -17,8 +19,8 @@ public class TabellaCheckboxIndirizzi extends TabellaCheckBox<IndirizzoSimulazio
 
 	@Override
 	protected void aggiungiColonne() {
-		aggiungiColonna("Ragione Sociale", 200, new EtichettatoreIndirizziSimulazione(), 0);
-		aggiungiColonna("Indirizzo", 300, new EtichettatoreIndirizziSimulazione(), 1);		
+		aggiungiColonna("Ragione Sociale", 200, 0);
+		aggiungiColonna("Indirizzo", 300, 1);		
 	}
 
 	@Override
@@ -29,6 +31,16 @@ public class TabellaCheckboxIndirizzi extends TabellaCheckBox<IndirizzoSimulazio
 	@Override
 	protected Ordinatore<IndirizzoSimulazione> creaOrdinatore() {
 		return new OrdinatoreIndirizziSimulazione();
+	}
+
+	@Override
+	protected Etichettatore<IndirizzoSimulazione> creaEtichettatore() {
+		return new EtichettatoreIndirizziSimulazione();
+	}
+
+	@Override
+	protected ModificatoreValoriCelle<IndirizzoSimulazione> creaModificatore() {
+		return null;
 	}
 
 }

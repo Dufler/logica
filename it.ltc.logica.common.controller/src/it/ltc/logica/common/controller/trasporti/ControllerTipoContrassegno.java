@@ -19,6 +19,7 @@ public class ControllerTipoContrassegno extends ControllerReadOnly<TipoContrasse
 	private ControllerTipoContrassegno() {
 		super(title, resource, TipoContrassegno[].class);
 		tipi = new HashMap<>();
+		caricaDati();
 	}
 
 	public static synchronized ControllerTipoContrassegno getInstance() {

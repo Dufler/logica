@@ -15,6 +15,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,9 +24,12 @@ import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
 
 public class RestClient {
 	
-	public static final String DOMAIN_TEST = "http://test.services.ltc-logistics.it";
-	public static final String DOMAIN_PRODUZIONE = "http://ws.services.ltc-logistics.it";
-	public static final String DOMAIN_SEDE = "http://sede.services.ltc-logistics.it";
+//	public static final String DOMAIN_TEST = "http://test.services.ltc-logistics.it";
+//	public static final String DOMAIN_PRODUZIONE = "http://ws.services.ltc-logistics.it";
+//	public static final String DOMAIN_SEDE = "http://sede.services.ltc-logistics.it";
+	
+//	public static String DOMAIN_CENTRALE = "http://ws.services.ltc-logistics.it";
+//	public static String DOMAIN_SEDE = "http://sede.services.ltc-logistics.it";
 	
 	public static final String CONTEXT_PATH_CENTRALE = "/logica/rest/";
 	public static final String CONTEXT_PATH_SEDE = "/sede/rest/";
@@ -51,15 +55,24 @@ public class RestClient {
 	}
 
 	public RestClient(String domain, String contextPath, String dateFormat, String risorsaCommessa) {
-		this.domain = domain != null ? domain : getDomain();
-		this.contextPath = contextPath != null ? contextPath : CONTEXT_PATH_CENTRALE;
+		this.domain = domain != null ? domain : getDefaultDomain();
+		this.contextPath = contextPath != null ? contextPath : getDefaultContextPath();
 		this.rest = getClient(dateFormat);
 		this.headers = getHeaders(risorsaCommessa);
 	}
 
-	protected String getDomain() {
-		String domain = ControllerVariabiliGlobali.getInstance().isTesting() ? DOMAIN_TEST : DOMAIN_PRODUZIONE;
+//	protected String getDomain() {
+//		String domain = ControllerVariabiliGlobali.getInstance().isTesting() ? DOMAIN_TEST : DOMAIN_PRODUZIONE;
+//		return domain;
+//	}
+	
+	protected String getDefaultDomain() {
+		String domain = ControllerVariabiliGlobali.getInstance().getString("indirizzo.server.centrale");
 		return domain;
+	}
+	
+	protected String getDefaultContextPath() {
+		return CONTEXT_PATH_CENTRALE;
 	}
 	
 	protected RestTemplate getClient(String dateFormat) {
@@ -110,6 +123,10 @@ public class RestClient {
 			result = null;
 			httpStatus = exception.getStatusCode();
 			error = httpStatus == HttpStatus.BAD_REQUEST ? exception.getResponseBodyAsString() : exception.getStatusText();
+		} catch (RestClientException exception) {
+			result = null;
+			httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+			error = exception.getLocalizedMessage();
 		}
 		return result;
 	}

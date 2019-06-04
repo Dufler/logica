@@ -3,7 +3,7 @@ package it.ltc.logica.common.controller.processi.specifici;
 import java.util.List;
 
 import it.ltc.logica.common.controller.dao.ProdottoLocaleDao;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.task.Processo;
 
 public class ProcessoSelezioneProdotti extends Processo {

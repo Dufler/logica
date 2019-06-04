@@ -14,6 +14,9 @@ import it.ltc.logica.gui.elements.table.filter.FiltroTabella;
  */
 public abstract class TabellaCRUDConFiltro<T, U extends CriteriFiltraggio> extends TabellaCRUD<T> {
 	
+	protected FiltroTabella<T, U> filter;
+	protected CriteriFiltraggio criteri;
+	
 	public TabellaCRUDConFiltro(Composite parent) {
 		this(parent, STILE_SEMPLICE, true, true);
 	}
@@ -25,8 +28,6 @@ public abstract class TabellaCRUDConFiltro<T, U extends CriteriFiltraggio> exten
 	public TabellaCRUDConFiltro(Composite parent, int style, boolean cancellazionePossibile, boolean apriConDoppioClick) {
 		super(parent, style, cancellazionePossibile, apriConDoppioClick);
 	}
-
-	protected FiltroTabella<T, U> filter;
 	
 	/**
 	 * Restituisce il filtro della tabella.

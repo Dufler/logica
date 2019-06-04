@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Label;
 
 import it.ltc.logica.common.controller.sistema.ControllerCommesse;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.elements.ToolbarCRUDConFiltro;
 import it.ltc.logica.gui.input.ComboBox;
 import it.ltc.logica.utilities.variabili.Permessi;

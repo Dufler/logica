@@ -2,6 +2,8 @@ package it.ltc.logica.common.controller.processi;
 
 import it.ltc.logica.common.ws.RestClient;
 import it.ltc.logica.common.ws.WSError;
+import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.centrale.Sede;
 
 public class ProcessoCancellazioneDati<T> extends ProcessoWebService {
 	
@@ -15,6 +17,10 @@ public class ProcessoCancellazioneDati<T> extends ProcessoWebService {
 
 	public ProcessoCancellazioneDati(String title, String resource, T object) {
 		this(title, resource, object, true, null, null, null);
+	}
+	
+	public ProcessoCancellazioneDati(String title, String resource, T object, Sede sede, Commessa commessa) {
+		this(title, resource, object, true, sede.getIndirizzoWeb(), RestClient.CONTEXT_PATH_SEDE, commessa.getNomeRisorsa());
 	}
 	
 	@SuppressWarnings("unchecked")

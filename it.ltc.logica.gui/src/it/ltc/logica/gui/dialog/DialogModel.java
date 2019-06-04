@@ -139,11 +139,12 @@ public abstract class DialogModel<T> extends DialogSempliceConValidazione {
 	}
 	
 	protected void showValidationError(List<String> errors) {
-		String errorMessage = "Errori riscontrati nella validazione dei dati:";
+		StringBuilder errorMessage = new StringBuilder("Errori riscontrati nella validazione dei dati:");
 		for (String error : errors) {
-			errorMessage += "\r\n" + error;
+			errorMessage.append("\r\n");
+			errorMessage.append(error);
 		}
-		mostraErrore(TITLE_ERROR_IN_MODEL_VALIDATION, errorMessage);
+		mostraErrore(TITLE_ERROR_IN_MODEL_VALIDATION, errorMessage.toString());
 	}
 
 }

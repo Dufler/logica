@@ -194,6 +194,7 @@ public class DialogOrdineTestata extends DialogModel<OrdineTestata> {
 			compositeImballi.setLayout(new GridLayout(1, false));
 			
 			compositeImballo = new CompositeInfoImballo(compositeImballi);
+			compositeImballo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 			compositeImballo.enableElement(false);
 			
 			toolbarImballi = new ToolbarImballi(compositeImballi);

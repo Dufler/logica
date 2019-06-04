@@ -38,7 +38,7 @@ public class DialogCdgEventi extends DialogModel<CdgEvento> {
 		compositeEvento.setNome(valore.getNome());
 		compositeEvento.setDescrizione(valore.getDescrizione());
 		compositeEvento.setFase(controllerFasi.getFase(valore.getFase()));
-		compositeEvento.setCategoria(controllerCategorie.getCategoria(valore.getCategoriaMerceologica()));
+		compositeEvento.setCategoria(controllerCategorie.getCategoria(valore.getCategoriaMerceologica(), 0)); //FIXME
 	}
 
 	@Override

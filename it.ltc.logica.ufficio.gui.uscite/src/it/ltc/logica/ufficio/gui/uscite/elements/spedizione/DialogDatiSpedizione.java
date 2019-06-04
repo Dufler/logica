@@ -10,6 +10,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
+import it.ltc.logica.common.controller.sistema.ControllerValute;
 import it.ltc.logica.common.controller.trasporti.ControllerCodiciClienteCorriere;
 import it.ltc.logica.common.controller.trasporti.ControllerCorrieri;
 import it.ltc.logica.common.controller.trasporti.ControllerServizioSpedizione;
@@ -50,14 +51,18 @@ public class DialogDatiSpedizione extends DialogModel<DatiSpedizione> {
 		compositeDatiSpedizione.setPeso(valore.getPeso());
 		compositeDatiSpedizione.setVolume(valore.getVolume());
 		compositeDatiSpedizione.setDataConsegna(valore.getDataConsegna());
-		compositeDatiSpedizione.setOrdini(valore.getOrdini());
+		compositeDatiSpedizione.setNote(valore.getNote());
+//		if (valore.getOrdini() != null)
+//			compositeDatiSpedizione.setOrdini(valore.getOrdini());
 		//corriere
 		compositeCorriere.setCorriere(ControllerCorrieri.getInstance().getCorriere(valore.getCorriere()));
+		compositeCorriere.setCodiciDisponibili();
 		compositeCorriere.setCodice(ControllerCodiciClienteCorriere.getInstance().getCodiceCliente(valore.getCodiceCorriere()));
 		compositeCorriere.setServizio(ControllerServizioSpedizione.getInstance().getServizio(valore.getServizioCorriere()));
 		//contrassegno
 		compositeContrassegno.setValore(valore.getValoreContrassegno());
 		compositeContrassegno.setTipoContrassegno(ControllerTipoContrassegno.getInstance().getTipoContrassegno(valore.getTipoContrassegno()));
+		compositeContrassegno.setValuta(ControllerValute.getInstance().getValuta(valore.getValutaContrassegno()));
 		//documento
 		compositeDocumento.setRiferimento(valore.getRiferimentoDocumento());
 		compositeDocumento.setDataDocumento(valore.getDataDocumento());
@@ -80,7 +85,8 @@ public class DialogDatiSpedizione extends DialogModel<DatiSpedizione> {
 		valore.setPeso(compositeDatiSpedizione.getPeso());
 		valore.setVolume(compositeDatiSpedizione.getVolume());
 		valore.setDataConsegna(compositeDatiSpedizione.getDataConsegna());
-		valore.setOrdini(compositeDatiSpedizione.getOrdini());
+//		valore.setOrdini(compositeDatiSpedizione.getOrdini());
+		valore.setNote(compositeDatiSpedizione.getNote());
 		//corriere
 		valore.setCorriere(compositeCorriere.getCorriere().getCodifica());
 		valore.setCodiceCorriere(compositeCorriere.getCodice().getCodiceCliente());
@@ -88,6 +94,7 @@ public class DialogDatiSpedizione extends DialogModel<DatiSpedizione> {
 		//contrassegno
 		valore.setValoreContrassegno(compositeContrassegno.getValore());
 		valore.setTipoContrassegno(compositeContrassegno.getTipoContrassegno().getCodice());
+		valore.setValutaContrassegno(compositeContrassegno.getValuta().getCodice());
 		//documento
 		valore.setRiferimentoDocumento(compositeDocumento.getRiferimento());
 		valore.setDataDocumento(compositeDocumento.getDataDocumento());
@@ -154,6 +161,7 @@ public class DialogDatiSpedizione extends DialogModel<DatiSpedizione> {
 		
 		compositeContrassegno = new CompositeContrassegno(this, tabFolder);
 		compositeContrassegno.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		compositeContrassegno.setRequired(false);
 		tbtmContrassegno.setControl(compositeContrassegno);
 		
 		CTabItem tbtmDocumento = new CTabItem(tabFolder, SWT.NONE);

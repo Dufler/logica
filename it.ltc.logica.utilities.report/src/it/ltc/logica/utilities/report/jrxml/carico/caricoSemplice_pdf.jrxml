@@ -49,7 +49,7 @@
 				<reportElement x="0" y="25" width="281" height="16" uuid="a0b2d5ff-dc88-4596-bba4-4932cf241c6c"/>
 				<text><![CDATA[Report per riga di carico.]]></text>
 			</staticText>
-			<image>
+			<image onErrorType="Blank">
 				<reportElement x="520" y="0" width="35" height="30" uuid="a023c472-8453-46b4-8e9b-a6f98a58bb74"/>
 				<imageExpression><![CDATA["C:/Logica/report/immagini/ltc_logo_Homeok.png"]]></imageExpression>
 			</image>

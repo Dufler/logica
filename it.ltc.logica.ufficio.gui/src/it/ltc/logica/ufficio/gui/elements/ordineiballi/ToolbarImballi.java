@@ -30,7 +30,7 @@ public class ToolbarImballi extends ToolbarSemplice<TabellaImballi, ImballoCollo
 		scarica = new ToolItem(toolbar, SWT.NONE);
 		scarica.setImage(Immagine.FRECCIAROSSAGIU_16X16.getImage());
 		scarica.setDisabledImage(Immagine.FRECCIAROSSAGIU_16X16.getImage());
-		scarica.setText("");
+		scarica.setText("Scarica dettagli");
 		scarica.setToolTipText("Scarica");
 		scarica.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -42,7 +42,7 @@ public class ToolbarImballi extends ToolbarSemplice<TabellaImballi, ImballoCollo
 		reportImabllo = new ToolItem(toolbar, SWT.NONE);
 		reportImabllo.setImage(Immagine.CODICE_16X16.getImage());
 		reportImabllo.setDisabledImage(Immagine.CODICE_16X16.getImage());
-		reportImabllo.setText("");
+		reportImabllo.setText("Report");
 		reportImabllo.setToolTipText("Report");
 		reportImabllo.addSelectionListener(new SelectionAdapter() {
 			@Override

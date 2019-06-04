@@ -2,7 +2,13 @@ package it.ltc.logica.ufficio.gui.elements.caricodettagli;
 
 import java.util.List;
 
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 
 import it.ltc.logica.common.controller.ingressi.ControllerCarichiDettagli;
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
@@ -12,6 +18,7 @@ import it.ltc.logica.database.model.centrale.ingressi.CaricoTestata;
 import it.ltc.logica.database.model.centrale.ingressi.ColloCaricoJSON;
 import it.ltc.logica.database.model.centrale.ingressi.ProdottoCaricoJSON;
 import it.ltc.logica.database.model.centrale.ingressi.StatiCarico;
+import it.ltc.logica.gui.decoration.Immagine;
 import it.ltc.logica.gui.dialog.DialogApribile;
 import it.ltc.logica.gui.dialog.DialogMessaggio;
 import it.ltc.logica.gui.dialog.DialogSelezioneCartella;
@@ -33,6 +40,8 @@ public class TabellaCaricoDettagli extends TabellaCRUD<CaricoDettaglio> {
 	
 	private List<CaricoDettaglio> dettagli;
 	
+	protected MenuItem inserimentoMultiplo;
+	
 	public TabellaCaricoDettagli(Composite parent, Commessa commessa, CaricoTestata carico) {
 		super(parent);
 		this.commessa = commessa;
@@ -50,6 +59,18 @@ public class TabellaCaricoDettagli extends TabellaCRUD<CaricoDettaglio> {
 		aggiungiColonna("Magazzino", 100, 6);
 		aggiungiColonna("Dichiarato", 100, 7);
 		aggiungiColonna("Riscontrato", 100, 8);
+	}
+	
+	@Override
+	protected void aggiungiMenu(Menu menu) {
+		inserimentoMultiplo = new MenuItem(menu, SWT.PUSH);
+	    delete.setText("Inserimento multiplo");
+	    delete.setImage(Immagine.CROCIVERDI_16X16.getImage());
+	    delete.addListener(SWT.Selection, new Listener() {
+	    	public void handleEvent(Event event) {
+	    		apriDialogInserimentoMultiplo();
+	    	}
+	    });
 	}
 
 	@Override
@@ -142,6 +163,16 @@ public class TabellaCaricoDettagli extends TabellaCRUD<CaricoDettaglio> {
 		if (insert != null)	insert.setEnabled(permesso && statoNuovo);
 		if (modify != null)	modify.setEnabled(permesso && statoModifica);
 		if (delete != null)	delete.setEnabled(permesso && statoElimina);
+		if (inserimentoMultiplo != null) inserimentoMultiplo.setEnabled(permesso && statoNuovo);
+	}
+	
+	protected void apriDialogInserimentoMultiplo() {
+		DialogCaricoDettagliMultipli dialog = new DialogCaricoDettagliMultipli(commessa, carico, dettagli);
+		int result = dialog != null ? dialog.open() : -1;
+		if (result == Dialog.OK) {
+			aggiornaContenuto();
+			dirty = true;
+		}
 	}
 
 	@Override

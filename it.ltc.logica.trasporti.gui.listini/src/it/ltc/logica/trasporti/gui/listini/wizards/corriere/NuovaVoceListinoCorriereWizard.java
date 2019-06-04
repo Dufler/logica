@@ -1,14 +1,11 @@
 package it.ltc.logica.trasporti.gui.listini.wizards.corriere;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 
 import it.ltc.logica.common.controller.listini.ControllerListiniCorrieri;
 import it.ltc.logica.database.model.centrale.listini.ListinoCorriere;
 import it.ltc.logica.database.model.centrale.listini.VoceDiListinoCorriere;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class NuovaVoceListinoCorriereWizard extends WizardConRisultati {
@@ -26,8 +23,6 @@ public class NuovaVoceListinoCorriereWizard extends WizardConRisultati {
 	private final NuovaVoceListinoCorrierePercentualeWizardPage paginaPercentuale;
 	private final NuovaVoceListinoCorriereRiepilogoWizardPage paginaRiepilogo;
 	
-	private final LinkedList<PaginaWizardRisultati> result;
-	
 	private IWizardPage algoritmoSelezionato;
 
 	public NuovaVoceListinoCorriereWizard(ListinoCorriere listino) {
@@ -41,8 +36,6 @@ public class NuovaVoceListinoCorriereWizard extends WizardConRisultati {
 		paginaScaglioniRipetuti = new NuovaVoceListinoCorriereScaglioniRipetutiWizardPage(voce);
 		paginaPercentuale = new NuovaVoceListinoCorrierePercentualeWizardPage(voce);
 		paginaRiepilogo = new NuovaVoceListinoCorriereRiepilogoWizardPage(voce);
-		result = new LinkedList<PaginaWizardRisultati>();
-		result.add(paginaRiepilogo);
 	}
 
 	@Override
@@ -83,11 +76,6 @@ public class NuovaVoceListinoCorriereWizard extends WizardConRisultati {
 			MessageDialog.openError(null, "Errore", "Ci sono stati problemi con l'inserimento.");
 		}
 		return finish;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return result;
 	}
 
 }

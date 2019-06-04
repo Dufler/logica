@@ -156,7 +156,7 @@ public class ListiniSimulazioneController {
 		for (Integer id : listini.keySet()) {
 			ListinoSimulazione listino = listini.get(id);
 			int tipo = listino.getTipo();
-			if (tipo == AmbitoFattura.ID_SIMULAZIONI_TRASPORTI || tipo == AmbitoFattura.ID_SIMULAZIONI_CORRIERI)
+			if (tipo == AmbitoFattura.ID_SIMULAZIONI_TRASPORTI)
 				lista.add(listino);
 		}
 		return lista;
@@ -925,7 +925,6 @@ public class ListiniSimulazioneController {
 		ListinoSimulazione listino = listini.get(idListino);
 		int tipo = listino != null ? listino.getTipo() : -1;
 		switch (tipo) {
-			case AmbitoFattura.ID_SIMULAZIONI_CORRIERI : scopo = Scopo.COSTO; break;
 			case AmbitoFattura.ID_SIMULAZIONI_TRASPORTI : scopo = Scopo.RICAVO; break;
 			default : scopo = Scopo.NESSUNO; break;
 		}

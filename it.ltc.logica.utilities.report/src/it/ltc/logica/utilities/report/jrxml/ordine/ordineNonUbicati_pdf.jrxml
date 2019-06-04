@@ -141,7 +141,7 @@
 				</textElement>
 				<text><![CDATA[Lista dei prodotti non ubicati]]></text>
 			</staticText>
-			<image>
+			<image onErrorType="Blank">
 				<reportElement x="520" y="0" width="35" height="30" uuid="5acc779e-6526-4400-8818-ef07faa61a8f"/>
 				<imageExpression><![CDATA["C:/Logica/report/immagini/ltc_logo_Homeok.png"]]></imageExpression>
 			</image>

@@ -1,6 +1,6 @@
 package it.ltc.logica.ufficio.gui.elements.prodotto;
 
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.elements.Ordinatore;
 
 public class OrdinatoreProdotti extends Ordinatore<Prodotto> {

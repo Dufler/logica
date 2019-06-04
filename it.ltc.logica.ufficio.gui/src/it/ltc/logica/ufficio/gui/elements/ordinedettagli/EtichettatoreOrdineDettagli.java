@@ -3,8 +3,8 @@ package it.ltc.logica.ufficio.gui.elements.ordinedettagli;
 import org.eclipse.swt.graphics.Image;
 
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
-import it.ltc.logica.database.model.centrale.Prodotto;
 import it.ltc.logica.database.model.centrale.ordini.OrdineDettaglio;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.decoration.Immagine;
 import it.ltc.logica.gui.elements.Etichettatore;
 

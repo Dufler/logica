@@ -12,6 +12,7 @@ public enum Immagine {
 	COPIA_16X16("/it/ltc/logica/gui/resources/copy_16x16.png"),
 	
 	CODICE_16X16("/it/ltc/logica/gui/resources/codice_16x16.png"),
+	CAP_16X16("/it/ltc/logica/gui/resources/cap_16x16.png"),
 	LISTINO_16X16("/it/ltc/logica/gui/resources/listino_16x16.png"),
 	SALVADANAIO_16X16("/it/ltc/logica/gui/resources/salvadanaio_16x16.png"),
 	IMPOSTAZIONI_16X16("/it/ltc/logica/gui/resources/impostazioni_16x16.png"),
@@ -48,6 +49,7 @@ public enum Immagine {
 	
 	CROCEVERDE_16X16("/it/ltc/logica/gui/resources/croceVerde_16x16.png"),
 	CROCEVERDE_ANNULLATA_16X16("/it/ltc/logica/gui/resources/croceVerdeAnnullata_16x16.png"),
+	CROCIVERDI_16X16("/it/ltc/logica/gui/resources/crociVerdi_16x16.png"),
 	
 	EXCEL_16X16("/it/ltc/logica/gui/resources/excel_16x16.png"),
 	EXCEL_ANNULLATO_16X16("/it/ltc/logica/gui/resources/excelAnnullato_16x16.png"),
@@ -59,6 +61,7 @@ public enum Immagine {
 	FRECCIABLUSU_16X16("/it/ltc/logica/gui/resources/frecciaBluSu_16x16.png"),
 	FRECCIAGIALLAGIU_16X16("/it/ltc/logica/gui/resources/frecciaGiallaGiu_16x16.png"),
 	FRECCIAROSSAGIU_16X16("/it/ltc/logica/gui/resources/frecciaRossaGiu_16x16.png"),
+	FRECCEROSSEGIU_16X16("/it/ltc/logica/gui/resources/frecceRosseGiu_16x16.png"),
 	
 	RED_QUESTION_MARK_12X20("/it/ltc/logica/gui/resources/redQuestionMark_12x20.png"),
 	RED_MARK_12X20("/it/ltc/logica/gui/resources/redMark_12x20.png"),

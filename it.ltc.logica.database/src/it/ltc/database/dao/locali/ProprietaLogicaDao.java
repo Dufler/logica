@@ -1,5 +1,7 @@
 package it.ltc.database.dao.locali;
 
+import java.util.List;
+
 import it.ltc.database.dao.CRUDDao;
 import it.ltc.logica.database.model.locale.ProprietaLogica;
 
@@ -12,6 +14,11 @@ public class ProprietaLogicaDao extends CRUDDao<ProprietaLogica> {
 	public ProprietaLogica trovaDaChiave(String key) {
 		ProprietaLogica entity = findByID(key);
 		return entity;
+	}
+	
+	public List<ProprietaLogica> trovaTutte() {
+		List<ProprietaLogica> entities = findAll();
+		return entities;
 	}
 	
 	public ProprietaLogica inserisci(ProprietaLogica proprieta) {

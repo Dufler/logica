@@ -1,10 +1,7 @@
 package it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.wizard.IWizardPage;
 
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class PreventivoSpedizioneFittiziaWizard extends WizardConRisultati {
@@ -14,16 +11,12 @@ public class PreventivoSpedizioneFittiziaWizard extends WizardConRisultati {
 	private PreventivoSpedizioneFittiziaSelezioneListiniWizardPage selezioneListiniPage;
 	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
 	private PreventivoSpedizioneFittiziaRisultatoWizardPage risultatoPage;
-	
-	private final LinkedList<PaginaWizardRisultati> fine;
 
 	public PreventivoSpedizioneFittiziaWizard() {
 		super(title, true);
 		selezioneListiniPage = new PreventivoSpedizioneFittiziaSelezioneListiniWizardPage();
 		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
 		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
-		fine = new LinkedList<PaginaWizardRisultati>();
-		fine.add(risultatoPage);
 	}
 
 	@Override
@@ -47,11 +40,6 @@ public class PreventivoSpedizioneFittiziaWizard extends WizardConRisultati {
 			nextPage = risultatoPage;
 		}
 		return nextPage;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return fine;
 	}
 
 }

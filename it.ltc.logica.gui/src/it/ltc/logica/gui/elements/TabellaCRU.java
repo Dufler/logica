@@ -98,9 +98,10 @@ public abstract class TabellaCRU<T> extends Tabella<T> {
 
 	protected void apriDialog(T elemento) {
 		DialogApribile dialog = creaDialog(elemento);
-		int result = dialog.open();
+		int result = dialog != null ? dialog.open() : -1;
 		if (result == Dialog.OK) {
 			aggiornaContenuto();
+			dirty = true;
 		}
 	}
 	

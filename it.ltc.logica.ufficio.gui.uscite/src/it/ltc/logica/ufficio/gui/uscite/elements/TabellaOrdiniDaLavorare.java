@@ -15,6 +15,8 @@ import it.ltc.logica.common.controller.uscite.ControllerOrdini;
 import it.ltc.logica.database.model.centrale.Commessa;
 import it.ltc.logica.database.model.centrale.ordini.OrdineTestata;
 import it.ltc.logica.database.model.centrale.ordini.StatiOrdine;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;
 import it.ltc.logica.gui.elements.TabellaCheckBox;
 import it.ltc.logica.ufficio.gui.elements.ordinedettagli.DialogDettagliOrdine;
@@ -66,7 +68,7 @@ public class TabellaOrdiniDaLavorare extends TabellaCheckBox<OrdineTestata> {
 	protected List<OrdineTestata> trovaOrdiniDaSpedire() {
 		List<OrdineTestata> ordiniFinalizzabili = new LinkedList<>();
 		ordiniFinalizzabili.addAll(controller.trovaOrdini(null, StatiOrdine.ELAB, null, null, null));
-		ordiniFinalizzabili.addAll(controller.trovaOrdini(null, StatiOrdine.INSP, null, null, null));
+		//ordiniFinalizzabili.addAll(controller.trovaOrdini(null, StatiOrdine.INSP, null, null, null));
 		return ordiniFinalizzabili;
 	}
 	
@@ -92,13 +94,13 @@ public class TabellaOrdiniDaLavorare extends TabellaCheckBox<OrdineTestata> {
 
 	@Override
 	protected void aggiungiColonne() {
-		aggiungiColonna("Data", 100, new EtichettatoreOrdineTestata(), 1);
-		aggiungiColonna("Riferimento", 100, new EtichettatoreOrdineTestata(), 2);
-		aggiungiColonna("Destinatario", 100, new EtichettatoreOrdineTestata(), 3);
-		aggiungiColonna("Ordinati", 100, new EtichettatoreOrdineTestata(), 4);
-		aggiungiColonna("Assegnati", 100, new EtichettatoreOrdineTestata(), 5);
-		aggiungiColonna("Tipo", 100, new EtichettatoreOrdineTestata(), 7);
-		aggiungiColonna("Stato", 100, new EtichettatoreOrdineTestata(), 8);
+		aggiungiColonna("Data", 100, 1);
+		aggiungiColonna("Riferimento", 100, 2);
+		aggiungiColonna("Destinatario", 100, 3);
+		aggiungiColonna("Ordinati", 100, 4);
+		aggiungiColonna("Assegnati", 100, 5);
+		aggiungiColonna("Tipo", 100, 7);
+		aggiungiColonna("Stato", 100, 8);
 	}
 
 	@Override
@@ -115,6 +117,16 @@ public class TabellaOrdiniDaLavorare extends TabellaCheckBox<OrdineTestata> {
 				aggiornaContenuto();
 			}
 		}
+	}
+
+	@Override
+	protected Etichettatore<OrdineTestata> creaEtichettatore() {
+		return new EtichettatoreOrdineTestata();
+	}
+
+	@Override
+	protected ModificatoreValoriCelle<OrdineTestata> creaModificatore() {
+		return null;
 	}
 
 }

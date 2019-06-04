@@ -108,7 +108,7 @@ public class DialogProdottiPerModello extends DialogModel<ProdottiPerModello> {
 	public void loadModel() {
 		String modello = valore.getCodiceModello() != null ? valore.getCodiceModello() : "-";
 		textModello.setText(modello);
-		CategoriaMerceologica categoria = controllerCategorie.getCategoria(valore.getCategoriaMerceologica());
+		CategoriaMerceologica categoria = controllerCategorie.getCategoria(valore.getCategoriaMerceologica(), 0); //FIXME
 		String testoCategoria = categoria != null ? categoria.getNome() : "-";
 		textCategoria.setText(testoCategoria);
 		String testoBrand = valore.getBrand() != null ? valore.getBrand() : "-";

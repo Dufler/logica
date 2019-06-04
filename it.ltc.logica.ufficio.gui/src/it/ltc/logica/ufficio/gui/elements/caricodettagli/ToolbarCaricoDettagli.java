@@ -14,6 +14,8 @@ import it.ltc.logica.utilities.variabili.Permessi;
 
 public class ToolbarCaricoDettagli extends ToolbarCRUD<TabellaCaricoDettagli, CaricoDettaglio> {
 	
+	protected ToolItem inserimentoMultiplo;
+	
 	protected ToolItem reportSemplice;
 	protected ToolItem reportSempliceXLS;
 	protected ToolItem reportPerCollo;
@@ -29,6 +31,17 @@ public class ToolbarCaricoDettagli extends ToolbarCRUD<TabellaCaricoDettagli, Ca
 
 	@Override
 	protected void setupTastiToolbar() {
+		inserimentoMultiplo = new ToolItem(toolbar, SWT.NONE);
+		inserimentoMultiplo.setImage(Immagine.CROCIVERDI_16X16.getImage());
+		inserimentoMultiplo.setDisabledImage(Immagine.CROCEVERDE_ANNULLATA_16X16.getImage());
+		inserimentoMultiplo.setText("");
+		inserimentoMultiplo.setToolTipText("Inserimento multiplo");
+		inserimentoMultiplo.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				inserimentoMultiplo();
+			}
+		});
 		aggiungiTastoNuovo();
 		aggiungiTastoModifica();
 		aggiungiTastoElimina();
@@ -94,8 +107,13 @@ public class ToolbarCaricoDettagli extends ToolbarCRUD<TabellaCaricoDettagli, Ca
 			case ANNULLATO : statoNuovo = false; statoModifica = false; statoElimina = false; break;
 		}
 		nuovo.setEnabled(permesso && statoNuovo);
+		inserimentoMultiplo.setEnabled(permesso && statoNuovo);
 		modifica.setEnabled(permesso && statoModifica);
 		elimina.setEnabled(permesso && statoElimina);
 	}
+	
+	public void inserimentoMultiplo() {
+		tabella.apriDialogInserimentoMultiplo();
+	} 
 
 }

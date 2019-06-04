@@ -75,7 +75,8 @@ public abstract class ControllerCRUDLocale<T> extends ControllerCRUD<T> {
 			ProcessoSalvataggioSincronizzazione<T> processoSalvataggio = new ProcessoSalvataggioSincronizzazione<>(title, processoChiamata.getStatus(), processoChiamata.getEntities(), getDao());
 			DialogProgresso dialogSalvataggio = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
 			dialogSalvataggio.esegui(processoSalvataggio);
-			if (processoSalvataggio.getEsito())
+			//Se la sincronizzazione è andata a buon fine ed ho effettivamente salvato qualcosa allora aggiorno la data della versione della tabella.
+			if (processoSalvataggio.getEsito() && processoSalvataggio.getStatus() != 204) 
 				setDataUltimaVersione(processoSalvataggio.getDataUltimoAggiornamento());
 		}
 	}

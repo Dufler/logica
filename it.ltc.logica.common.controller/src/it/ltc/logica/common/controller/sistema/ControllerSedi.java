@@ -52,8 +52,8 @@ public class ControllerSedi extends ControllerReadOnly<Sede> {
 		return RestClient.CONTEXT_PATH_SEDE;
 	}
 	
-	public String getDomain() {
-		return RestClient.DOMAIN_SEDE;
-	}
+//	public String getDomain() {
+//		return RestClient.DOMAIN_SEDE;
+//	}
 
 }

@@ -39,7 +39,7 @@ public abstract class CompositeAstrattoVoceListino extends Gruppo {
 			String valore;
 			switch (idAmbito) {
 				case 30: case 65 : case 94 : case 95 : case 99 : {DialogSelezioneRegioni dialog = new DialogSelezioneRegioni(valorePrecedente); valore = dialog.apri();} break;
-				case 111 : {DialogSelezioneNazioni dialog = new DialogSelezioneNazioni(valorePrecedente); valore = dialog.apri();} break;
+				case 111 : case 132 : case 133 : {DialogSelezioneNazioni dialog = new DialogSelezioneNazioni(valorePrecedente); valore = dialog.apri();} break;
 				case 17 : {DialogGiorniFranchigia dialog = new DialogGiorniFranchigia(valorePrecedente); valore = dialog.apri();} break;
 				case 10 : case 11 : case 63 : case 64 : case 112 : case 113 : {DialogSogliaContrassegno dialog = new DialogSogliaContrassegno(valorePrecedente); valore = dialog.apri();} break;
 				case 19 : case 54 : case 82 : case 89 : {DialogSpedizioneConMoltiColli dialog = new DialogSpedizioneConMoltiColli(valorePrecedente); valore = dialog.apri();} break;

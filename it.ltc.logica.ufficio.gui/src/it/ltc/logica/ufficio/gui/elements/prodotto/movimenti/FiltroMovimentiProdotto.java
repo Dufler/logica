@@ -1,6 +1,6 @@
 package it.ltc.logica.ufficio.gui.elements.prodotto.movimenti;
 
-import it.ltc.logica.database.model.centrale.MovimentoProdotto;
+import it.ltc.logica.database.model.prodotto.MovimentoProdotto;
 import it.ltc.logica.gui.elements.table.filter.FiltroTabella;
 
 public class FiltroMovimentiProdotto extends FiltroTabella<MovimentoProdotto, CriteriFiltraggioMovimentiProdotto> {

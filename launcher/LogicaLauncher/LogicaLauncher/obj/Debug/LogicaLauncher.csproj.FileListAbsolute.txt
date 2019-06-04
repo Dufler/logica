@@ -1,0 +1,8 @@
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\obj\Debug\LogicaLauncher.csprojResolveAssemblyReference.cache
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\bin\Debug\LogicaLauncher.exe.config
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\bin\Debug\LogicaLauncher.exe
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\bin\Debug\LogicaLauncher.pdb
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\bin\Debug\System.Data.SQLite.dll
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\bin\Debug\System.Data.SQLite.xml
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\obj\Debug\LogicaLauncher.exe
+C:\Users\Damiano\Documents\SharpDevelop Projects\LogicaLauncher\LogicaLauncher\obj\Debug\LogicaLauncher.pdb

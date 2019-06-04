@@ -24,6 +24,8 @@ Import-Package: javax.annotation;version="1.2.0",
  javax.inject;version="1.0.0"
 Export-Package: it.ltc.logica.ufficio.gui.elements.caricodettagli,
  it.ltc.logica.ufficio.gui.elements.caricotestata,
+ it.ltc.logica.ufficio.gui.elements.cassa,
+ it.ltc.logica.ufficio.gui.elements.cassastandard,
  it.ltc.logica.ufficio.gui.elements.fornitore,
  it.ltc.logica.ufficio.gui.elements.ordinedettagli,
  it.ltc.logica.ufficio.gui.elements.ordinetestata,

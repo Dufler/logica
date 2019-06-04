@@ -2,7 +2,7 @@ package it.ltc.logica.ufficio.gui.elements.prodotto.movimenti;
 
 import org.eclipse.swt.graphics.Image;
 
-import it.ltc.logica.database.model.centrale.MovimentoProdotto;
+import it.ltc.logica.database.model.prodotto.MovimentoProdotto;
 import it.ltc.logica.gui.elements.Etichettatore;
 
 public class EtichettatoreMovimentiProdotto extends Etichettatore<MovimentoProdotto> {

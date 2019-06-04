@@ -133,6 +133,20 @@ public abstract class TabellaCheckBox<T> extends CheckboxTableViewer {
 	 */
 	protected void setFiltro() {}
 	
+	protected abstract Etichettatore<T> creaEtichettatore();
+	
+	protected abstract ModificatoreValoriCelle<T> creaModificatore();
+	
+	/**
+	 * Aggiunge una colonna alla tabella, vanno specificati il nome, la larghezza di default e il provider del contenuto, se ce l'ha.
+	 * @param nome
+	 * @param larghezza
+	 * @param provider
+	 */
+	public void aggiungiColonna(String nome, int larghezza, int indiceColonna) {
+		aggiungiColonna(nome, larghezza, creaEtichettatore(), indiceColonna);
+	}
+	
 	/**
 	 * Aggiunge una colonna alla tabella, vanno specificati il nome, la larghezza di default e il provider del contenuto, se ce l'ha.
 	 * @param nome

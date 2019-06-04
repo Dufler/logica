@@ -6,4 +6,13 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_wgRR0FwOEeeziNj7rRLOlw" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
     <elements xsi:type="basic:Part" xmi:id="_ywYTQFwOEeeziNj7rRLOlw" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.fatturazione" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.FatturazionePart" label="Fatturazione" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/saccoSoldi_16x16.png" tooltip="Qui puoi fatturare"/>
   </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_wpKkoH4pEemQJ4rnZdIA7A" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_zvomUH4pEemQJ4rnZdIA7A" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.categorie" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.CategoriePart" label="Categorie" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire le categorie di fatturazione"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_bXt1UIBPEemAxNRP88OeGA" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_d0LQsIBPEemAxNRP88OeGA" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.coordinate" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.CoordinatePart" label="Coordinate Bancarie" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/monete_16x16.png" tooltip="Qui puoi gestire le coordinate bancarie"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_C62BUIBQEemAxNRP88OeGA" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_Fhsu0IBQEemAxNRP88OeGA" elementId="it.ltc.logica.amministrazione.gui.fatturazione.part.preferenze" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.fatturazione/it.ltc.logica.amministrazione.gui.fatturazione.parts.PreferenzePart" label="Preferenze" iconURI="platform:/plugin/it.ltc.logica.container/resources/icons/menu/preferences16x16.png" tooltip="Qui puoi gestire le preferenze di fatturazione"/>
+  </fragments>
 </fragment:ModelFragments>

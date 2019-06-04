@@ -1,5 +1,7 @@
 package it.ltc.logica.ufficio.gui.uscite.elements;
 
+import java.util.LinkedList;
+
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,6 +18,7 @@ import it.ltc.logica.database.model.centrale.ordini.DatiSpedizione;
 import it.ltc.logica.database.model.centrale.ordini.OrdineTestata;
 import it.ltc.logica.database.model.centrale.ordini.RisultatoAssegnazioneOrdine;
 import it.ltc.logica.database.model.centrale.ordini.StatiOrdine;
+import it.ltc.logica.database.model.centrale.ordini.RisultatoAssegnazioneOrdine.StatoAssegnazione;
 import it.ltc.logica.gui.decoration.Immagine;
 import it.ltc.logica.gui.dialog.DialogApribile;
 import it.ltc.logica.gui.dialog.DialogMessaggio;
@@ -171,6 +174,9 @@ public class TabellaOrdineTestata extends TabellaCRUDConFiltro<OrdineTestata, Cr
 			ControllerOrdini controller = new ControllerOrdini(commessa);
 			String tipo = criteri.getTipo() != null ? criteri.getTipo().getCodice() : null;
 			setElementi(controller.trovaOrdini(criteri.getRiferimento(), criteri.getStato(), tipo, criteri.getDa(), criteri.getA()));
+		} else {
+			//Imposto una lista vuota se non posso andare a filtrare per qualche ragione.
+			setElementi(new LinkedList<>());
 		}
 	}
 
@@ -246,7 +252,7 @@ public class TabellaOrdineTestata extends TabellaCRUDConFiltro<OrdineTestata, Cr
 		if (elemento != null && commessa != null) {
 			ControllerOrdini controller = new ControllerOrdini(commessa);
 			RisultatoAssegnazioneOrdine assegnazione = controller.recuperaAssegnazione(elemento);
-			if (assegnazione != null) {
+			if (assegnazione != null && assegnazione.getStato() != StatoAssegnazione.NONDEFINITA) {
 				DialogStatoAssegnazione dialog = new DialogStatoAssegnazione(commessa, assegnazione);
 				dialog.open();
 			} else {

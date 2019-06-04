@@ -1,31 +1,21 @@
 package it.ltc.logica.amministrazione.gui.fatturazione.wizards.uscite;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.wizard.IWizardPage;
 
 import it.ltc.logica.amministrazione.gui.fatturazione.parts.FatturazionePart;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class FatturazioneUsciteWizard extends WizardConRisultati {
 	
 	private static final String title = "Fatturazione Uscite";
 	
-//	private final FatturazionePart fp;
-	
 	private final SelezioneDatiFatturazioneWizardPage selezionePage;
 	private final EsitoFatturazioneWizardPage esitoPage;
-	
-	private final LinkedList<PaginaWizardRisultati> risultati;
 	
 	public FatturazioneUsciteWizard(FatturazionePart fp) {
 		super(title, false);
 		selezionePage = new SelezioneDatiFatturazioneWizardPage();
 		esitoPage = new EsitoFatturazioneWizardPage();
-		risultati = new LinkedList<PaginaWizardRisultati>();
-		risultati.add(esitoPage);
-//		this.fp = fp;
 	}
 
 	@Override
@@ -45,13 +35,7 @@ public class FatturazioneUsciteWizard extends WizardConRisultati {
 
 	@Override
 	public boolean finisci() {
-//		fp.aggiornaTabellaDocumenti();
 		return true;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return risultati;
 	}
 
 }

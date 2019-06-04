@@ -138,7 +138,7 @@ public class ControllerListiniClienti {
 		List<ListinoCommessa> lista = new LinkedList<ListinoCommessa>();
 		for (ListinoCommessa listino : listini.values()) {
 			int tipo = listino.getTipo();
-			if (tipo == AmbitoFattura.ID_SPEDIZIONI || tipo == AmbitoFattura.ID_GIACENZE || tipo == AmbitoFattura.ID_RITIRI)
+			if (tipo == AmbitoFattura.ID_SPEDIZIONI || tipo == AmbitoFattura.ID_SPEDIZIONI_UE || tipo == AmbitoFattura.ID_SPEDIZIONI_EXTRA_UE || tipo == AmbitoFattura.ID_GIACENZE || tipo == AmbitoFattura.ID_RITIRI)
 				lista.add(listino);
 		}
 		return lista;

@@ -1,5 +1,7 @@
 package it.ltc.logica.container.lifecycle;
 
+import java.io.File;
+
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.e4.ui.workbench.lifecycle.PostContextCreate;
@@ -20,20 +22,11 @@ public class Manager {
 	@PostContextCreate
 	void postContextCreate(IEclipseContext context, IApplicationContext appContext, Display display, UISynchronize sync) {
 		
-//		Display display2 = PlatformUI.createDisplay();
-//		WorkbenchAdvisor advisor = new WorkbenchAdvisor() {
-//			
-//			@Override
-//			public String getInitialWindowPerspectiveId() {
-//				return null;
-//			}
-//		};
-//		int returnCode = PlatformUI.createAndRunWorkbench(display2, advisor);
-//		if (returnCode == PlatformUI.RETURN_OK)
-//			System.out.println("Workbench istanziata");
-		
 		//Genero il controller utente
 		ControllerUtente.createInstance(sync, context);
+		
+		//Ripulisco i file temporanei non più necessari
+		pulisciFileTemporanei();
 		
 		// Inizializzo il DB Locale se non esiste
 		//ControllerLocalDB.getInstance(); //TODO - Controllare se fosse ancora necessario.
@@ -50,6 +43,22 @@ public class Manager {
 		if (dialog.open() != Window.OK) {
 			// close the application
 			System.exit(-1);
+		}
+	}
+
+	private void pulisciFileTemporanei() {
+		//Report vecchi
+		String baseFolder = System.getProperty("user.dir");
+		String separator = System.getProperty("file.separator");
+		File folder = new File(baseFolder + separator + "report" + separator + "temp" + separator);
+		if (!folder.exists())
+			folder.mkdirs();
+		for (File vecchioReport : folder.listFiles()) {
+			if (vecchioReport.isFile() && (vecchioReport.getName().endsWith("pdf") || vecchioReport.getName().endsWith("PDF"))) {
+				boolean delete = vecchioReport.delete();
+				if (!delete)
+					System.out.println("Impossibile cancellare il file temporaneo: " + vecchioReport.getAbsolutePath());
+			}
 		}
 	}
 

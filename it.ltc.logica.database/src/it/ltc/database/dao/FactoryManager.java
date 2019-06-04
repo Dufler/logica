@@ -118,7 +118,7 @@ public class FactoryManager {
 			logger.info("Script eseguito!");
 		} catch (Exception e) {
 			update = false;
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 		} finally {
 			em.close();
 		}

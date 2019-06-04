@@ -15,14 +15,17 @@ import it.ltc.logica.common.controller.processi.sincronizzazione.CriteriUltimaMo
 import it.ltc.logica.common.controller.processi.sincronizzazione.ProcessoAggiornamentoDB;
 import it.ltc.logica.common.controller.processi.sincronizzazione.ProcessoChiamataSincronizzazione;
 import it.ltc.logica.common.controller.processi.sincronizzazione.ProcessoSalvataggioSincronizzazione;
+import it.ltc.logica.common.controller.processi.specifici.ProcessoSelezioneModelli;
 import it.ltc.logica.common.controller.processi.specifici.ProcessoSelezioneProdotti;
+import it.ltc.logica.common.controller.processi.specifici.ProcessoSelezioneProdottiPerModello;
 import it.ltc.logica.common.controller.sistema.ControllerSedi;
 import it.ltc.logica.common.ws.RestClient;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.MovimentoProdotto;
-import it.ltc.logica.database.model.centrale.Prodotto;
-import it.ltc.logica.database.model.centrale.SaldoProdotto;
 import it.ltc.logica.database.model.centrale.Sede;
+import it.ltc.logica.database.model.prodotto.Modello;
+import it.ltc.logica.database.model.prodotto.MovimentoProdotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
+import it.ltc.logica.database.model.prodotto.SaldoProdotto;
 import it.ltc.logica.gui.task.DialogProgresso;
 
 public class ControllerProdotti extends ControllerCRUDLocale<Prodotto> {
@@ -93,6 +96,34 @@ public class ControllerProdotti extends ControllerCRUDLocale<Prodotto> {
 		if (filtro != null) {
 			ProdottoLocaleDao dao = getDao();
 			ProcessoSelezioneProdotti processo = new ProcessoSelezioneProdotti(dao, filtro);
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.esegui(processo);
+			lista = processo.getLista();
+		} else {
+			lista = new LinkedList<>();
+		}		
+		return lista;
+	}
+	
+	public List<Prodotto> cercaDaModello(Prodotto filtro) {
+		List<Prodotto> lista;
+		if (filtro != null) {
+			ProdottoLocaleDao dao = getDao();
+			ProcessoSelezioneProdottiPerModello processo = new ProcessoSelezioneProdottiPerModello(dao, filtro);
+			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+			dialog.esegui(processo);
+			lista = processo.getLista();
+		} else {
+			lista = new LinkedList<>();
+		}		
+		return lista;
+	}
+	
+	public List<Modello> trovaModelli(Modello filtro) {
+		List<Modello> lista;
+		if (filtro != null) {
+			ProdottoLocaleDao dao = getDao();
+			ProcessoSelezioneModelli processo = new ProcessoSelezioneModelli(dao, filtro);
 			DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
 			dialog.esegui(processo);
 			lista = processo.getLista();

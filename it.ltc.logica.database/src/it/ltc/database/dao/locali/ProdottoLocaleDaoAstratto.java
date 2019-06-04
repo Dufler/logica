@@ -12,8 +12,9 @@ import javax.persistence.criteria.Root;
 
 import it.ltc.database.dao.CRUDDaoConSincronizzazione;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
-import it.ltc.logica.database.model.centrale.ProdottoPK;
+import it.ltc.logica.database.model.prodotto.Modello;
+import it.ltc.logica.database.model.prodotto.Prodotto;
+import it.ltc.logica.database.model.prodotto.ProdottoPK;
 
 public abstract class ProdottoLocaleDaoAstratto extends CRUDDaoConSincronizzazione<Prodotto> {
 	
@@ -30,6 +31,58 @@ public abstract class ProdottoLocaleDaoAstratto extends CRUDDaoConSincronizzazio
 		pk.setCommessa(commessa);
 		Prodotto entity = findByID(pk);
 		return entity;
+	}
+	
+	private Modello parsaModello(Object[] entity) {
+		Modello modello = new Modello();
+		modello.setModello((String) entity[0]);
+		modello.setCommessa((int) entity[1]);
+		return modello;
+	}
+	
+	public List<Modello> trovaModelli(Modello filtro) {	
+		List<Object[]> results = executeNativeSearch("SELECT DISTINCT codice_modello, commessa FROM prodotto WHERE commessa=" + commessa.getId() + " AND codice_modello LIKE '%" + filtro.getModello() + "%'");
+		List<Modello> modelli = new LinkedList<>();
+		for (Object[] result : results) {
+			Modello modello = parsaModello(result);
+			modelli.add(modello);
+		}
+		return modelli;
+		
+//		EntityManager em = getManager();
+//		CriteriaBuilder cb = em.getCriteriaBuilder();
+//        CriteriaQuery<Prodotto> criteria = cb.createQuery(Prodotto.class);
+//        Root<Prodotto> member = criteria.from(c);
+//        Predicate[] predicates = new Predicate[1];
+//        List<Predicate> condizioniAccessorie = new LinkedList<>();
+//        Predicate condizioneCommessa = cb.equal(member.get("commessa"), commessa.getId());
+//        String modello = filtro.getModello();
+//		if (modello != null && !modello.isEmpty()) {
+//			Predicate condizioneModello = cb.like(member.get("codiceModello"), "%" + modello + "%");
+//			condizioniAccessorie.add(condizioneModello);
+//		}
+//		predicates = condizioniAccessorie.toArray(predicates);
+//        criteria.select(member).where(condizioniAccessorie.isEmpty() ? condizioneCommessa : cb.and(condizioneCommessa, cb.or(predicates)));
+//        List<Prodotto> entities = em.createQuery(criteria).setMaxResults(1000).getResultList();
+	}
+	
+	public List<Prodotto> trovaPerModello(Prodotto filtro) {
+		EntityManager em = getManager();
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Prodotto> criteria = cb.createQuery(Prodotto.class);
+        Root<Prodotto> member = criteria.from(c);
+        Predicate[] predicates = new Predicate[1];
+        List<Predicate> condizioniAccessorie = new LinkedList<>();
+        Predicate condizioneCommessa = cb.equal(member.get("commessa"), commessa.getId());
+        String modello = filtro.getCodiceModello();
+		if (modello != null && !modello.isEmpty()) {
+			Predicate condizioneModello = cb.equal(member.get("codiceModello"), modello);
+			condizioniAccessorie.add(condizioneModello);
+		}
+		predicates = condizioniAccessorie.toArray(predicates);
+        criteria.select(member).where(condizioniAccessorie.isEmpty() ? condizioneCommessa : cb.and(condizioneCommessa, cb.or(predicates)));
+        List<Prodotto> entities = em.createQuery(criteria).setMaxResults(1000).getResultList();
+        return entities;
 	}
 	
 	public List<Prodotto> trovaCorrispondenti(Prodotto filtro) {		

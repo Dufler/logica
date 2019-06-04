@@ -21,7 +21,7 @@ public class TabellaCommesse extends TabellaCRUDConFiltro<CommessaCentrale, Crit
 	
 	@Override
 	protected void aggiungiColonne() {
-		aggiungiColonna("CommessaCentrale", 120, 0);
+		aggiungiColonna("Commessa", 120, 0);
 		aggiungiColonna("Sede", 80, 1);
 		aggiungiColonna("Descrizione", 200, 2);
 	}

@@ -12,6 +12,7 @@ public class Magazzino {
 	private String codiceLTC;
 	private String codiceCliente;
 	private String descrizione;
+	private boolean magazzinoDefault;
 	
 	public Magazzino() {}
 
@@ -39,9 +40,18 @@ public class Magazzino {
 		this.descrizione = descrizione;
 	}
 	
+	public boolean isMagazzinoDefault() {
+		return magazzinoDefault;
+	}
+
+	public void setMagazzinoDefault(boolean magazzinoDefault) {
+		this.magazzinoDefault = magazzinoDefault;
+	}
+	
 	@Override
 	public String toString() {
-		return codiceLTC;
+		String testo = codiceLTC.equalsIgnoreCase(codiceCliente) ? codiceLTC : codiceLTC + " - " + codiceCliente;
+		return testo;
 	}
 
 }

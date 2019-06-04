@@ -41,7 +41,7 @@ public class DialogPezziCostiRicavi extends DialogModel<CdgPezzo> {
 
 	@Override
 	public void loadModel() {
-		composite.setCategoria(ControllerCategorieMerceologiche.getInstance().getCategoria(valore.getCategoriaMerceologica()));
+		composite.setCategoria(ControllerCategorieMerceologiche.getInstance().getCategoria(valore.getCategoriaMerceologica(), valore.getCommessa()));
 		composite.setCommessa(ControllerCommesse.getInstance().getCommessa(valore.getCommessa()));
 		composite.setCosto(valore.getCosto());
 		composite.setRicavo(valore.getRicavo());

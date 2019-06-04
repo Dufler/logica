@@ -16,6 +16,7 @@ public class ControllerMagazzini extends ControllerReadOnly<Magazzino> {
 	public static final String title = "Magazzini";
 	public static final String resource = "magazzino";
 
+	private final HashMap<Integer, Magazzino> magazziniDefault;
 	private final HashMap<Integer, List<Magazzino>> magazzini;
 	
 	private static ControllerMagazzini instance;
@@ -23,6 +24,7 @@ public class ControllerMagazzini extends ControllerReadOnly<Magazzino> {
 	private ControllerMagazzini() {
 		super(title, resource, Magazzino[].class);
 		magazzini = new HashMap<>();
+		magazziniDefault = new HashMap<>();
 	}
 
 	public static synchronized ControllerMagazzini getInstance() {
@@ -50,6 +52,21 @@ public class ControllerMagazzini extends ControllerReadOnly<Magazzino> {
 			}
 		}
 		return magazzino;
+	}
+	
+	public Magazzino getMagazzinoDefault(Commessa commessa) {
+		//Controllo se ho già determinato qual è, se non cè l'ho ancora vado a cercarlo.
+		if (!magazziniDefault.containsKey(commessa.getId())) {
+			Magazzino magazzino = null;
+			for (Magazzino m : getMagazzini(commessa)) {
+				if (m.isMagazzinoDefault()) {
+					magazzino = m;
+					break;
+				}
+			}
+			magazziniDefault.put(commessa.getId(), magazzino);
+		}
+		return magazziniDefault.get(commessa.getId());
 	}
 	
 	public List<Magazzino> getMagazzini(Commessa commessa) {

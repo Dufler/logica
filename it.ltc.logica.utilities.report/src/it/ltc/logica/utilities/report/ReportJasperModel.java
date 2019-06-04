@@ -1,11 +1,14 @@
 package it.ltc.logica.utilities.report;
 
+import java.io.File;
 import java.nio.file.FileSystems;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
 import org.eclipse.swt.program.Program;
+
+import it.ltc.logica.utilities.report.print.Printer;
 
 /**
  * Classe astratta con metodi d'utilità per i report.
@@ -14,12 +17,12 @@ import org.eclipse.swt.program.Program;
  */
 public abstract class ReportJasperModel {
 	
-	protected final static String DEFAULT_REPORT_PATH = "C:\\Logica\\report";
-	
 	protected final static SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS");
 	
 	protected final ReportExportType exportType;
 	protected final HashMap<String, Object> parameters;
+	
+	protected String reportPath;
 	
 	public ReportJasperModel() {
 		this(ReportExportType.PDF);
@@ -32,23 +35,44 @@ public abstract class ReportJasperModel {
 	
 	protected String getReportExportPath(String nomeReport, String selectedFolderPath) {
 		String separatore = FileSystems.getDefault().getSeparator();
-		nomeReport = nomeReport.replace(separatore, "");
+		nomeReport = nomeReport.replace("/", "-");
+		nomeReport = nomeReport.replace("\\", "-");
 		String nomeFile = nomeReport + getReportExtension();
 		String exportPath = selectedFolderPath + separatore + nomeFile;
+		reportPath = exportPath;
 		return exportPath;
 	}
 	
 	protected String getDefaultReportExportPath() {
 		String nomeReport = timestampFormat.format(new Date());
-		return getReportExportPath(nomeReport, DEFAULT_REPORT_PATH);
+		return getReportExportPath(nomeReport, getReportFolderPath());
+	}
+	
+	protected String getReportFolderPath() {
+		String baseFolder = System.getProperty("user.dir");
+		String separator = System.getProperty("file.separator");
+		File folder = new File(baseFolder + separator + "report" + separator + "temp" + separator);
+		if (!folder.exists())
+			folder.mkdirs();
+		return folder.getAbsolutePath();
 	}
 	
 	protected String getReportExtension() {
 		return exportType.getExtension();
 	}
 	
-	protected void apriFile(String path) {
-		Program.launch(path);
+	public void apriFile() {
+		if (reportPath != null)
+			Program.launch(reportPath);
+		else
+			throw new RuntimeException("Il path del report non è ancora stato valorizzato!");
+	}
+	
+	public boolean stampaFile() {
+		if (reportPath != null)
+			return Printer.printDocument(reportPath);
+		else
+			throw new RuntimeException("Il path del report non è ancora stato valorizzato!");
 	}
 	
 //	public void creaReport(Insieme oggetti su cui fare il report) {

@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 
 public abstract class TextForSelection<T> extends TextField<T> {
 	
@@ -69,10 +70,12 @@ public abstract class TextForSelection<T> extends TextField<T> {
 	@Override
 	public void setValue(T value) {
 		this.value = value;
-		if (value != null)
+		if (value != null) {
 			mostraSelezione(value);
-		else
+			notifyListeners(SWT.Selection, new Event()); //TEST
+		} else {
 			nascondiSelezione();
+		}
 	}
 
 	@Override

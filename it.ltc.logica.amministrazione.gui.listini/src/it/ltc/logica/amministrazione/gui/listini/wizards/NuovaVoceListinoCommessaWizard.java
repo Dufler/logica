@@ -1,14 +1,11 @@
 package it.ltc.logica.amministrazione.gui.listini.wizards;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.IWizardPage;
 
 import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
 import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
 import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class NuovaVoceListinoCommessaWizard extends WizardConRisultati {
@@ -19,7 +16,6 @@ public class NuovaVoceListinoCommessaWizard extends WizardConRisultati {
 	
 	private final VoceDiListino voce;
 	
-	private final LinkedList<PaginaWizardRisultati> result;
 	private final NuovaVoceListinoCommessaProprietaWizardPage paginaProprieta;
 	private final NuovaVoceListinoCommessaFissoWizardPage paginaFisso;
 	private final NuovaVoceListinoCommessaProporzionaleWizardPage paginaProporzionale;
@@ -41,8 +37,6 @@ public class NuovaVoceListinoCommessaWizard extends WizardConRisultati {
 		paginaScaglioni = new NuovaVoceListinoCommessaScaglioniWizardPage(voce);
 		paginaScaglioniRipetuti = new NuovaVoceListinoCommessaScaglioniRipetutiWizardPage(voce);
 		paginaRiepilogo = new NuovaVoceListinoCommessaRiepilogoWizardPage(voce);
-		result = new LinkedList<PaginaWizardRisultati>();
-		result.add(paginaRiepilogo);
 	}
 
 	@Override
@@ -83,11 +77,6 @@ public class NuovaVoceListinoCommessaWizard extends WizardConRisultati {
 			MessageDialog.openError(null, "Errore", "Ci sono stati problemi con l'inserimento.");
 		}
 		return finish;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return result;
 	}
 
 }

@@ -8,11 +8,11 @@ import java.util.List;
 import it.ltc.logica.common.controller.ingressi.ControllerFornitori;
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
 import it.ltc.logica.database.model.centrale.ingressi.CaricoTestata;
 import it.ltc.logica.database.model.centrale.ingressi.ColloCaricoJSON;
 import it.ltc.logica.database.model.centrale.ingressi.Fornitore;
 import it.ltc.logica.database.model.centrale.ingressi.ProdottoCaricoJSON;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.dialog.DialogMessaggio;
 import it.ltc.logica.utilities.report.JasperReportBuilder;
 import it.ltc.logica.utilities.report.ReportJasper;
@@ -30,8 +30,8 @@ public class ReportCaricoPerCollo extends ReportJasperModel {
 			//Imposto i parametri base
 			parameters.put("utente", ControllerVariabiliGlobali.getInstance().getString("utente.username"));
 			parameters.put("dataStampa", new Date());
-			parameters.put("riferimento", carico.getDocumentoRiferimento());
-			parameters.put("dataCarico", carico.getDocumentoData());
+			parameters.put("riferimento", carico.getRiferimento());
+			parameters.put("dataCarico", carico.getDataArrivo());
 			parameters.put("fornitore", fornitore != null ? fornitore.getNome() : "N/A");
 			parameters.put("commessa", commessa != null ? commessa.getNome() : "N/A");
 			//Creo una mappa dei colli e ubicazioni
@@ -66,7 +66,7 @@ public class ReportCaricoPerCollo extends ReportJasperModel {
 			for (CaricoPerColloRiga riga : mappaProdotti.values())
 				righe.add(riga);
 			JasperReportBuilder.buildReportPDF(ReportJasper.CARICO_PER_COLLO_PDF, exportPath, parameters, righe);
-			apriFile(exportPath);
+			apriFile();
 		} catch (Exception e) {
 			DialogMessaggio.openError("Errore durante la generazione del report", "Errore durante la generazione del report: " + e.getLocalizedMessage());
 			e.printStackTrace();

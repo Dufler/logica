@@ -1,24 +1,25 @@
 package it.ltc.logica.common.controller.sistema;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
-import it.ltc.logica.common.controller.ControllerReadOnly;
+import it.ltc.logica.common.controller.ControllerCRUD;
 import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
 
-public class ControllerCategorieMerceologiche extends ControllerReadOnly<CategoriaMerceologica> {
+public class ControllerCategorieMerceologiche extends ControllerCRUD<CategoriaMerceologica> {
 	
 	private static final String title = "Categorie Merceologiche";
 	private static final String resource = "categoriamerceologica";
 	
 	private static ControllerCategorieMerceologiche instance;
 	
-	private final HashMap<String, CategoriaMerceologica> categorie;
+//	private final HashMap<String, CategoriaMerceologica> categorie;
+	private final HashSet<CategoriaMerceologica> categorie;
 
 	private ControllerCategorieMerceologiche() {
 		super(title, resource, CategoriaMerceologica[].class);
-		categorie = new HashMap<String, CategoriaMerceologica>();
+		categorie = new HashSet<CategoriaMerceologica>();
 		caricaDati();
 	}
 
@@ -29,21 +30,43 @@ public class ControllerCategorieMerceologiche extends ControllerReadOnly<Categor
 		return instance;
 	}
 	
-	public CategoriaMerceologica getCategoria(String nome) {
-		return categorie.get(nome);
+	public CategoriaMerceologica getCategoria(String nome, int commessa) {
+		CategoriaMerceologica categoria = null;
+		for (CategoriaMerceologica c : categorie) {
+			if (c.getNome().equals(nome) && c.getCommessa() == commessa) {
+				categoria = c;
+				break;
+			}
+		}
+		return categoria;
 	}
 	
 	public Collection<CategoriaMerceologica> getCategorie() {
-		return categorie.values();
+		return categorie;
 	}
 
 	@Override
 	protected boolean aggiornaInfoTuttiDati(List<CategoriaMerceologica> lista) {
 		categorie.clear();
 		for (CategoriaMerceologica categoria : lista) {
-			categorie.put(categoria.getNome(), categoria);
+			categorie.add(categoria);
 		}
 		return true;
+	}
+
+	@Override
+	protected void aggiornaInfoInserimento(CategoriaMerceologica object, CategoriaMerceologica nuovo) {
+		categorie.add(nuovo);
+	}
+
+	@Override
+	protected void aggiornaInfoElemento(CategoriaMerceologica object) {
+		categorie.add(object);		
+	}
+
+	@Override
+	protected void aggiornaInfoEliminazione(CategoriaMerceologica object) {
+		categorie.remove(object);		
 	}
 
 }

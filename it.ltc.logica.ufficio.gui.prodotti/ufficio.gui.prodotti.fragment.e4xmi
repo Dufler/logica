@@ -6,4 +6,10 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Ghiv0HnkEeiV3sQaoYfzEg" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
     <elements xsi:type="basic:Part" xmi:id="_IdTR4HnkEeiV3sQaoYfzEg" elementId="it.ltc.logica.ufficio.gui.prodotti.part.prodotti" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.prodotti/it.ltc.logica.ufficio.gui.prodotti.parts.ProdottiPart" label="Prodotti" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaVerdeSu_16x16.png" tooltip="Qui puoi gestire tutte le informazioni sui prodotti."/>
   </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_RpjRIF-FEem4jKYHQQEqHA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_UB_IIF-FEem4jKYHQQEqHA" elementId="it.ltc.logica.ufficio.gui.prodotti.part.casse" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.prodotti/it.ltc.logica.ufficio.gui.prodotti.parts.CassePart" label="Casse" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/scatola_16x16.png" tooltip="Qui puoi gestire tutte le informazioni sui prodotti a cassa."/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_LRmvMGBXEemUrd0D6q9mGw" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_N2OBAGBXEemUrd0D6q9mGw" elementId="it.ltc.logica.ufficio.gui.prodotti.part.cassestandard" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.prodotti/it.ltc.logica.ufficio.gui.prodotti.parts.CasseStandardPart" label="Casse Standard" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/scatolaAnnullata_16x16.png" tooltip="Qui puoi gestire tutte le informazioni sulle composizioni delle casse standard."/>
+  </fragments>
 </fragment:ModelFragments>

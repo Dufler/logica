@@ -2,7 +2,7 @@ package it.ltc.logica.common.controller.prodotti;
 
 import java.util.HashMap;
 
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 
 /**
  * Rappresenta la definizione di un collo in fase di importazione dei dati di un carico.

@@ -25,6 +25,10 @@ public class ProcessoSalvataggioSincronizzazione<T> extends Processo {
 		return esito;
 	}
 	
+	public int getStatus() {
+		return status;
+	}
+	
 	public Date getDataUltimoAggiornamento() {
 		return dataUltimoAggiornamento;
 	}

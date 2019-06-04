@@ -52,6 +52,7 @@ public class DialogOrdineDettaglio extends DialogModel<OrdineDettaglio> {
 		composite.setAssegnati(0);
 		composite.setImballati(0);
 		composite.setRiga(trovaProgressivoRiga());
+		composite.setMagazzino(ControllerMagazzini.getInstance().getMagazzinoDefault(commessa));
 	}
 	
 	private int trovaProgressivoRiga() {

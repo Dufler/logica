@@ -40,7 +40,7 @@ public abstract class CRUDDaoConSincronizzazione<T> extends CRUDDao<T> {
 				t.commit();
 				insert = true;
 			} catch (Exception e) {
-				logger.error(e);
+				logger.error(e.getMessage(), e);
 				logger.info(current);
 				if (t != null && t.isActive())
 					t.rollback();

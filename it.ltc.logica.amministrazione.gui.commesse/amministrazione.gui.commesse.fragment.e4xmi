@@ -6,4 +6,10 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_p7xosND_Eeeia58oUiKWeQ" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
     <elements xsi:type="basic:Part" xmi:id="_sKmQsND_Eeeia58oUiKWeQ" elementId="it.ltc.logica.amministrazione.gui.commesse.part.commesse" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.commesse/it.ltc.logica.amministrazione.gui.commesse.parts.CommessePart" label="Gestione Commesse" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire le commesse"/>
   </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_iKjiwHx4EemOYIaIPus0gw" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_mAFp4Hx4EemOYIaIPus0gw" elementId="it.ltc.logica.amministrazione.gui.commesse.part.clienti" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.commesse/it.ltc.logica.amministrazione.gui.commesse.parts.ClientiPart" label="Gestione Clienti" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire i clienti"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_X7t6wHx5EemOYIaIPus0gw" featurename="children" parentElementId="it.ltc.logica.amministrazione.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_akGSQHx5EemOYIaIPus0gw" elementId="it.ltc.logica.amministrazione.gui.commesse.part.brand" contributionURI="bundleclass://it.ltc.logica.amministrazione.gui.commesse/it.ltc.logica.amministrazione.gui.commesse.parts.BrandPart" label="Brand" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/wizard_16x16.png" tooltip="Qui puoi gestire i brand per ogni commessa"/>
+  </fragments>
 </fragment:ModelFragments>

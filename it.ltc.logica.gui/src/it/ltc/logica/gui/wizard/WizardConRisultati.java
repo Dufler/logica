@@ -1,6 +1,7 @@
 package it.ltc.logica.gui.wizard;
 
-import java.util.LinkedList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -9,17 +10,29 @@ import org.eclipse.swt.widgets.Button;
 
 public abstract class WizardConRisultati extends WizardConFinale {
 	
+//	protected final LinkedList<PaginaWizardRisultati> pagineConRisultati;
+	protected final Set<PaginaWizardRisultati> pagineConRisultati;
+	
 	public WizardConRisultati(String title, boolean canGoBack) {
 		super(title, canGoBack);
+//		pagineConRisultati = new LinkedList<>();
+		pagineConRisultati = new HashSet<>();
 	}
 	
-	public abstract LinkedList<PaginaWizardRisultati> getPaginaRisultati();
+	@Override
+	public void addPage(IWizardPage page) {
+		if (page instanceof PaginaWizardRisultati) {
+			PaginaWizardRisultati pagina = (PaginaWizardRisultati) page;
+			pagineConRisultati.add(pagina);
+		}
+		super.addPage(page);
+	}
 
 	protected void aggiungiListener(Button nextButton) {
 		nextButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				for (PaginaWizardRisultati pagina : getPaginaRisultati()) {
+				for (PaginaWizardRisultati pagina : pagineConRisultati) {
 					if (getContainer().getCurrentPage().equals(pagina)) {
 						pagina.mostraRisultato();
 					}
@@ -31,8 +44,18 @@ public abstract class WizardConRisultati extends WizardConFinale {
 	@Override
 	public boolean canFinish() {
 		IWizardPage current = getContainer().getCurrentPage();
-		boolean finish = current.equals(getPaginaRisultati().getLast()) && current.isPageComplete();
+//		boolean finish = current.equals(pagineConRisultati.getLast()) && current.isPageComplete();
+		boolean finish = checkLastPage(current) && current.isPageComplete();
 		return finish;
+	}
+	
+	protected boolean checkLastPage(IWizardPage current) {
+		boolean check = false;
+		if (current instanceof PaginaWizardRisultati) {
+			PaginaWizardRisultati pagina = (PaginaWizardRisultati) current;
+			check = pagina.isLastPage();
+		}
+		return check;
 	}
 
 }

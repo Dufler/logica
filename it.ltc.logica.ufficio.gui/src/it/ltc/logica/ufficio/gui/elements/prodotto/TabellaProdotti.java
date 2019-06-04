@@ -1,10 +1,12 @@
 package it.ltc.logica.ufficio.gui.elements.prodotto;
 
+import java.util.LinkedList;
+
 import org.eclipse.swt.widgets.Composite;
 
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.dialog.DialogApribile;
 import it.ltc.logica.gui.dialog.DialogMessaggio;
 import it.ltc.logica.gui.elements.Etichettatore;
@@ -88,8 +90,9 @@ public class TabellaProdotti extends TabellaCRUDConFiltro<Prodotto, CriteriFiltr
 			filtro.setChiaveCliente(criteri.getSkuModelloBarcode());
 			filtro.setStagione(criteri.getSkuModelloBarcode());
 			setElementi(controller.cerca(filtro));
+		} else {
+			setElementi(new LinkedList<>());
 		}
-		
 	}
 
 	@Override

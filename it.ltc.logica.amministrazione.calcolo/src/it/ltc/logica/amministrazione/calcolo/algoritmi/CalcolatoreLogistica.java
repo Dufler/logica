@@ -13,13 +13,13 @@ import it.ltc.logica.common.calcolo.algoritmi.Calcolatore;
 import it.ltc.logica.common.calcolo.algoritmi.Calcolo;
 import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
 import it.ltc.logica.database.model.centrale.ingressi.Ingresso;
 import it.ltc.logica.database.model.centrale.ingressi.IngressoDettaglio;
 import it.ltc.logica.database.model.centrale.ingressi.StatiCarico;
 import it.ltc.logica.database.model.centrale.listini.ListinoCommessa;
 import it.ltc.logica.database.model.centrale.listini.VoceDiListino;
 import it.ltc.logica.database.model.centrale.ordini.OrdineTestata;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 
 public class CalcolatoreLogistica extends Calcolatore<LogisticaModel, VoceDiListinoLogistica> {
 	

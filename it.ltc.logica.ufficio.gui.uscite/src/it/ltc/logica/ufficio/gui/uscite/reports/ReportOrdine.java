@@ -30,6 +30,16 @@ public abstract class ReportOrdine extends ReportJasperModel {
 				copia.setTotalePezzi(riga.getTotalePezzi());
 				copia.setCollo(riga.getCollo());
 				copia.setUbicazione(riga.getUbicazione());
+				String anomalia;
+				switch (riga.getStato()) {
+					case PRELIEVO : anomalia = ""; break;
+					case SCORTA : anomalia = "scorta"; break;
+					case NONUBICATO : anomalia = "non ubicato"; break;
+					case NONPRESENTE : anomalia = "anomalia: non disponibile"; break;
+					case LEGACY : anomalia = "anomalia: assegnazione legacy mista"; break;
+					default : anomalia = "anomalia: non specificato"; break;
+				}
+				copia.setAnomalie(anomalia);
 				mappaRigheQuantita.put(key, copia);
 			}
 		}
@@ -40,7 +50,7 @@ public abstract class ReportOrdine extends ReportJasperModel {
 	 * Restituisce una chiave di raggruppamento per gli elementi.
 	 */
 	protected String getChiaveRaggruppamento(RisultatoAssegnazioneRigaOrdine riga) {
-		String key = riga.getUbicazione() + "#" + riga.getCollo() + "#" + riga.getSku();
+		String key = riga.getUbicazione() + "#" + riga.getCollo() + "#" + riga.getSku() + "#" + riga.getTaglia();
 		return key;
 	}
 

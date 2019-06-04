@@ -6,7 +6,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import it.ltc.logica.common.controller.prodotti.ProdottiPerModello;
 import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.elements.Etichettatore;
 import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;

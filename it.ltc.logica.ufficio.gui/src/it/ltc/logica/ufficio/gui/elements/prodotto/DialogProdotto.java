@@ -19,7 +19,7 @@ import it.ltc.logica.common.controller.sistema.ControllerCategorieMerceologicheP
 import it.ltc.logica.common.controller.trasporti.ControllerNazioni;
 import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.dialog.DialogModel;
 import it.ltc.logica.gui.input.ComboBox;
 import it.ltc.logica.ufficio.gui.elements.prodotto.movimenti.TabellaMovimentiProdotto;

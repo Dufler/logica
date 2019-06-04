@@ -8,8 +8,8 @@ import org.eclipse.swt.widgets.Label;
 
 import it.ltc.logica.common.controller.trasporti.ControllerNazioni;
 import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
-import it.ltc.logica.database.model.centrale.Prodotto.Cassa;
 import it.ltc.logica.database.model.centrale.indirizzi.Nazione;
+import it.ltc.logica.database.model.prodotto.TipoCassa;
 import it.ltc.logica.gui.composite.Gruppo;
 import it.ltc.logica.gui.decoration.SpacerLabel;
 import it.ltc.logica.gui.input.ComboBox;
@@ -31,7 +31,7 @@ public class CompositeProdotto extends Gruppo {
 	private TextForString textStagione;
 	private ComboBox<CategoriaMerceologica> comboCategoria;
 	private ComboBox<Nazione> comboMadeIn;
-	private ComboBox<Cassa> comboCassa;
+	private ComboBox<TipoCassa> comboCassa;
 
 	public CompositeProdotto(ParentValidationHandler parentValidator, Composite parent) {
 		super(parentValidator, parent, title);
@@ -152,7 +152,7 @@ public class CompositeProdotto extends Gruppo {
 		
 		comboCassa = new ComboBox<>(this);
 		comboCassa.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		comboCassa.setItems(Cassa.values());
+		comboCassa.setItems(TipoCassa.values());
 
 		new SpacerLabel(this);
 	}
@@ -249,11 +249,11 @@ public class CompositeProdotto extends Gruppo {
 		comboMadeIn.setSelectedValue(madeIn);
 	}
 
-	public Cassa getCassa() {
+	public TipoCassa getCassa() {
 		return comboCassa.getSelectedValue();
 	}
 
-	public void setCassa(Cassa cassa) {
+	public void setCassa(TipoCassa cassa) {
 		comboCassa.setSelectedValue(cassa);
 	}
 

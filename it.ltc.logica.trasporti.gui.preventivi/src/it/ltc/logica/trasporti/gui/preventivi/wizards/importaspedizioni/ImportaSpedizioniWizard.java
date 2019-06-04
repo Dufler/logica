@@ -6,7 +6,6 @@ import java.util.List;
 import org.eclipse.jface.wizard.IWizardPage;
 
 import it.ltc.logica.database.model.centrale.trasporti.SpedizioneSimulazione;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 import it.ltc.logica.trasporti.controller.importazione.FileSpedizioni;
 import it.ltc.logica.trasporti.controller.importazione.ImportazioneFileSpedizioniController;
@@ -14,8 +13,6 @@ import it.ltc.logica.trasporti.controller.importazione.ImportazioneFileSpedizion
 public class ImportaSpedizioniWizard extends WizardConRisultati {
 	
 	private static final String title = "Importa Dati Spedizioni";
-	
-	private final LinkedList<PaginaWizardRisultati> fine;
 	
 	private final FileSpedizioni file;
 	private final List<SpedizioneSimulazione> spedizioni;
@@ -31,18 +28,11 @@ public class ImportaSpedizioniWizard extends WizardConRisultati {
 		controllerImportazione = ImportazioneFileSpedizioniController.getInstance();
 		selezionePage = new ImportaSpedizioniSelezioneFileWizardPage(file);
 		spedizioniPage = new ImportaSpedizioniVerificaInformazioniWizardPage(file, spedizioni);
-		fine = new LinkedList<PaginaWizardRisultati>();
-		fine.add(spedizioniPage);
 	}
 
 	@Override
 	public boolean finisci() {
 		return controllerImportazione.importaSpedizioni(spedizioni, file);
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return fine;
 	}
 	
 	@Override

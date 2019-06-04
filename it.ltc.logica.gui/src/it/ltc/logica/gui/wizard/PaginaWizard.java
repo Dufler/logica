@@ -14,7 +14,7 @@ import it.ltc.logica.gui.validation.ValidationHandler;
 public abstract class PaginaWizard extends WizardPage implements ParentValidationHandler {
 
 	protected boolean valid;
-	protected boolean lastPage;
+	protected final boolean lastPage;
 	
 	protected Composite container;
 	protected final Set<ValidationHandler> children;
@@ -56,6 +56,10 @@ public abstract class PaginaWizard extends WizardPage implements ParentValidatio
 	@Override
 	public boolean isValid() {
 		return valid;
+	}
+	
+	public boolean isLastPage() {
+		return lastPage;
 	}
 
 	@Override

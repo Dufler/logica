@@ -13,6 +13,12 @@ public interface GruppoDiElementi extends Element {
 	public boolean isDirty();
 	
 	/**
+	 * Indica se il gruppo di elementi è stato compilato dall'utente.
+	 * @return
+	 */
+	public boolean isRequired();
+	
+	/**
 	 * Aggiunge un elemento che non può essere modificato.
 	 * @param control
 	 */

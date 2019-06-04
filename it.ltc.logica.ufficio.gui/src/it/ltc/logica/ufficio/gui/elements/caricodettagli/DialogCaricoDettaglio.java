@@ -54,6 +54,7 @@ public class DialogCaricoDettaglio extends DialogModel<CaricoDettaglio> {
 		composite.setMadeIn(ControllerNazioni.getInstance().getDefault());
 		composite.setRiscontrati(0);
 		composite.setRiga(trovaProgressivoRiga());
+		composite.setMagazzino(ControllerMagazzini.getInstance().getMagazzinoDefault(commessa));
 	}
 	
 	private int trovaProgressivoRiga() {

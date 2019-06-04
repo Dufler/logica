@@ -25,7 +25,7 @@ import it.ltc.logica.common.controller.prodotti.ProdottiPerModello;
 import it.ltc.logica.common.controller.prodotti.ProdottoConQuantita;
 import it.ltc.logica.common.controller.sistema.ControllerCategorieMerceologiche;
 import it.ltc.logica.database.model.centrale.CategoriaMerceologica;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 
 public class AlberoProdotti extends TreeViewer {
 	
@@ -287,7 +287,7 @@ public class AlberoProdotti extends TreeViewer {
         	StyledString testo;
         	if (element instanceof ProdottiPerModello) {
         		ProdottiPerModello ppm = (ProdottiPerModello) element;
-        		CategoriaMerceologica categoria = controllerCategorie.getCategoria(ppm.getCategoriaMerceologica()); //FIXME
+        		CategoriaMerceologica categoria = controllerCategorie.getCategoria(ppm.getCategoriaMerceologica(), 0); //FIXME
         		String testoSemplice = categoria != null ? categoria.getNome() : "-";
         		testo = new StyledString(testoSemplice);
         	} else {

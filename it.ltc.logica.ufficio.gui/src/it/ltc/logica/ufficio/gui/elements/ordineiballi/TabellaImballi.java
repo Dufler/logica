@@ -3,6 +3,7 @@ package it.ltc.logica.ufficio.gui.elements.ordineiballi;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
@@ -10,10 +11,12 @@ import it.ltc.logica.common.controller.uscite.ControllerOrdini;
 import it.ltc.logica.database.model.centrale.Commessa;
 import it.ltc.logica.database.model.centrale.ordini.ImballoCollo;
 import it.ltc.logica.database.model.centrale.ordini.OrdineTestata;
+import it.ltc.logica.gui.dialog.DialogMessaggio;
 import it.ltc.logica.gui.elements.Etichettatore;
 import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;
 import it.ltc.logica.gui.elements.Tabella;
+import it.ltc.logica.ufficio.report.ordine.ReportImballoOrdine;
 
 public class TabellaImballi extends Tabella<ImballoCollo> {
 	
@@ -76,7 +79,16 @@ public class TabellaImballi extends Tabella<ImballoCollo> {
 	}
 	
 	public void elaboraReportImballi() {
-		//TODO
+		//Controllo che siano già state scaricate le informazioni sugli imballi, se non le ho ancora le prendo.
+		if (imballi == null || imballi.isEmpty())
+			aggiornaContenuto();
+		//Elaboro il report e se tutto va bene lo apro.
+		ReportImballoOrdine report = new ReportImballoOrdine();
+		String exportPath = report.creaReport(commessa, ordine, imballi);
+		if (exportPath != null)
+			Program.launch(exportPath);
+		else
+			DialogMessaggio.openError("Errore durante la generazione del report", "Impossibile visualizzare/stampare il report perch\u00E8 non \u00E8 stato generato.");
 	}
 
 }

@@ -76,8 +76,7 @@ public class ControllerCommesseCentrale extends ControllerCRUD<CommessaCentrale>
 
 	@Override
 	protected void aggiornaInfoElemento(CommessaCentrale object) {
-		// TODO Auto-generated method stub
-		
+		commesse.put(object.getId(), object);	
 	}
 
 	@Override

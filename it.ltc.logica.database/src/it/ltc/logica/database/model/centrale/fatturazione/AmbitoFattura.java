@@ -3,6 +3,8 @@ package it.ltc.logica.database.model.centrale.fatturazione;
 public class AmbitoFattura {
 	
 	public static final int ID_SPEDIZIONI = 1;
+	public static final int ID_SPEDIZIONI_UE = 11;
+	public static final int ID_SPEDIZIONI_EXTRA_UE = 14;
 	public static final int ID_GIACENZE = 2;
 	public static final int ID_RITIRI = 9;
 	public static final int ID_CORRIERI = 4;
@@ -13,7 +15,7 @@ public class AmbitoFattura {
 	public static final int ID_EXTRA = 7;
 	
 	public static final int ID_SIMULAZIONI_TRASPORTI = 3;
-	public static final int ID_SIMULAZIONI_CORRIERI = 8;
+	//public static final int ID_SIMULAZIONI_CORRIERI = 8;
 	
 	public enum Categoria {
 		

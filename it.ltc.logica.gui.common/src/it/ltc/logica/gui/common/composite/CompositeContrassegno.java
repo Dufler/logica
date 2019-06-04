@@ -65,9 +65,9 @@ public class CompositeContrassegno extends Gruppo {
 		
 		new SpacerLabel(this);
 		
-		Label lblAnuullato = new Label(this, SWT.NONE);
-		lblAnuullato.setText("Anuullato: ");
-		lblAnuullato.setToolTipText(TOOLTIP_ANNULLATO);
+		Label lblAnnullato = new Label(this, SWT.NONE);
+		lblAnnullato.setText("Annullato: ");
+		lblAnnullato.setToolTipText(TOOLTIP_ANNULLATO);
 		
 		buttonAnnullato = new Bottone(this, SWT.CHECK);
 		buttonAnnullato.setToolTipText(TOOLTIP_ANNULLATO);

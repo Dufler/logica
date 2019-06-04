@@ -2,7 +2,6 @@
 package it.ltc.logica.trasporti.gui.report.parts;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -22,13 +21,12 @@ import org.eclipse.wb.swt.SWTResourceManager;
 import it.ltc.database.dao.locali.CriteriSelezioneSpedizioni;
 import it.ltc.logica.common.controller.trasporti.ControllerSpedizioni;
 import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
+import it.ltc.logica.gui.dialog.DialogSelezioneCartella;
 import it.ltc.logica.gui.wizard.DialogWizard;
 import it.ltc.logica.trasporti.gui.report.wizards.colli.DistribuzioneColliWizard;
 import it.ltc.logica.trasporti.gui.report.wizards.destinazione.DistribuzioneDestinazioneWizard;
 import it.ltc.logica.trasporti.gui.report.wizards.pesovolume.DistribuzionePesoVolumeWizard;
 import it.ltc.logica.trasporti.gui.report.wizards.semplice.StatisticheSempliciSpedizioniWizard;
-import it.ltc.logica.utilities.report.JasperReportBuilder;
-import it.ltc.logica.utilities.report.ReportJasper;
 
 public class ReportPart {
 	
@@ -96,28 +94,21 @@ public class ReportPart {
 	}
 	
 	private void lanciaReportJasper() {
-		System.out.println("Avvio report jasper.");
-		//String reportInfo = "C:\\Users\\Damiano\\Desktop\\report\\Test_Json2.jrxml";
-		String exportPath = "C:\\Users\\Damiano\\Desktop\\report\\Test_Json3.pdf";
-		Date dataA = new Date();
-		Date dataDa = new Date();
-		dataDa.setTime(dataDa.getTime() - 1000000000);
-		HashMap<String, Object> parameters = new HashMap<>();
-//		parameters.put("start_date", dataA);
-//		parameters.put("end_date", dataDa);
-		parameters.put("DataDa", dataA);
-		parameters.put("DataA", dataDa);
-		CriteriSelezioneSpedizioni criteri = new CriteriSelezioneSpedizioni();
-		//criteri.setDataA(dataA);
-		//criteri.setDataDa(dataDa);
-		List<Spedizione> spedizioni = ControllerSpedizioni.getInstance().selezionaSpedizioni(criteri);
-		try {
-			//JasperReportBuilder.buildReportPDF(reportInfo, exportPath, parameters);
-			JasperReportBuilder.buildReportPDF(ReportJasper.SPEDIZIONI, exportPath, parameters, spedizioni);
-		} catch (Exception e) {
-			e.printStackTrace();
+		DialogSelezioneCartella dialog = new DialogSelezioneCartella();
+		String path = dialog.open();
+		if (path != null && !path.isEmpty()) {
+			//Carico le spedizioni - TODO le condizioni di filtraggio sono provvisorie.
+			Date dataA = new Date();
+			Date dataDa = new Date();
+			dataDa.setTime(dataDa.getTime() - 1000000000);
+			CriteriSelezioneSpedizioni criteri = new CriteriSelezioneSpedizioni();
+			List<Spedizione> spedizioni = ControllerSpedizioni.getInstance().selezionaSpedizioni(criteri);
+			//Elaboro il report nel percorso indicato e lo apro.
+			ReportSpedizioniGeneriche report = new ReportSpedizioniGeneriche();
+			String exportPath = report.creaReport(spedizioni, dataA, dataDa, path);
+			if (exportPath != null)
+				report.apriFile();
 		}
-		System.out.println("Report jasper completato.");
 	}
 	
 	private void apriWizardReportSemplice() {

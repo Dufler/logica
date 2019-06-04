@@ -1,17 +1,12 @@
 package it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.wizard.IWizardPage;
 
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class PreventivoSpedizioneFittiziaSuColliWizard extends WizardConRisultati {
 	
 	private static final String title = "Preventivo di costo per una spedizione fittizia";
-	
-	private final LinkedList<PaginaWizardRisultati> fine;
 	
 	private PreventivoSpedizioneFittiziaSelezioneListiniWizardPage selezioneListiniPage;
 	private PreventivoSpedizioneFittiziaDatiWizardPage datiPage;
@@ -22,8 +17,6 @@ public class PreventivoSpedizioneFittiziaSuColliWizard extends WizardConRisultat
 		selezioneListiniPage = new PreventivoSpedizioneFittiziaSelezioneListiniWizardPage();
 		datiPage = new PreventivoSpedizioneFittiziaDatiWizardPage();
 		risultatoPage = new PreventivoSpedizioneFittiziaRisultatoWizardPage();
-		fine = new LinkedList<PaginaWizardRisultati>();
-		fine.add(risultatoPage);
 	}
 
 	@Override
@@ -42,11 +35,6 @@ public class PreventivoSpedizioneFittiziaSuColliWizard extends WizardConRisultat
 			nextPage = risultatoPage;
 		}
 		return nextPage;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return fine;
 	}
 	
 	@Override

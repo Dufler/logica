@@ -19,6 +19,7 @@ import it.ltc.logica.gui.task.Processo;
 import it.ltc.logica.update.model.feature.Feature;
 import it.ltc.logica.update.model.feature.Site;
 import it.ltc.logica.update.model.plugin.Plugin;
+import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
 
 /**
  * Processo atto al controllo e l'eventuale scaricamento ed installazione di aggiornamenti.
@@ -30,7 +31,8 @@ public class CheckForUpdatesProcess extends Processo {
 	private static final String titolo = "Controllo aggiornamenti";
 	private static final int operazioni = 100;
 
-	private static final String repository = "http://ws.services.ltc-logistics.it/logica-update/";
+//	private static final String repository = "http://ws.services.ltc-logistics.it/logica-update/";
+	private final String repository;
 	private static final String featureListFile = "site.xml";
 
 	private final UpdateController controller;
@@ -43,6 +45,7 @@ public class CheckForUpdatesProcess extends Processo {
 
 	public CheckForUpdatesProcess(LinkedHashSet<String> names) {
 		super(titolo, operazioni);
+		repository = ControllerVariabiliGlobali.getInstance().getString("indirizzo.server.aggiornamenti");
 		controller = new UpdateController(names);
 		updateFolder = controller.getUpdateFolder();
 		featuresFolder = controller.getFeaturesFolder();

@@ -21,6 +21,7 @@ public abstract class GruppoSemplice extends Composite implements ParentValidati
 	
 	protected boolean valid;
 	protected boolean dirty;
+	protected boolean required;
 	protected ParentValidationHandler successor;
 	protected final LinkedList<ValidationHandler> children;
 	protected final Set<Control> nonUpdatableElements;
@@ -41,11 +42,12 @@ public abstract class GruppoSemplice extends Composite implements ParentValidati
 	public GruppoSemplice(ParentValidationHandler parentValidator, Composite parent, int style) {
 		super(parent, style);
 		if (parentValidator != null) {
-			successor = (ParentValidationHandler) parentValidator;
+			successor = parentValidator;
 			successor.addChild(this);
 		} else {
 			successor = null;
 		}
+		required = true;
 		children = new LinkedList<ValidationHandler>();
 		nonUpdatableElements = new HashSet<>();
 		aggiungiElementiGrafici();
@@ -73,6 +75,14 @@ public abstract class GruppoSemplice extends Composite implements ParentValidati
 		return dirty;
 	}
 	
+	public boolean isRequired() {
+		return required;
+	}
+	
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
+	
 	@Override
 	public boolean isValid() {
 		return valid;
@@ -81,7 +91,8 @@ public abstract class GruppoSemplice extends Composite implements ParentValidati
 	@Override
 	public boolean validate() {
 		valid = true;
-		for (ValidationHandler child : children) {
+		//Se è required oppure è stato toccato vado a validarlo
+		if (required || isDirty()) for (ValidationHandler child : children) {
 			valid = child.isValid();
 			if (!valid)
 				break;

@@ -2,6 +2,7 @@ package it.ltc.database.dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
@@ -48,7 +49,7 @@ public abstract class Dao {
 			connection = DriverManager.getConnection(url);
 		} catch (Exception e) {
 			connection = null;
-			System.out.println(e);
+			logger.error(e.getMessage(), e);
 		}
 		return connection;
 	}
@@ -69,7 +70,7 @@ public abstract class Dao {
 			transaction.commit();
 			result = true;
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error(e.getMessage(), e);
 			if (transaction != null && transaction.isActive())
 				transaction.rollback();
 			result = false;
@@ -77,6 +78,24 @@ public abstract class Dao {
 			em.close();
 		}
 		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected List<Object[]> executeNativeSearch(String nativeQuery) {
+		List<Object[]> results;
+		EntityManager em = getManager();
+		EntityTransaction transaction = em.getTransaction();
+		try {
+			results = em.createNativeQuery(nativeQuery).getResultList();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			if (transaction != null && transaction.isActive())
+				transaction.rollback();
+			results = null;
+		} finally {
+			em.close();
+		}
+		return results;
 	}
 
 }

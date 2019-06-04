@@ -9,8 +9,8 @@ import org.eclipse.swt.widgets.Composite;
 import it.ltc.logica.common.controller.ingressi.ControllerMagazzini;
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
 import it.ltc.logica.database.model.centrale.Commessa;
-import it.ltc.logica.database.model.centrale.MovimentoProdotto;
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.MovimentoProdotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.dialog.DialogModel;
 
 public class DialogMovimentiProdotto extends DialogModel<MovimentoProdotto> {

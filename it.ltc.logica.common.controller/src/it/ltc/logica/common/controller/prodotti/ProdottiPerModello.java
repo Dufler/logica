@@ -3,7 +3,7 @@ package it.ltc.logica.common.controller.prodotti;
 import java.util.Collection;
 import java.util.HashMap;
 
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 
 /**
  * Le istanze di questa classe raggruppano prodotti dello stesso modello.

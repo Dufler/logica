@@ -92,6 +92,7 @@ public abstract class TabellaCRUD<T> extends TabellaCRU<T> {
 						DialogMessaggio.openWarning("Eliminazione non riuscita", "Impossibile eliminare l'elemento selezionato. Se pensi che questo sia un bug contattare il CED.");
 					} else {
 						aggiornaContenuto();
+						dirty = true;
 					}
 				}
 			} else {

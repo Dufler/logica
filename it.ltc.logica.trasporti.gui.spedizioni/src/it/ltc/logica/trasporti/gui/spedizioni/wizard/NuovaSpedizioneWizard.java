@@ -1,7 +1,6 @@
 package it.ltc.logica.trasporti.gui.spedizioni.wizard;
 
 import java.util.Date;
-import java.util.LinkedList;
 
 import org.eclipse.jface.wizard.IWizardPage;
 
@@ -12,7 +11,6 @@ import it.ltc.logica.database.model.centrale.documenti.Documento;
 import it.ltc.logica.database.model.centrale.indirizzi.Indirizzo;
 import it.ltc.logica.database.model.centrale.trasporti.Contrassegno;
 import it.ltc.logica.database.model.centrale.trasporti.Spedizione;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class NuovaSpedizioneWizard extends WizardConRisultati {
@@ -28,8 +26,6 @@ public class NuovaSpedizioneWizard extends WizardConRisultati {
 	private final Contrassegno contrassegno;
 	private final Indirizzo mittente;
 	private final Indirizzo destinatario;
-	
-	private final LinkedList<PaginaWizardRisultati> result;
 	
 	private final SelezioneCommessaWizardPage selezionePage;
 	private final InserimentoDatiSpedizioneWizardPage datiPage;
@@ -53,9 +49,6 @@ public class NuovaSpedizioneWizard extends WizardConRisultati {
 		datiPage = new InserimentoDatiSpedizioneWizardPage(spedizione, contrassegno);
 		indirizziPage = new InserimentoIndirizziWizardPage(spedizione, mittente, destinatario);
 		riepilogoPage = new RiepilogoNuovaSpedizioneWizardPage(spedizione, contrassegno, mittente, destinatario);
-		result = new LinkedList<PaginaWizardRisultati>();
-		result.add(datiPage);
-		result.add(riepilogoPage);
 	}
 	
 	/**
@@ -122,11 +115,6 @@ public class NuovaSpedizioneWizard extends WizardConRisultati {
 			}
 		}
 		return inserimentoOrdine && inserimentoSpedizione && inserimentoContrassegno;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return result;
 	}
 
 }

@@ -14,7 +14,9 @@
 		<class>it.ltc.logica.database.model.locale.ListinoSimulazione</class>
 		<class>it.ltc.logica.database.model.locale.VersioneTabella</class>
 		<class>it.ltc.logica.database.model.locale.ProprietaLogica</class>
-		<class>it.ltc.logica.database.model.centrale.Prodotto</class>
+		<!-- Prodotti -->
+		<class>it.ltc.logica.database.model.prodotto.Prodotto</class>
+		<!-- Trasporti -->
 		<class>it.ltc.logica.database.model.centrale.trasporti.Spedizione</class>
 		<class>it.ltc.logica.database.model.centrale.trasporti.Giacenza</class>
 		<class>it.ltc.logica.database.model.centrale.trasporti.Contrassegno</class>

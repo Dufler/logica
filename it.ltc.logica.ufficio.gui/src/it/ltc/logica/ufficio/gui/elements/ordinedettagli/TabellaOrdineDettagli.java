@@ -86,35 +86,6 @@ public class TabellaOrdineDettagli extends TabellaCRUD<OrdineDettaglio> {
 	protected Ordinatore<OrdineDettaglio> creaOrdinatore() {
 		return new OrdinatoreOrdineDettagli();
 	}
-
-//	public void creaReportSemplicePDF() {
-//		DialogSelezioneCartella dialog = new DialogSelezioneCartella();
-//		String path = dialog.open();
-//		if (path != null && !path.isEmpty()) {
-//			ReportCaricoSemplice report = new ReportCaricoSemplice(ReportExportType.PDF);
-//			report.creaReport(commessa, ordine, dettagli, path);
-//		}		
-//	}
-//	
-//	public void creaReportSempliceExcel() {
-//		DialogSelezioneCartella dialog = new DialogSelezioneCartella();
-//		String path = dialog.open();
-//		if (path != null && !path.isEmpty()) {
-//			ReportCaricoSemplice report = new ReportCaricoSemplice(ReportExportType.XLS);
-//			report.creaReport(commessa, ordine, dettagli, path);
-//		}		
-//	}
-//	
-//	public void creaReportPerCollo() {
-//		DialogSelezioneCartella dialog = new DialogSelezioneCartella();
-//		String path = dialog.open();
-//		if (path != null && !path.isEmpty()) {
-//			List<ColloCaricoJSON> colli = controller.trovaColli(ordine.getId(), commessa);
-//			List<ProdottoCaricoJSON> prodotti = controller.trovaProdotti(ordine.getId(), commessa);
-//			ReportCaricoPerCollo report = new ReportCaricoPerCollo();
-//			report.creaReport(commessa, ordine, colli, prodotti, path);
-//		}
-//	}
 	
 	public void abilitaTastiCRUDPerStato(StatiOrdine stato) {
 		boolean permesso = isPermesso();
@@ -122,7 +93,7 @@ public class TabellaOrdineDettagli extends TabellaCRUD<OrdineDettaglio> {
 		boolean statoModifica = false;
 		boolean statoElimina = false;
 		switch (stato) {
-			case INSE : statoNuovo = true; statoModifica = true; statoElimina = true; break;
+			case INSE : case ERRO : statoNuovo = true; statoModifica = true; statoElimina = true; break;
 			default : statoNuovo = false; statoModifica = false; statoElimina = false; break;
 		}
 		if (insert != null)	insert.setEnabled(permesso && statoNuovo);

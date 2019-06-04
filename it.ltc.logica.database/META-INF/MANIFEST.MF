@@ -24,7 +24,8 @@ Export-Package:
  it.ltc.logica.database.model.centrale.ordini,
  it.ltc.logica.database.model.centrale.trasporti,
  it.ltc.logica.database.model.centrale.utenti,
- it.ltc.logica.database.model.locale;uses:="it.ltc.logica.database.model.centrale.listini"
+ it.ltc.logica.database.model.locale;uses:="it.ltc.logica.database.model.centrale.listini",
+ it.ltc.logica.database.model.prodotto
 Bundle-ClassPath: .,
  lib/antlr-2.7.7.jar,
  lib/c3p0-0.9.5.2.jar,

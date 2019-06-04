@@ -16,6 +16,8 @@ import org.eclipse.swt.widgets.Text;
 
 import it.ltc.logica.container.controller.ControllerUtente;
 import it.ltc.logica.database.model.locale.User;
+import it.ltc.logica.gui.decoration.Immagine;
+
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -46,6 +48,7 @@ public class PasswordDialog extends Dialog {
 	private Button btnMemorizzaPassword;
 	private Label lblLogica;
 	private Button okButton;
+	private Button buttonPreferenze;
 
 	public PasswordDialog(Shell parentShell) {
 		super(parentShell);
@@ -65,7 +68,18 @@ public class PasswordDialog extends Dialog {
 		container = (Composite) super.createDialogArea(parent);
 		container.setBackground(SWTResourceManager.getColor(255, 204, 0));
 		container.setLayout(new GridLayout(2, false));
-		new Label(container, SWT.NONE);
+		
+		buttonPreferenze = new Button(container, SWT.NONE);
+		buttonPreferenze.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+		buttonPreferenze.setBackground(SWTResourceManager.getColor(255, 204, 0));
+		buttonPreferenze.setImage(Immagine.IMPOSTAZIONI_16X16.getImage());
+		buttonPreferenze.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				ProprietaDialog dialogProprieta = new ProprietaDialog();
+				dialogProprieta.open();
+			}
+		});
 		
 		lblLogica = new Label(container, SWT.NONE);
 		lblLogica.setBackground(SWTResourceManager.getColor(255, 204, 0));
@@ -121,11 +135,11 @@ public class PasswordDialog extends Dialog {
 		btnMemorizzaPassword.setText("Memorizza Password");
 		btnMemorizzaPassword.setBackground(SWTResourceManager.getColor(255, 204, 0));
 		
-		new Label(container, SWT.NONE);
-		
 		lblMessage = new Label(container, SWT.NONE);
 		lblMessage.setBackground(SWTResourceManager.getColor(255, 204, 0));
-		lblMessage.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData layoutMessage = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		layoutMessage.horizontalSpan = 2;
+		lblMessage.setLayoutData(layoutMessage);
 		
 		setUsernameSuggestion();
 

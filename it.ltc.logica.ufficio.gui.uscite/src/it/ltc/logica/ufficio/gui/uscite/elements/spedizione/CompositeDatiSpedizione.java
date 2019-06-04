@@ -1,7 +1,6 @@
 package it.ltc.logica.ufficio.gui.uscite.elements.spedizione;
 
 import java.util.Date;
-import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -9,7 +8,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import it.ltc.logica.database.model.centrale.ordini.OrdineTestata;
 import it.ltc.logica.gui.composite.Gruppo;
 import it.ltc.logica.gui.decoration.SpacerLabel;
 import it.ltc.logica.gui.input.DateField;
@@ -17,8 +15,6 @@ import it.ltc.logica.gui.input.TextForDescription;
 import it.ltc.logica.gui.input.TextForDouble;
 import it.ltc.logica.gui.input.TextForInteger;
 import it.ltc.logica.gui.validation.ParentValidationHandler;
-import it.ltc.logica.ufficio.gui.uscite.elements.TabellaOrdiniSemplice;
-import it.ltc.logica.ufficio.gui.uscite.elements.ToolbarOrdiniSemplice;
 
 public class CompositeDatiSpedizione extends Gruppo {
 	
@@ -31,8 +27,8 @@ public class CompositeDatiSpedizione extends Gruppo {
 	private TextForDescription textNote;
 	private Label lblDataConsegna;
 	private DateField dataConsegna;
-	private TabellaOrdiniSemplice tabellaOrdini;
-	private ToolbarOrdiniSemplice toolbarOrdini;
+//	private TabellaOrdiniSemplice tabellaOrdini;
+//	private ToolbarOrdiniSemplice toolbarOrdini;
 
 	public CompositeDatiSpedizione(ParentValidationHandler parentValidator, Composite parent) {
 		super(parentValidator, parent, title);
@@ -82,6 +78,7 @@ public class CompositeDatiSpedizione extends Gruppo {
 		lblDataConsegna.setText("Data Consegna: ");
 		
 		dataConsegna = new DateField(this);
+		dataConsegna.setRequired(false);
 
 		new SpacerLabel(this);
 		
@@ -94,24 +91,20 @@ public class CompositeDatiSpedizione extends Gruppo {
 
 		new SpacerLabel(this);
 		
-		Label lblOrdini = new Label(this, SWT.NONE);
-		lblOrdini.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblOrdini.setText("Ordini: ");
-		
-		toolbarOrdini = new ToolbarOrdiniSemplice(this);
-		toolbarOrdini.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
-		
-		new SpacerLabel(this);
-		
-		tabellaOrdini = new TabellaOrdiniSemplice(this);
-		
-		new SpacerLabel(this);
-		
-		toolbarOrdini.setTabella(tabellaOrdini);
-
-		new SpacerLabel(this);
-		new Label(this, SWT.NONE);
-		new Label(this, SWT.NONE);
+//		Label lblOrdini = new Label(this, SWT.NONE);
+//		lblOrdini.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+//		lblOrdini.setText("Ordini: ");
+//		
+//		toolbarOrdini = new ToolbarOrdiniSemplice(this);
+//		toolbarOrdini.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 2, 1));
+//		
+//		new SpacerLabel(this);
+//		
+//		tabellaOrdini = new TabellaOrdiniSemplice(this);
+//		
+//		new SpacerLabel(this);
+//		
+//		toolbarOrdini.setTabella(tabellaOrdini);		
 	}
 
 	public Integer getPezzi() {
@@ -154,12 +147,20 @@ public class CompositeDatiSpedizione extends Gruppo {
 		dataConsegna.setValue(data);
 	}
 	
-	public void setOrdini(List<OrdineTestata> ordini) {
-		tabellaOrdini.setOrdini(ordini);
+//	public void setOrdini(List<OrdineTestata> ordini) {
+//		tabellaOrdini.setOrdini(ordini);
+//	}
+//	
+//	public List<OrdineTestata> getOrdini() {
+//		return tabellaOrdini.getOrdini();
+//	}
+	
+	public void setNote(String note) {
+		textNote.setValue(note);
 	}
 	
-	public List<OrdineTestata> getOrdini() {
-		return tabellaOrdini.getOrdini();
+	public String getNote() {
+		return textNote.getValue();
 	}
 
 }

@@ -12,10 +12,12 @@ import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.swt.widgets.Text;
 
+import it.ltc.database.dao.locali.ProprietaLogicaDao;
 import it.ltc.database.dao.locali.UserDao;
 import it.ltc.logica.common.ws.RestClient;
 import it.ltc.logica.common.ws.RestClientSede;
 import it.ltc.logica.database.model.centrale.Commessa;
+import it.ltc.logica.database.model.locale.ProprietaLogica;
 import it.ltc.logica.database.model.locale.User;
 import it.ltc.logica.update.UpdateController;
 import it.ltc.logica.utilities.variabili.ControllerVariabiliGlobali;
@@ -34,6 +36,7 @@ public class ControllerUtente {
 	private final IEclipseContext context;
 	
 	private final UserDao managerUtenti;
+	private final ProprietaLogicaDao managerProprieta;
 	
 	private Utenza utente;
 	
@@ -45,6 +48,7 @@ public class ControllerUtente {
 		sync = uisync;
 		context = e4context;
 		managerUtenti = new UserDao();
+		managerProprieta = new ProprietaLogicaDao(); //TODO - Cancellare anche i files temporanei.
 		featureNames = new LinkedHashSet<String>();
 	}
 	
@@ -56,12 +60,21 @@ public class ControllerUtente {
 		return instance;
 	}
 	
+	private void setupProprietaLogica() {
+		IEclipsePreferences rootNode = Platform.getPreferencesService().getRootNode();
+		List<ProprietaLogica> proprieta = managerProprieta.trovaTutte();
+		for (ProprietaLogica p : proprieta) {
+			rootNode.put(p.getKey(), p.getValue());
+		}
+	}
+	
 	public int login(String username, String password, boolean memorizzaPassword) {
+		
+		//Setup delle proprieta generali di Logica (compresi gli indirizzi dei ws da chiamare)
+		setupProprietaLogica();
+		
 		int returnCode;
 		getAuthenticationString(username, password);
-		
-		//WSLogin c = new WSLogin(authString);
-		//WSAnswer a = c.login();
 		
 		/*nuovo: vado a fare la chiamata di login sulla sede. */
 		RestClient a = new RestClientSede();
@@ -95,72 +108,6 @@ public class ControllerUtente {
 		}
 		return returnCode;
 	}
-	
-//	private void setUserDetails(String json) {
-//		//JSON info = new JSON();
-//	    //info.parse(json);
-//	    
-//	    //int[] sedi = info.getIntArray("sedi");
-//	    //int[] commesse = info.getIntArray("commesse");
-//	    //int commessaDefault = commesse.length > 0 ? commesse[0] : 32;
-//		
-//		//Sedi
-//	    LinkedList<Sede> listaSedi = new LinkedList<Sede>();
-//	    for (int id : sedi) {
-//	    	Sede sede = ControllerSedi.getInstance().getSede(id);
-//	    	listaSedi.add(sede);
-//	    }
-//	    utente.setSedi(listaSedi);
-//	    //Commesse
-//	    LinkedList<Commessa> listaCommesse = new LinkedList<Commessa>();
-//	    for (int id : commesse) {
-//	    	Commessa commessa = ControllerCommesse.getInstance().getCommessa(id);
-//	    	listaCommesse.add(commessa);
-//	    }
-//	    utente.setCommesse(listaCommesse);
-//	    utente.setCommessaDefault(ControllerCommesse.getInstance().getCommessa(commessaDefault));
-//	   
-//	}
-
-//	private Utenza parseJSON(String json, String username, String password, String authString) {
-//		JSON info = new JSON();
-//	    info.parse(json);	    
-//	    
-//	    String nome = info.getString("nome");
-//	    String cognome = info.getString("cognome");
-//	    String email = info.getString("email");
-//	    String[] features = info.getStringArray("features");
-//	    int[] permessi = info.getIntArray("permessi");
-//	   
-//	    
-//	    Utenza utente = new Utenza();
-//	    //Imposto le credenziali
-//	    utente.setUsername(username);
-//		utente.setPassword(password);
-//		utente.setAuthString(authString);
-//		//Imposto il sistema con le informazioni recuperate.
-//	    utente.setNome(nome);
-//	    utente.setCognome(cognome);
-//	    utente.setEmail(email);
-//	    utente.setNome(nome);
-//	    utente.setCognome(cognome);
-//	    utente.setEmail(email);
-//	    
-//	    //Permessi
-//	    boolean[] permessiUtente = utente.getPermessi();
-//	    for (int id : permessi) {
-//	    	permessiUtente[id] = true;
-//	    }
-//	    
-//	    //Features
-//	    LinkedList<String> listaFeatures = new LinkedList<>();
-//	    for (String feature : features) {
-//	    	listaFeatures.add(feature);
-//	    }
-//	    utente.setFeatures(listaFeatures);
-//	    
-//	    return utente;
-//	}
 	
 	private void setGlobalInfo(Utenza utente) {
 		IEclipsePreferences rootNode = Platform.getPreferencesService().getRootNode();

@@ -6,4 +6,10 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_GZxb8FsjEeeO2ep1lYbkaA" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
     <elements xsi:type="basic:Part" xmi:id="_Jdo1kFsjEeeO2ep1lYbkaA" elementId="it.ltc.logica.ufficio.gui.ordini.part.ordini" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.uscite/it.ltc.logica.ufficio.gui.uscite.parts.UscitePart" label="Uscite" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/frecciaGiallaGiu_16x16.png" tooltip="Qui puoi gestire gli ordini dei clienti"/>
   </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_9DX2IGHbEemSHY0a2BsKcw" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="__m5i0GHbEemSHY0a2BsKcw" elementId="it.ltc.logica.ufficio.gui.uscite.part.spedizioni" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.uscite/it.ltc.logica.ufficio.gui.uscite.parts.SpedizioniPart" label="Spedizioni" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/trasporti_16x16.png" tooltip="Qui puoi gestire le spedizioni degli ordini"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_iGtx8G_-EemFouFIHdcYCw" featurename="children" parentElementId="it.ltc.logica.ufficio.gui.partstack.funzioni">
+    <elements xsi:type="basic:Part" xmi:id="_lpZOgG_-EemFouFIHdcYCw" elementId="it.ltc.logica.ufficio.gui.uscite.part.delivery" contributionURI="bundleclass://it.ltc.logica.ufficio.gui.uscite/it.ltc.logica.ufficio.gui.uscite.parts.DeliveryPart" label="Delivery" iconURI="platform:/plugin/it.ltc.logica.gui/src/it/ltc/logica/gui/resources/report_16x16.png" tooltip="Qui puoi gestire e stampare le delivery"/>
+  </fragments>
 </fragment:ModelFragments>

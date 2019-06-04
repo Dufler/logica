@@ -2,7 +2,7 @@ package it.ltc.logica.ufficio.gui.elements.prodotto;
 
 import org.eclipse.swt.graphics.Image;
 
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 import it.ltc.logica.gui.elements.Etichettatore;
 
 public class EtichettatoreProdotto extends Etichettatore<Prodotto> {

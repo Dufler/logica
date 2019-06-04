@@ -5,15 +5,15 @@ Bundle-SymbolicName: it.ltc.logica.ufficio.gui.prodotti;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: LTC
 Require-Bundle: javax.inject,
- org.eclipse.osgi,
- org.eclipse.jface,
- org.eclipse.e4.ui.model.workbench,
- org.eclipse.e4.ui.di,
- org.eclipse.e4.ui.services,
- org.eclipse.e4.core.di.annotations,
- it.ltc.logica.gui;bundle-version="1.0.0",
- it.ltc.logica.ufficio.gui,
- it.ltc.logica.database;bundle-version="1.0.0"
+  org.eclipse.osgi,
+  org.eclipse.jface,
+  org.eclipse.e4.ui.model.workbench,
+  org.eclipse.e4.ui.di,
+  org.eclipse.e4.ui.services,
+  org.eclipse.e4.core.di.annotations,
+  it.ltc.logica.gui;bundle-version="1.0.0",
+  it.ltc.logica.ufficio.gui,
+  it.ltc.logica.database;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: javax.annotation;version="1.0.0";resolution:=optional,
   javax.inject;version="1.0.0"

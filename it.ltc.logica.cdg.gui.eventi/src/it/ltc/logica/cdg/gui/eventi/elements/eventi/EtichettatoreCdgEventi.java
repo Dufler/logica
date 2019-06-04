@@ -25,7 +25,7 @@ public class EtichettatoreCdgEventi extends Etichettatore<CdgEvento> {
 	}
 
 	private String getCategoria(CdgEvento oggetto) {
-		CategoriaMerceologica categoria = ControllerCategorieMerceologiche.getInstance().getCategoria(oggetto.getCategoriaMerceologica());
+		CategoriaMerceologica categoria = ControllerCategorieMerceologiche.getInstance().getCategoria(oggetto.getCategoriaMerceologica(), 0); //FIXME
 		String testo = categoria != null ? categoria.getNome() : "N/A";
 		return testo;
 	}

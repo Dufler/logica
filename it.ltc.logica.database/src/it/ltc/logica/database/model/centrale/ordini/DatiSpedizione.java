@@ -26,6 +26,7 @@ public class DatiSpedizione {
 	
 	private Double valoreContrassegno;
 	private String tipoContrassegno;
+	private String valutaContrassegno;
 	
 	private Double valoreDoganale;
 	private String codiceTracking;
@@ -38,7 +39,25 @@ public class DatiSpedizione {
 	
 	private boolean forzaAccoppiamentoDestinatari;
 	
-	private boolean abilitaPartenza;
+//	private boolean abilitaPartenza;
+	
+	private StatiSpedizione stato;
+	
+//	@JsonIgnore
+//	private boolean generazioneOk;
+	
+	//Vengono usati solo come criteri di filtraggio durante la ricerca.
+	private Date da;
+	private Date a;
+	
+	//campi indirizzo
+	private String riferimento;
+	private String ragioneSociale;
+	private String indirizzo;
+	private String localita;
+	private String provincia;
+	private String cap;
+	private String nazione;
 	
 	public DatiSpedizione() {}
 
@@ -138,6 +157,14 @@ public class DatiSpedizione {
 		this.tipoContrassegno = tipoContrassegno;
 	}
 
+	public String getValutaContrassegno() {
+		return valutaContrassegno;
+	}
+
+	public void setValutaContrassegno(String valutaContrassegno) {
+		this.valutaContrassegno = valutaContrassegno;
+	}
+
 	public Double getValoreDoganale() {
 		return valoreDoganale;
 	}
@@ -194,12 +221,100 @@ public class DatiSpedizione {
 		this.forzaAccoppiamentoDestinatari = forzaAccoppiamentoDestinatari;
 	}
 
-	public boolean isAbilitaPartenza() {
-		return abilitaPartenza;
+//	public boolean isAbilitaPartenza() {
+//		return abilitaPartenza;
+//	}
+//
+//	public void setAbilitaPartenza(boolean abilitaPartenza) {
+//		this.abilitaPartenza = abilitaPartenza;
+//	}
+
+	public StatiSpedizione getStato() {
+		return stato;
 	}
 
-	public void setAbilitaPartenza(boolean abilitaPartenza) {
-		this.abilitaPartenza = abilitaPartenza;
+	public void setStato(StatiSpedizione stato) {
+		this.stato = stato;
+	}
+
+//	public boolean isGenerazioneOk() {
+//		return generazioneOk;
+//	}
+//
+//	public void setGenerazioneOk(boolean generazioneOk) {
+//		this.generazioneOk = generazioneOk;
+//	}
+	
+	public Date getDa() {
+		return da;
+	}
+
+	public void setDa(Date da) {
+		this.da = da;
+	}
+
+	public Date getA() {
+		return a;
+	}
+
+	public void setA(Date a) {
+		this.a = a;
+	}
+	
+	public String getRiferimento() {
+		return riferimento;
+	}
+
+	public void setRiferimento(String riferimento) {
+		this.riferimento = riferimento;
+	}
+
+	public String getRagioneSociale() {
+		return ragioneSociale;
+	}
+
+	public void setRagioneSociale(String ragioneSociale) {
+		this.ragioneSociale = ragioneSociale;
+	}
+
+	public String getIndirizzo() {
+		return indirizzo;
+	}
+
+	public void setIndirizzo(String indirizzo) {
+		this.indirizzo = indirizzo;
+	}
+
+	public String getLocalita() {
+		return localita;
+	}
+
+	public void setLocalita(String localita) {
+		this.localita = localita;
+	}
+
+	public String getProvincia() {
+		return provincia;
+	}
+
+	public void setProvincia(String provincia) {
+		this.provincia = provincia;
+	}
+
+	public String getCap() {
+		return cap;
+	}
+
+	public void setCap(String cap) {
+		this.cap = cap;
+	}
+
+	public String getNazione() {
+		return nazione;
+	}
+
+	public void setNazione(String nazione) {
+		this.nazione = nazione;
 	}
 
 }

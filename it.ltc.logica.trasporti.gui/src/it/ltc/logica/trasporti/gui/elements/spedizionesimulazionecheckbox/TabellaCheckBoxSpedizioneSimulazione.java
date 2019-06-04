@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TableItem;
 
 import it.ltc.logica.database.model.centrale.trasporti.SpedizioneSimulazione;
+import it.ltc.logica.gui.elements.Etichettatore;
+import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;
 import it.ltc.logica.gui.elements.TabellaCheckBox;
 
@@ -40,15 +42,15 @@ public class TabellaCheckBoxSpedizioneSimulazione extends TabellaCheckBox<Spediz
 		super(parent);
 		
 		//Colonne fondamentali, sono presenti in tutti i tipi
-		aggiungiColonna("Data", 120, new EtichettatoreCheckBoxSpedizioneSimulazione(), 0);
-		aggiungiColonna("Destinatario", 180, new EtichettatoreCheckBoxSpedizioneSimulazione(), 1);
+		aggiungiColonna("Data", 120, 0);
+		aggiungiColonna("Destinatario", 180, 1);
 				
 		//Versione completa
 		if (type == TIPO_COMPLETO) {
-			aggiungiColonna("Colli", 40, new EtichettatoreCheckBoxSpedizioneSimulazione(), 2);
-			aggiungiColonna("Pezzi", 40, new EtichettatoreCheckBoxSpedizioneSimulazione(), 3);
-			aggiungiColonna("Contrassegno", 85, new EtichettatoreCheckBoxSpedizioneSimulazione(), 4);
-			aggiungiColonna("Giacenza", 80, new EtichettatoreCheckBoxSpedizioneSimulazione(), 5);
+			aggiungiColonna("Colli", 40, 2);
+			aggiungiColonna("Pezzi", 40, 3);
+			aggiungiColonna("Contrassegno", 85, 4);
+			aggiungiColonna("Giacenza", 80, 5);
 		}
 	}
 
@@ -103,6 +105,16 @@ public class TabellaCheckBoxSpedizioneSimulazione extends TabellaCheckBox<Spediz
 	@Override
 	protected Ordinatore<SpedizioneSimulazione> creaOrdinatore() {
 		return new OrdinatoreCheckBoxSpedizioneSimulazione();
+	}
+
+	@Override
+	protected Etichettatore<SpedizioneSimulazione> creaEtichettatore() {
+		return new EtichettatoreCheckBoxSpedizioneSimulazione();
+	}
+
+	@Override
+	protected ModificatoreValoriCelle<SpedizioneSimulazione> creaModificatore() {
+		return null;
 	}
 
 }

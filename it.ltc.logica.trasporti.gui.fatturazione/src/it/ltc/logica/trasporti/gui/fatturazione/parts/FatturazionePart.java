@@ -24,11 +24,7 @@ import it.ltc.logica.common.controller.listini.ControllerListiniClienti;
 import it.ltc.logica.common.controller.listini.ControllerListiniCorrieri;
 import it.ltc.logica.common.controller.trasporti.ControllerCap;
 import it.ltc.logica.common.controller.trasporti.ControllerCodiciClienteCorriere;
-import it.ltc.logica.gui.dialog.DialogMessaggio;
-import it.ltc.logica.gui.dialog.DialogSelezioneFile;
 import it.ltc.logica.gui.wizard.DialogWizard;
-import it.ltc.logica.trasporti.controller.FatturazioneTNTController;
-import it.ltc.logica.trasporti.controller.fatturazione.brt.FatturazioneBRTController;
 import it.ltc.logica.trasporti.gui.fatturazione.elements.TabellaDocumentiFatturazioneTrasporti;
 import it.ltc.logica.trasporti.gui.fatturazione.wizards.giacenze.FatturazioneGiacenzeWizard;
 import it.ltc.logica.trasporti.gui.fatturazione.wizards.spedizioni.FatturazioneSpedizioniWizard;
@@ -104,25 +100,25 @@ public class FatturazionePart {
 		btnFattura.setText("Fattura Trasporti");
 		btnFattura.setEnabled(abilitaFatturazioneSpedizioni);
 
-		Button btnImportaFatturaCorriere = new Button(compositeSpedizioni, SWT.NONE);
-		btnImportaFatturaCorriere.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				importaDatiFatturazioneTNT();
-			}
-		});
-		btnImportaFatturaCorriere.setText("Importa Fattura TNT");
-		btnImportaFatturaCorriere.setEnabled(abilitaFatturazioneSpedizioni);
-
-		Button btnImportaFatturaBrt = new Button(compositeSpedizioni, SWT.NONE);
-		btnImportaFatturaBrt.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				importaDatiFatturazioneBRT();
-			}
-		});
-		btnImportaFatturaBrt.setText("Importa Fattura BRT");
-		btnImportaFatturaBrt.setEnabled(abilitaFatturazioneSpedizioni);
+//		Button btnImportaFatturaCorriere = new Button(compositeSpedizioni, SWT.NONE);
+//		btnImportaFatturaCorriere.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				importaDatiFatturazioneTNT();
+//			}
+//		});
+//		btnImportaFatturaCorriere.setText("Importa Fattura TNT");
+//		btnImportaFatturaCorriere.setEnabled(abilitaFatturazioneSpedizioni);
+//
+//		Button btnImportaFatturaBrt = new Button(compositeSpedizioni, SWT.NONE);
+//		btnImportaFatturaBrt.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				importaDatiFatturazioneBRT();
+//			}
+//		});
+//		btnImportaFatturaBrt.setText("Importa Fattura BRT");
+//		btnImportaFatturaBrt.setEnabled(abilitaFatturazioneSpedizioni);
 
 		Composite compositeDocumenti = new Composite(compositeSpedizioni, SWT.NONE);
 		compositeDocumenti.setLayout(new GridLayout(1, false));
@@ -191,37 +187,37 @@ public class FatturazionePart {
 		}
 	}
 
-	private void importaDatiFatturazioneTNT() {
-		DialogSelezioneFile dialog = new DialogSelezioneFile();
-		String path = dialog.open();
-		if (path != null && !path.isEmpty()) {
-			int[] esito = FatturazioneTNTController.getInstance().importaXLSFatturazione(path);
-			String titolo = "Esito Importazione";
-			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
-			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
-			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
-			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
-			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
-			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
-			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
-			DialogMessaggio.openInformation(titolo, messaggio);
-		}
-	}
-
-	private void importaDatiFatturazioneBRT() {
-		DialogSelezioneFile dialog = new DialogSelezioneFile();
-		String path = dialog.open();
-		if (path != null && !path.isEmpty()) {
-			int[] esito = FatturazioneBRTController.getInstance().importaDocumentoFatturazione(path);
-			String titolo = "Esito Importazione";
-			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
-			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
-			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
-			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
-			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
-			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
-			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
-			DialogMessaggio.openInformation(titolo, messaggio);
-		}
-	}
+//	private void importaDatiFatturazioneTNT() {
+//		DialogSelezioneFile dialog = new DialogSelezioneFile();
+//		String path = dialog.open();
+//		if (path != null && !path.isEmpty()) {
+//			int[] esito = FatturazioneTNTController.getInstance().importaXLSFatturazione(path);
+//			String titolo = "Esito Importazione";
+//			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
+//			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
+//			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
+//			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
+//			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
+//			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
+//			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
+//			DialogMessaggio.openInformation(titolo, messaggio);
+//		}
+//	}
+//
+//	private void importaDatiFatturazioneBRT() {
+//		DialogSelezioneFile dialog = new DialogSelezioneFile();
+//		String path = dialog.open();
+//		if (path != null && !path.isEmpty()) {
+//			int[] esito = FatturazioneBRTController.getInstance().importaDocumentoFatturazione(path);
+//			String titolo = "Esito Importazione";
+//			String messaggio = "\u00C8 stato importato il file '" + path + "'\r\n\r\n";
+//			messaggio += "Totale dei record contenuti nel file: " + esito[0] + "\r\n";
+//			messaggio += "Totale delle spedizioni aggiornate: " + esito[1] + "\r\n";
+//			messaggio += "Totale delle giacenze aggiornate: " + esito[2] + "\r\n";
+//			messaggio += "Totale degli indirizzi aggiornati: " + esito[3] + "\r\n";
+//			messaggio += "Totale degli errori riscontrati: " + esito[4] + "\r\n";
+//			messaggio += "Totale delle nuove spedizioni trovate che non erano presenti a sistema: " + esito[5] + "\r\n";
+//			DialogMessaggio.openInformation(titolo, messaggio);
+//		}
+//	}
 }

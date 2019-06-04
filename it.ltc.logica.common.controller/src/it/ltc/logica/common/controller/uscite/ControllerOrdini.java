@@ -6,6 +6,7 @@ import java.util.List;
 
 import it.ltc.logica.common.controller.ControllerCommessa;
 import it.ltc.logica.common.controller.processi.ProcessoAggiornamentoDati;
+import it.ltc.logica.common.controller.processi.ProcessoCancellazioneDati;
 import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDati;
 import it.ltc.logica.common.controller.processi.ProcessoCaricamentoDato;
 import it.ltc.logica.common.controller.processi.ProcessoInserimentoDati;
@@ -25,6 +26,7 @@ import it.ltc.logica.database.model.centrale.ordini.RisultatoAssegnazioneRigaOrd
 import it.ltc.logica.database.model.centrale.ordini.RisultatoFinalizzazioneOrdine;
 import it.ltc.logica.database.model.centrale.ordini.RisultatoGenerazioneMovimenti;
 import it.ltc.logica.database.model.centrale.ordini.StatiOrdine;
+import it.ltc.logica.database.model.centrale.ordini.StatiSpedizione;
 import it.ltc.logica.gui.task.DialogProgresso;
 
 public class ControllerOrdini extends ControllerCommessa<OrdineTestata> {
@@ -240,6 +242,23 @@ public class ControllerOrdini extends ControllerCommessa<OrdineTestata> {
 		
 	}
 	
+	public DatiSpedizione trovaDatiSpedizioneDaID(int idSpedizione) {
+		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
+		ProcessoRecuperoDatiSpedizioneDaID processo = new ProcessoRecuperoDatiSpedizioneDaID(sede, commessa, idSpedizione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		DatiSpedizione datiSpedizione = processo.getEsito() ? processo.getObject() : null;
+		return datiSpedizione;
+	}
+	
+	protected class ProcessoRecuperoDatiSpedizioneDaID extends ProcessoCaricamentoDato<DatiSpedizione> {
+
+		public ProcessoRecuperoDatiSpedizioneDaID(Sede sede, Commessa commessa, int id) {
+			super(title, "spedizione/" + id, DatiSpedizione.class, sede, commessa);
+		}
+		
+	}
+	
 	public DatiSpedizione salvaDatiSpedizione(DatiSpedizione dati) {
 		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
 		ProcessoSalvataggioDatiSpedizione processo = new ProcessoSalvataggioDatiSpedizione(sede, commessa, dati);
@@ -262,6 +281,64 @@ public class ControllerOrdini extends ControllerCommessa<OrdineTestata> {
 		}
 		
 	}
+	
+	public DatiSpedizione abilitaSpedizione(DatiSpedizione spedizione, boolean abilita) {
+		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
+		ProcessoAbilitaSpedizione processo = new ProcessoAbilitaSpedizione(sede, commessa, spedizione, abilita);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		DatiSpedizione datiSpedizione = processo.getEsito() ? processo.getObject() : null;
+		return datiSpedizione;
+	}
+	
+	protected class ProcessoAbilitaSpedizione extends ProcessoAggiornamentoDati<DatiSpedizione> {
+
+		public ProcessoAbilitaSpedizione(Sede sede, Commessa commessa, DatiSpedizione spedizione, boolean abilita) {
+			super(title, abilita ? "spedizione/abilita/" : "spedizione/disabilita/", spedizione, sede, commessa);
+		}
+		
+	}
+	
+	public boolean eliminaSpedizione(DatiSpedizione spedizione) {
+		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
+		ProcessoEliminaSpedizione processo = new ProcessoEliminaSpedizione(sede, commessa, spedizione);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		return processo.getEsito();
+	}
+	
+	protected class ProcessoEliminaSpedizione extends ProcessoCancellazioneDati<DatiSpedizione> {
+
+		public ProcessoEliminaSpedizione(Sede sede, Commessa commessa, DatiSpedizione spedizione) {
+			super(title, "spedizione/elimina/", spedizione, sede, commessa);
+		}
+		
+	}
+	
+	public List<DatiSpedizione> trovaSpedizioni(String riferimento, String corriere, StatiSpedizione stato, Date da, Date a) {
+		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
+		DatiSpedizione filtro = new DatiSpedizione();
+		filtro.setRiferimentoDocumento(riferimento);
+		filtro.setStato(stato);
+		filtro.setDa(da);
+		filtro.setA(a);
+		filtro.setCorriere(corriere);
+		ProcessoTrovaSpedizioni processo = new ProcessoTrovaSpedizioni(sede, commessa, filtro);
+		DialogProgresso dialog = new DialogProgresso(DialogProgresso.TITOLO_DEFAULT);
+		dialog.esegui(processo);
+		List<DatiSpedizione> spedizioni = processo.getLista();
+		return spedizioni;
+	}
+	
+	protected class ProcessoTrovaSpedizioni extends ProcessoRicercaDati<DatiSpedizione> {
+
+		public ProcessoTrovaSpedizioni(Sede sede, Commessa commessa, DatiSpedizione filtro) {
+			super(title, "spedizione/cerca", DatiSpedizione[].class, sede, commessa, filtro);
+		}
+		
+	}
+	
+	
 	
 	public RisultatoAssegnazioneOrdine assegna(OrdineTestata ordine) {
 		Sede sede = ControllerSedi.getInstance().getSede(commessa.getIdSede());
@@ -303,7 +380,7 @@ public class ControllerOrdini extends ControllerCommessa<OrdineTestata> {
 	protected RisultatoAssegnazioneOrdine getProblemaRecuperoAssegnazione(OrdineTestata ordine) {
 		RisultatoAssegnazioneOrdine problema = new RisultatoAssegnazioneOrdine();
 		problema.setOrdine(ordine);
-		//TODO
+		problema.setStato(StatoAssegnazione.NONDEFINITA);
 		return problema;
 	}
 	

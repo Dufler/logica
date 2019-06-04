@@ -25,7 +25,6 @@ import it.ltc.logica.trasporti.gui.preventivi.wizards.esistenti.PreventivoSpediz
 import it.ltc.logica.trasporti.gui.preventivi.wizards.fittizia.PreventivoSpedizioneFittiziaWizard;
 import it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziadue.PreventivoSpedizioneFittiziaDueWizard;
 import it.ltc.logica.trasporti.gui.preventivi.wizards.fittiziasucolli.PreventivoSpedizioneFittiziaSuColliWizard;
-import it.ltc.logica.trasporti.gui.preventivi.wizards.importaspedizioni.ImportaSpedizioniWizard;
 import it.ltc.logica.trasporti.gui.preventivi.wizards.importate.PreventivoSpedizioniImportateWizard;
 
 public class PreventiviPart {
@@ -88,14 +87,14 @@ public class PreventiviPart {
 		});
 		btnPreventivoPerImportate.setText("Spedizioni importate");
 		
-		Button btnImportaSpedizioniSimulazione = new Button(parent, SWT.NONE);
-		btnImportaSpedizioniSimulazione.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				apriWizardImportazioneSpedizioni();
-			}
-		});
-		btnImportaSpedizioniSimulazione.setText("Importa Spedizioni per simulazione");
+//		Button btnImportaSpedizioniSimulazione = new Button(parent, SWT.NONE);
+//		btnImportaSpedizioniSimulazione.addSelectionListener(new SelectionAdapter() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				apriWizardImportazioneSpedizioni();
+//			}
+//		});
+//		btnImportaSpedizioniSimulazione.setText("Importa Spedizioni per simulazione");
 		
 		Label lblIndirizziDiSimulazione = new Label(parent, SWT.NONE);
 		lblIndirizziDiSimulazione.setText("Indirizzi di simulazione: ");
@@ -149,13 +148,13 @@ public class PreventiviPart {
 		}
 	}
 	
-	private void apriWizardImportazioneSpedizioni() {
-		DialogWizard wizard = new DialogWizard(new ImportaSpedizioniWizard(/*sync*/), DialogWizard.WIZARD_PREVENTIVO);
-		int esito = wizard.open();
-		if (esito == WizardDialog.OK) {
-			//Se serve fai qualcosa.
-		}
-	}
+//	private void apriWizardImportazioneSpedizioni() {
+//		DialogWizard wizard = new DialogWizard(new ImportaSpedizioniWizard(/*sync*/), DialogWizard.WIZARD_PREVENTIVO);
+//		int esito = wizard.open();
+//		if (esito == WizardDialog.OK) {
+//			//Se serve fai qualcosa.
+//		}
+//	}
 	
 	
 }

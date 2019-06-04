@@ -4,8 +4,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
 import it.ltc.logica.common.controller.prodotti.ControllerProdotti;
-import it.ltc.logica.database.model.centrale.Prodotto;
-import it.ltc.logica.database.model.centrale.SaldoProdotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
+import it.ltc.logica.database.model.prodotto.SaldoProdotto;
 import it.ltc.logica.gui.elements.Etichettatore;
 import it.ltc.logica.gui.elements.ModificatoreValoriCelle;
 import it.ltc.logica.gui.elements.Ordinatore;

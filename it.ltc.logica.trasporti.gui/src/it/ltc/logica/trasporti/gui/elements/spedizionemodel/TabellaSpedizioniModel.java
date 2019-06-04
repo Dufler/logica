@@ -65,11 +65,11 @@ public class TabellaSpedizioniModel extends Tabella<SpedizioneModel> {
 		for (ListinoCorriere listino : listiniCorrieri) {
 			aggiungiColonna(listino.getNome(), 100, new EtichettatoreSpedizioniModel(listino.getId()), 5, SWT.CENTER);
 		}
-		if (listiniSimulazione != null)
-		for (ListinoSimulazione listino : listiniSimulazione) {
-			if (listino.getTipo() == AmbitoFattura.ID_SIMULAZIONI_CORRIERI)
-				aggiungiColonna("(Sim.) " + listino.getNome(), 100, new EtichettatoreSpedizioniModel(listino.getId()), 5, SWT.CENTER);
-		}
+//		if (listiniSimulazione != null)
+//		for (ListinoSimulazione listino : listiniSimulazione) {
+//			if (listino.getTipo() == AmbitoFattura.ID_SIMULAZIONI_CORRIERI)
+//				aggiungiColonna("(Sim.) " + listino.getNome(), 100, new EtichettatoreSpedizioniModel(listino.getId()), 5, SWT.CENTER);
+//		}
 		
 		modifica = modify;
 	}

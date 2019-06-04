@@ -1,18 +1,13 @@
 package it.ltc.logica.trasporti.gui.preventivi.wizards.importate;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.wizard.IWizardPage;
 
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 import it.ltc.logica.trasporti.controller.preventivi.PreventivoEsistentiController;
 
 public class PreventivoSpedizioniImportateWizard extends WizardConRisultati {
 	
 	private static final String title = "Preventivo di costo per spedizioni importate";
-	
-	private final LinkedList<PaginaWizardRisultati> fine;
 	
 	private final PreventivoSpedizioneImportateSelezioneDatiWizardPage selezionePage;
 	private final PreventivoSpedizioniImportateSelezioneDocumentoWizardPage documentoPage;
@@ -28,9 +23,6 @@ public class PreventivoSpedizioniImportateWizard extends WizardConRisultati {
 		filtroPage = new PreventivoSpedizioniImportateFiltroSpedizioni();
 		spedizioniPage = new PreventivoSpedizioniImportateSelezioneSpedizioniWizardPage();
 		risultatoPage = new PreventivoSpedizioniImportateRisultatoWizardPage();
-		fine = new LinkedList<PaginaWizardRisultati>();
-		fine.add(spedizioniPage);
-		fine.add(risultatoPage);
 	}
 
 	@Override
@@ -66,11 +58,6 @@ public class PreventivoSpedizioniImportateWizard extends WizardConRisultati {
 	public boolean canFinish() {
 		boolean finish = (getContainer().getCurrentPage() == risultatoPage);
 		return finish;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return fine;
 	}
 
 }

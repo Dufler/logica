@@ -79,8 +79,8 @@ public class ControllerCommesse extends ControllerReadOnly<Commessa> {
 		return RestClient.CONTEXT_PATH_SEDE;
 	}
 	
-	public String getDomain() {
-		return RestClient.DOMAIN_SEDE;
-	}
+//	public String getDomain() {
+//		return RestClient.DOMAIN_SEDE;
+//	}
 
 }

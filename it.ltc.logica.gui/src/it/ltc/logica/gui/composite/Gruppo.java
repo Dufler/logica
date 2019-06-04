@@ -22,6 +22,7 @@ public abstract class Gruppo extends Group implements ParentValidationHandler, G
 	
 	protected boolean valid;
 	protected boolean dirty;
+	protected boolean required;
 	protected ParentValidationHandler successor;
 	protected final Set<ValidationHandler> children;
 	protected final Set<Control> nonUpdatableElements;
@@ -55,11 +56,12 @@ public abstract class Gruppo extends Group implements ParentValidationHandler, G
 		super(parent, style);
 		setText(title);
 		if (parentValidator != null) {
-			successor = (ParentValidationHandler) parentValidator;
+			successor = parentValidator;
 			successor.addChild(this);
 		} else {
 			successor = null;
 		}
+		required = true;
 		children = new HashSet<>();
 		nonUpdatableElements = new HashSet<>();
 		setup(setupInfo);
@@ -78,6 +80,14 @@ public abstract class Gruppo extends Group implements ParentValidationHandler, G
 	 * TODO: si protrebbe mettere un oggetto di configurazione (estendibile) come parametro in ingresso a questo metodo he contiene tutte le info necessarie alla configurazione (es. commessa) la maggior parte delle volte questo oggetto sarebbe null.
 	 */
 	public abstract void aggiungiElementiGrafici();
+	
+	public boolean isRequired() {
+		return required;
+	}
+	
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
 	
 	public boolean isDirty() {
 		dirty = false;
@@ -104,7 +114,8 @@ public abstract class Gruppo extends Group implements ParentValidationHandler, G
 	@Override
 	public boolean validate() {
 		valid = true;
-		for (ValidationHandler child : children) {
+		//Se è required oppure è stato toccato vado a validarlo
+		if (required || isDirty()) for (ValidationHandler child : children) {
 			valid = child.isValid();
 			if (!valid)
 				break;

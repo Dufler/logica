@@ -28,6 +28,7 @@ import it.ltc.logica.ufficio.gui.uscite.wizard.assegna.AssegnazioneOrdiniWizard;
 import it.ltc.logica.ufficio.gui.uscite.wizard.finalizza.FinalizzaOrdiniWizard;
 import it.ltc.logica.ufficio.gui.uscite.wizard.generamovimenti.GeneraMovimentiOrdiniWizard;
 import it.ltc.logica.ufficio.gui.uscite.wizard.generaspedizioni.GeneraDatiSpedizioniWizard;
+import it.ltc.logica.ufficio.gui.uscite.wizard.raggruppaspedizioni.RaggruppaSpedizioniWizard;
 import it.ltc.logica.utilities.variabili.Permessi;
 
 public class ToolbarOrdineTestata extends ToolbarCRUDConFiltro<TabellaOrdineTestata, OrdineTestata, CriteriFiltraggioOrdineTestata> {
@@ -43,6 +44,7 @@ public class ToolbarOrdineTestata extends ToolbarCRUDConFiltro<TabellaOrdineTest
 	protected ToolItem assegna;
 	protected ToolItem generaMovimenti;
 	protected ToolItem generaDatiSpedizione;
+	protected ToolItem raggruppaSpedizioni;
 
 	public ToolbarOrdineTestata(Composite parent) {
 		super(parent);
@@ -217,6 +219,17 @@ public class ToolbarOrdineTestata extends ToolbarCRUDConFiltro<TabellaOrdineTest
 				apriGeneraDatiSpedizioni();
 			}
 		});
+		
+		raggruppaSpedizioni = new ToolItem(toolbar, SWT.NONE);
+		raggruppaSpedizioni.setImage(Immagine.FRECCEROSSEGIU_16X16.getImage());
+		raggruppaSpedizioni.setText("");
+		raggruppaSpedizioni.setToolTipText("raggruppa spedizioni");
+		raggruppaSpedizioni.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				apriRaggruppaSpedizioni();
+			}
+		});
 	}
 	
 	private void selezionaCommessa() {
@@ -280,6 +293,19 @@ public class ToolbarOrdineTestata extends ToolbarCRUDConFiltro<TabellaOrdineTest
 		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
 		if (commessaSelezionata != null) {
 			DialogWizard dialog = new DialogWizard(new GeneraDatiSpedizioniWizard(commessaSelezionata));
+			int returnCode = dialog.open();
+			if (returnCode == Window.OK) {
+				tabella.aggiornaContenuto();
+			}
+		} else {
+			DialogMessaggio.openWarning("Selezione commessa", "Va selezionata una commessa.");
+		}
+	}
+	
+	private void apriRaggruppaSpedizioni() {
+		Commessa commessaSelezionata = comboCommessa.getSelectedValue();
+		if (commessaSelezionata != null) {
+			DialogWizard dialog = new DialogWizard(new RaggruppaSpedizioniWizard(commessaSelezionata));
 			int returnCode = dialog.open();
 			if (returnCode == Window.OK) {
 				tabella.aggiornaContenuto();

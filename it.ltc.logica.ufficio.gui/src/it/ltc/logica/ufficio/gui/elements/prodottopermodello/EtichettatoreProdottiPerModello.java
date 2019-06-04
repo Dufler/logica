@@ -49,7 +49,7 @@ public class EtichettatoreProdottiPerModello extends Etichettatore<ProdottiPerMo
 	}
 
 	private String getCategoriaMerceologica(ProdottiPerModello oggetto) {
-		CategoriaMerceologica categoria = controllerCategorie.getCategoria(oggetto.getCategoriaMerceologica());
+		CategoriaMerceologica categoria = controllerCategorie.getCategoria(oggetto.getCategoriaMerceologica(), 0); //FIXME
 		String testo = categoria != null ? categoria.getNome() : "-";
 		return testo;
 	}

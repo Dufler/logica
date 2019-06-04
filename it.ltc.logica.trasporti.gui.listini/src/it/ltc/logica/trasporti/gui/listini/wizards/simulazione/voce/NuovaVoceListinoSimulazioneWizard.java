@@ -1,7 +1,5 @@
 package it.ltc.logica.trasporti.gui.listini.wizards.simulazione.voce;
 
-import java.util.LinkedList;
-
 import org.eclipse.jface.wizard.IWizardPage;
 
 import it.ltc.logica.common.calcolo.algoritmi.TipoAlgoritmo;
@@ -9,7 +7,6 @@ import it.ltc.logica.common.controller.listini.ListiniSimulazioneController;
 import it.ltc.logica.database.model.locale.ListinoSimulazione;
 import it.ltc.logica.database.model.locale.ListinoSimulazioneVoce;
 import it.ltc.logica.gui.dialog.DialogMessaggio;
-import it.ltc.logica.gui.wizard.PaginaWizardRisultati;
 import it.ltc.logica.gui.wizard.WizardConRisultati;
 
 public class NuovaVoceListinoSimulazioneWizard extends WizardConRisultati {
@@ -17,8 +14,6 @@ public class NuovaVoceListinoSimulazioneWizard extends WizardConRisultati {
 	private static final String title = "Nuova Voce di Listino";
 	
 	private ListiniSimulazioneController controller;
-	
-	private final LinkedList<PaginaWizardRisultati> result;
 	
 	private final ListinoSimulazioneVoce voce;
 	
@@ -46,8 +41,6 @@ public class NuovaVoceListinoSimulazioneWizard extends WizardConRisultati {
 		paginaScaglioni = new NuovaVoceListinoSimulazioneScaglioniWizardPage(voce);
 		paginaScaglioniRipetuti = new NuovaVoceListinoSimulazioneScaglioniRipetutiWizardPage(voce);
 		paginaRiepilogo = new NuovaVoceListinoSimulazioneRiepilogoWizardPage(voce);
-		result = new LinkedList<PaginaWizardRisultati>();
-		result.add(paginaRiepilogo);
 	}
 
 	@Override
@@ -89,11 +82,6 @@ public class NuovaVoceListinoSimulazioneWizard extends WizardConRisultati {
 			DialogMessaggio.openError("Errore", "Ci sono stati problemi con l'inserimento.");
 		}
 		return finish;
-	}
-
-	@Override
-	public LinkedList<PaginaWizardRisultati> getPaginaRisultati() {
-		return result;
 	}
 
 }

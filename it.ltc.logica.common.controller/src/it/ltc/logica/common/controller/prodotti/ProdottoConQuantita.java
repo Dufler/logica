@@ -1,6 +1,6 @@
 package it.ltc.logica.common.controller.prodotti;
 
-import it.ltc.logica.database.model.centrale.Prodotto;
+import it.ltc.logica.database.model.prodotto.Prodotto;
 
 /**
  * Rappresenta un prodotto e la quantità di interesse per esso.
